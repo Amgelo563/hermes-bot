@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Offer {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String
+  price        String
+  createdAt    DateTime @default(now())
+  lastPostedAt DateTime @default(now())
+  postsAmount  Int      @default(1)
+  thumbnail    String
+  image        String
+  guildId      String
+  channelId    String
+  messageId    String
+  userId       String
+  tags         Tag[]
+}
+
+model Request {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String
+  budget       String
+  createdAt    DateTime @default(now())
+  lastPostedAt DateTime @default(now())
+  postsAmount  Int      @default(1)
+  guildId      String
+  channelId    String
+  messageId    String
+  userId       String
+  tag          Tag      @relation(fields: [tagId], references: [id])
+  tagId        Int
+}
+
+model Tag {
+  id          Int       @id @default(autoincrement())
+  name        String
+  color       String
+  description String
+  createdAt   DateTime  @default(now())
+  requests    Request[]
+  offers      Offer[]
+}

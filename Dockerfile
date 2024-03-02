@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+
+# Prepare
+ARG NODE_VERSION=18.17.1
+ARG PNPM_VERSION=8.7.1
+
+# Setup node
+FROM node:${NODE_VERSION}-alpine
+ENV NODE_ENV production
+
+# Install pnpm
+RUN --mount=type=cache,target=/root/.npm \
+    npm install -g pnpm@${PNPM_VERSION}
+
+# Setup working directory and essential files
+WORKDIR /usr/src/app
+COPY package.json pnpm-lock.yaml ./
+
+# Download dependencies as a separate step to take advantage of Docker's caching.
+# Leverage a cache mount to /root/.local/share/pnpm/store to speed up subsequent builds.
+# Leverage a bind mounts to package.json and pnpm-lock.yaml to avoid having to copy them into
+# into this layer.
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+    --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --prod --frozen-lockfile
+
+# Setup permissions
+RUN chown -R node:node /usr/src/app
+USER node
+
+# Copy the rest of the source
+COPY . .
+
+# Start, first checking if DATABASE_URL is set or exit with an error
+CMD if [ -z "$DATABASE_URL" ]; then echo "Error: DATABASE_URL environment variable required to start." && exit 1; else pnpm run setup && pnpm start; fi

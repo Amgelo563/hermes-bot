@@ -1,0 +1,51 @@
+{
+  "name": "hermes-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "pnpm run clean && tsc",
+    "setup": "pnpm run prisma:push && pnpm run build",
+    "start": "pnpm run build && node --trace-deprecation -r source-map-support/register dist/index.js",
+    "prisma:gen": "prisma generate",
+    "prisma:push": "prisma db push"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/builders": "^1.7.0",
+    "@discordjs/formatters": "^0.3.3",
+    "@isaacs/ttlcache": "^1.4.1",
+    "@nyx-discord/core": "1.5.1",
+    "@nyx-discord/framework": "1.5.1",
+    "@prisma/client": "^5.8.0",
+    "@pushcorn/hocon-parser": "^1.2.9",
+    "discord-api-types": "^0.37.66",
+    "discord.js": "^14.14.1",
+    "lru-cache": "^10.1.0",
+    "nanoid": "^3.3.7",
+    "parse-duration": "^1.1.0",
+    "prisma": "^5.8.0",
+    "rimraf": "^5.0.5",
+    "source-map-support": "^0.5.21",
+    "sqlite3": "^5.1.6",
+    "tslog": "^4.9.2",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "@types/validator": "^13.11.7",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=17.0.0"
+  }
+}
