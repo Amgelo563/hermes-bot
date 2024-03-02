@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "pnpm run clean && tsc",
-    "setup": "pnpm run prisma:push && pnpm run build",
+    "postinstall": "pnpm run prisma:push && pnpm run build",
     "start": "pnpm run build && node --trace-deprecation -r source-map-support/register dist/index.js",
     "prisma:gen": "prisma generate",
     "prisma:push": "prisma db push"
