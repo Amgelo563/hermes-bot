@@ -60,7 +60,7 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
         .getRequestMessages()
         .getNotFoundErrorEmbed(context, request.id.toString());
 
-      if (interaction.replied) {
+      if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [notFound] });
         return;
       }

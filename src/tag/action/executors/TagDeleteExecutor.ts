@@ -53,7 +53,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
     if (!member || !this.configWrapper.canEditTags(member)) {
       const error = tagMessages.getNotAllowedErrorEmbed(context);
 
-      if (interaction.replied) {
+      if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [error] });
       } else {
         await interaction.reply({ embeds: [error] });
@@ -66,7 +66,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
     if (tags.length === 1) {
       const error = tagMessages.getDeleteProtectedErrorEmbed(context);
 
-      if (interaction.replied) {
+      if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [error] });
       } else {
         await interaction.reply({ embeds: [error] });

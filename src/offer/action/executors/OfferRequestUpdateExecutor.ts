@@ -60,7 +60,7 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
         .getOfferMessages()
         .getNotFoundErrorEmbed(context, offer.id.toString());
 
-      if (interaction.replied) {
+      if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [notFound] });
         return;
       }
