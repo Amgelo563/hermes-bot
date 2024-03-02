@@ -1,5 +1,7 @@
 import { IllegalStateError } from '@nyx-discord/core';
+import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
+import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
@@ -18,16 +20,20 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
   protected readonly agent: DiscordTagAgent;
 
+  protected readonly configWrapper: HermesConfigWrapper;
+
   constructor(
     messages: TagMessagesParser,
     modalCodec: TagModalCodec,
     repository: TagRepository,
     agent: DiscordTagAgent,
+    configWrapper: HermesConfigWrapper,
   ) {
     this.modalCodec = modalCodec;
     this.messages = messages;
     this.repository = repository;
     this.agent = agent;
+    this.configWrapper = configWrapper;
   }
 
   public async execute(
@@ -42,13 +48,22 @@ export class TagUpdateExecutor implements TagActionExecutor {
       user: interaction.user,
       services: { tag },
     };
-    const newData = this.modalCodec.extractFromModal(interaction);
 
     if (interaction.isFromMessage()) {
       await interaction.deferUpdate();
     } else {
       await interaction.deferReply({ ephemeral: true });
     }
+
+    const member = interaction.member as GuildMember | null;
+    if (!member || !this.configWrapper.canEditTags(member)) {
+      const error = this.messages.getNotAllowedErrorEmbed(context);
+
+      await interaction.editReply({ embeds: [error] });
+      return;
+    }
+
+    const newData = this.modalCodec.extractFromModal(interaction);
 
     const oldTag = await this.repository.find(tag.id);
     if (!oldTag) {

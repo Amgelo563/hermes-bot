@@ -1,8 +1,9 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
-import { IllegalStateError } from '@nyx-discord/core';
+import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
+import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
@@ -21,33 +22,46 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
   protected readonly agent: DiscordTagAgent;
 
+  protected readonly configWrapper: HermesConfigWrapper;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     repository: TagRepository,
     agent: DiscordTagAgent,
+    configWrapper: HermesConfigWrapper,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.repository = repository;
     this.agent = agent;
+    this.configWrapper = configWrapper;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
     tag: TagData,
   ): Promise<void> {
-    if (!interaction.member) {
-      throw new IllegalStateError();
-    }
-
     const context = {
       user: interaction.user,
       services: { tag },
     };
 
-    const tags = this.repository.getTags();
     const tagMessages = this.messages.getTagsMessages();
+
+    const member = interaction.member as GuildMember | null;
+    if (!member || !this.configWrapper.canEditTags(member)) {
+      const error = tagMessages.getNotAllowedErrorEmbed(context);
+
+      if (interaction.replied) {
+        await interaction.editReply({ embeds: [error] });
+      } else {
+        await interaction.reply({ embeds: [error] });
+      }
+      return;
+    }
+
+    const tags = this.repository.getTags();
 
     if (tags.length === 1) {
       const error = tagMessages.getDeleteProtectedErrorEmbed(context);

@@ -1,4 +1,6 @@
+import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
+import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
@@ -13,14 +15,18 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
 
   protected readonly agent: DiscordTagAgent;
 
+  protected readonly configWrapper: HermesConfigWrapper;
+
   constructor(
     tagMessages: TagMessagesParser,
     repository: TagRepository,
     agent: DiscordTagAgent,
+    configWrapper: HermesConfigWrapper,
   ) {
     this.tagMessages = tagMessages;
     this.repository = repository;
     this.agent = agent;
+    this.configWrapper = configWrapper;
   }
 
   public async execute(
@@ -40,6 +46,16 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
       } else {
         await interaction.deferUpdate();
       }
+    }
+
+    const canDelete = this.configWrapper.canEditTags(
+      interaction.member as GuildMember,
+    );
+    if (!canDelete) {
+      const error = this.tagMessages.getNotAllowedErrorEmbed(context);
+
+      await interaction.editReply({ embeds: [error] });
+      return;
     }
 
     let tag;

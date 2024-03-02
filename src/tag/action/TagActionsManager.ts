@@ -59,7 +59,13 @@ export class TagActionsManager extends AbstractActionsManager<
     >([
       [
         TagAction.enum.Delete,
-        new TagDeleteExecutor(bot, messageService, repository, tagAgent),
+        new TagDeleteExecutor(
+          bot,
+          messageService,
+          repository,
+          tagAgent,
+          configWrapper,
+        ),
       ],
       [
         TagAction.enum.ReqUpd,
@@ -76,6 +82,7 @@ export class TagActionsManager extends AbstractActionsManager<
           modalCodec,
           repository,
           tagAgent,
+          configWrapper,
         ),
       ],
     ]);
@@ -86,6 +93,7 @@ export class TagActionsManager extends AbstractActionsManager<
       messageService.getTagsMessages(),
       repository,
       tagAgent,
+      configWrapper,
     );
 
     return new TagActionsManager(

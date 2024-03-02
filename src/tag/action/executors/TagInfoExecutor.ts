@@ -1,4 +1,3 @@
-import { IllegalStateError } from '@nyx-discord/core';
 import type { ButtonBuilder, GuildMember } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
@@ -40,16 +39,16 @@ export class TagInfoExecutor implements TagActionExecutor {
     } satisfies HermesPlaceholderContext;
 
     const embed = this.messages.getTagsMessages().getInfoEmbed(context);
-    if (!interaction.member) {
-      throw new IllegalStateError();
-    }
 
-    if (!this.configWrapper.canEditTags(interaction.member as GuildMember)) {
+    const member = interaction.member as GuildMember | null;
+    if (!member || !this.configWrapper.canEditTags(member)) {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [embed] });
       } else {
         await interaction.reply({ embeds: [embed] });
       }
+
+      return;
     }
 
     const generalMessages = this.messages.getGeneralMessages();
