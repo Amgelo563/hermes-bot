@@ -4,6 +4,7 @@ import { SubscriberCallbackWrapper } from '@nyx-discord/framework';
 import type { Events } from 'discord.js';
 
 import { PermanentAutocompleteChoiceSource } from '../../autocomplete/PermanentAutocompleteChoiceSource';
+import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
 import { DiscordCommandLimits } from '../../discord/command/DiscordCommandLimits';
 import type { RepositoryEventArgs } from '../../hermes/database/event/RepositoryEvent';
 import { RepositoryEventEnum } from '../../hermes/database/event/RepositoryEvent';
@@ -29,24 +30,29 @@ export class BotTagManager {
 
   protected readonly bot: NyxBot;
 
+  protected readonly config: HermesConfigWrapper;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     tagDomain: TagDomain,
     tagAutocomplete: PermanentAutocompleteChoiceSource,
     actionsSubscriber: AbstractDJSClientSubscriber<Events.InteractionCreate>,
+    config: HermesConfigWrapper,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.tagDomain = tagDomain;
     this.tagAutocomplete = tagAutocomplete;
     this.actionsSubscriber = actionsSubscriber;
+    this.config = config;
   }
 
   public static create(
     bot: NyxBot,
     messages: HermesMessageService,
     tagDomain: TagDomain,
+    config: HermesConfigWrapper,
   ): BotTagManager {
     const tagAutocomplete = new PermanentAutocompleteChoiceSource([]);
     const subscriber = new ServiceActionInteractionSubscriber(
@@ -59,6 +65,7 @@ export class BotTagManager {
       tagDomain,
       tagAutocomplete,
       subscriber,
+      config,
     );
   }
 
@@ -93,6 +100,7 @@ export class BotTagManager {
       repo,
       agent,
       actions,
+      this.config,
     );
 
     const infoData = tagMessages.getInfoCommandData();

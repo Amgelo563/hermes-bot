@@ -1,5 +1,6 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { Client } from 'discord.js';
+import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { CommandPlaceholderReplacer } from '../hermes/message/placeholder/CommandPlaceholderReplacer';
 import type { ServiceManager } from '../service/ServiceManager';
@@ -37,8 +38,14 @@ export class BotManager {
     services: ServiceManager,
     messages: HermesMessageService,
     bot: NyxBot,
+    config: HermesConfigWrapper,
   ) {
-    const tag = BotTagManager.create(bot, messages, services.getTagDomain());
+    const tag = BotTagManager.create(
+      bot,
+      messages,
+      services.getTagDomain(),
+      config,
+    );
     const request = BotRequestManager.create(
       bot,
       messages,

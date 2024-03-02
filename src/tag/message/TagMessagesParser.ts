@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessageParser';
 import type { ConfigCommandOption } from '../../hermes/message/command/ConfigCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesPlaceholderErrorContext } from '../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { ErrorEmbedsData } from '../../hermes/message/error/ErrorEmbedsData';
 
 import type { TagData } from '../../service/tag/TagData';
@@ -38,7 +39,15 @@ export class TagMessagesParser extends BasicHermesMessageParser<
   public getNotAllowedErrorEmbed(
     context: HermesPlaceholderContext,
   ): EmbedBuilder {
-    return this.parseEmbed(this.messages.notAllowed, context);
+    const errorContext = {
+      ...context,
+      error: {
+        instance: new IllegalStateError('Not allowed'),
+        id: nanoid(5),
+      },
+    } satisfies HermesPlaceholderErrorContext;
+
+    return this.parseEmbed(this.messages.notAllowed, errorContext);
   }
 
   public getParentCommandData(): CommandData {

@@ -6,9 +6,11 @@ import type {
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
+  GuildMember,
   ModalBuilder,
   ModalSubmitInteraction,
 } from 'discord.js';
+import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
@@ -30,6 +32,8 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
 
   protected readonly actions: TagActionsManager;
 
+  protected readonly config: HermesConfigWrapper;
+
   protected cachedModal: ModalBuilder | null = null;
 
   constructor(
@@ -39,6 +43,7 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
     repository: TagRepository,
     agent: DiscordTagAgent,
     actions: TagActionsManager,
+    config: HermesConfigWrapper,
   ) {
     super(parent);
 
@@ -48,12 +53,27 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
     this.repository = repository;
     this.agent = agent;
     this.actions = actions;
+    this.config = config;
   }
 
   public async execute(
     interaction: ChatInputCommandInteraction,
     meta: CommandExecutionMeta,
   ) {
+    const member = interaction.member as GuildMember | null;
+
+    if (!member || !this.config.canEditTags(member)) {
+      const context = {
+        user: interaction.user,
+      };
+
+      const error = this.messages
+        .getTagsMessages()
+        .getNotAllowedErrorEmbed(context);
+      await interaction.reply({ embeds: [error], ephemeral: true });
+      return;
+    }
+
     if (!this.cachedModal) {
       const modalId = this.getCustomId(meta.getBot());
       this.cachedModal = this.modalCodec.createModal().setCustomId(modalId);

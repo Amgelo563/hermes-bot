@@ -54,7 +54,7 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
     if (!canDelete) {
       const error = this.tagMessages.getNotAllowedErrorEmbed(context);
 
-      await interaction.editReply({ embeds: [error] });
+      await interaction.editReply({ embeds: [error], components: [] });
       return;
     }
 

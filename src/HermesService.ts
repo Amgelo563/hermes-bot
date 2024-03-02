@@ -64,7 +64,7 @@ export class HermesService {
       config,
     );
 
-    const botManager = BotManager.create(serviceManager, messages, bot);
+    const botManager = BotManager.create(serviceManager, messages, bot, config);
 
     return new HermesService(
       logger,
