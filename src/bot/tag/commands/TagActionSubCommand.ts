@@ -4,6 +4,7 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
 } from 'discord.js';
+
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { ConfigCommandOption } from '../../../hermes/message/command/ConfigCommandOptionSchema';

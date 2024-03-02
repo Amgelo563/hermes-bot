@@ -8,6 +8,9 @@ export class OffersParentCommand extends AbstractParentCommand {
 
   constructor(data: ParentCommandData) {
     super();
-    this.data = data;
+    this.data = {
+      ...data,
+      dmPermission: false,
+    };
   }
 }
