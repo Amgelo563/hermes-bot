@@ -3,7 +3,7 @@
 
 # Config secrets
 .env
-config
+/config
 
 # Database
 database.db
