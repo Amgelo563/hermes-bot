@@ -97,7 +97,7 @@ export class RequestModalCodec
     const modal = new SimplifiedModalBuilder(
       this.createModal(customId).toJSON(),
     );
-    const fields = { ...modalData.fields };
+    const fields = structuredClone({ ...modalData.fields });
 
     const { title, description, budget } = fields;
 

@@ -112,7 +112,7 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     const modal = new SimplifiedModalBuilder(
       this.createModal(customId).toJSON(),
     );
-    const fields = { ...modalData.fields };
+    const fields = structuredClone({ ...modalData.fields });
 
     const { title, description, price, thumbnail, image } = fields;
 

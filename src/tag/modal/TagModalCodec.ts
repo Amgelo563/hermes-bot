@@ -76,7 +76,7 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     const modal = new SimplifiedModalBuilder(
       this.createModal().setCustomId('mock').toJSON(),
     );
-    const fields = { ...this.modalData.fields };
+    const fields = structuredClone({ ...this.modalData.fields });
 
     const { name, description, color } = fields;
 
