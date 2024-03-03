@@ -29,6 +29,8 @@ export class OfferUpdateSession extends OfferCreateSession {
 
   protected override data: OfferData;
 
+  protected readonly initialData: OfferData;
+
   protected readonly selectMenuRow: ActionRowWrapper<StringSelectMenuBuilder> | null;
 
   protected cachedContext: OfferPlaceholderContext;
@@ -53,7 +55,8 @@ export class OfferUpdateSession extends OfferCreateSession {
       offer.tags,
     );
 
-    this.data = offer;
+    this.data = { ...offer };
+    this.initialData = { ...offer };
     this.offerMessages = messageService.getOfferMessages();
     this.cachedContext = {
       user: startInteraction.user,
@@ -107,5 +110,20 @@ export class OfferUpdateSession extends OfferCreateSession {
         offer: this.data,
       },
     };
+  }
+
+  protected override allowConfirm(): boolean {
+    const hasChanged =
+      this.data.title !== this.initialData.title
+      || this.data.description !== this.initialData.description
+      || this.data.image !== this.initialData.image
+      || this.data.price !== this.initialData.price
+      || this.data.thumbnail !== this.initialData.thumbnail;
+
+    if (!hasChanged) {
+      return false;
+    }
+
+    return super.allowConfirm();
   }
 }
