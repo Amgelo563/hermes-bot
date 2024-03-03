@@ -20,7 +20,7 @@ export class OfferNotFoundExecutor implements ServiceActionExecutor<string> {
     if (interaction.replied || interaction.deferred) {
       await interaction.editReply({ embeds: [embed] });
     } else {
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
 }

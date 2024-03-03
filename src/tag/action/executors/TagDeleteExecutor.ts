@@ -56,7 +56,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [error] });
       } else {
-        await interaction.reply({ embeds: [error] });
+        await interaction.reply({ embeds: [error], ephemeral: true });
       }
       return;
     }
@@ -69,7 +69,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [error] });
       } else {
-        await interaction.reply({ embeds: [error] });
+        await interaction.reply({ embeds: [error], ephemeral: true });
       }
 
       return;

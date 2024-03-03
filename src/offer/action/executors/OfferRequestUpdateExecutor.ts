@@ -65,7 +65,7 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
         return;
       }
 
-      await interaction.reply({ embeds: [notFound] });
+      await interaction.reply({ embeds: [notFound], ephemeral: true });
     }
 
     const session = new OfferUpdateSession(

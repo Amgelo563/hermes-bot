@@ -87,6 +87,10 @@ export class RequestInfoExecutor implements RequestActionExecutor {
       await interaction.editReply({ embeds: [embed], components: [row] });
       return;
     }
-    await interaction.reply({ embeds: [embed], components: [row] });
+    await interaction.reply({
+      embeds: [embed],
+      components: [row],
+      ephemeral: true,
+    });
   }
 }

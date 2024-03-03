@@ -45,7 +45,7 @@ export class TagInfoExecutor implements TagActionExecutor {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [embed] });
       } else {
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
       }
 
       return;
@@ -80,7 +80,11 @@ export class TagInfoExecutor implements TagActionExecutor {
     if (interaction.replied || interaction.deferred) {
       await interaction.editReply({ embeds: [embed], components: [row] });
     } else {
-      await interaction.reply({ embeds: [embed], components: [row] });
+      await interaction.reply({
+        embeds: [embed],
+        components: [row],
+        ephemeral: true,
+      });
     }
   }
 }

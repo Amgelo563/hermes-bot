@@ -21,7 +21,11 @@ export class TagNotFoundExecutor implements ServiceActionExecutor<string> {
     if (interaction.replied || interaction.deferred) {
       await interaction.editReply({ embeds: [embed], components: [] });
     } else {
-      await interaction.reply({ embeds: [embed], components: [] });
+      await interaction.reply({
+        embeds: [embed],
+        components: [],
+        ephemeral: true,
+      });
     }
   }
 }
