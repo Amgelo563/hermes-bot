@@ -73,9 +73,10 @@ export class TagCreateSession extends AbstractHermesSession {
 
   protected async handleButton(interaction: ButtonInteraction) {
     if (interaction.customId === this.editButtonId) {
-      const modal = this.modalCodec
-        .createFromData(this.tag)
-        .setCustomId(this.customId.build());
+      const modal = this.modalCodec.createFromData(
+        this.tag,
+        this.customId.build(),
+      );
 
       await interaction.showModal(modal);
 

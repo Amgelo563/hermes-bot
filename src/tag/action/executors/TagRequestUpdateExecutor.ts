@@ -41,7 +41,7 @@ export class TagRequestUpdateExecutor implements TagActionExecutor {
       TagAction.enum.Update,
     );
 
-    const modal = this.modalCodec.createFromData(tag).setCustomId(modalId);
+    const modal = this.modalCodec.createFromData(tag, modalId);
     await interaction.showModal(modal);
   }
 }

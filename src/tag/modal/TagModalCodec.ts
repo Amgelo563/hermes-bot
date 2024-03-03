@@ -1,3 +1,4 @@
+import { TextInputBuilder } from '@discordjs/builders';
 import { TextInputStyle } from 'discord-api-types/v10';
 import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
@@ -72,17 +73,19 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     return modal;
   }
 
-  public createFromData(data: TagCreateData): ModalBuilder {
+  public createFromData(data: TagCreateData, customId: string): ModalBuilder {
     const modal = new SimplifiedModalBuilder(
-      this.createModal().setCustomId('mock').toJSON(),
+      this.createModal().setCustomId(customId).toJSON(),
     );
-    const fields = structuredClone({ ...this.modalData.fields });
+    const { fields } = this.modalData;
 
-    const { name, description, color } = fields;
+    const nameField = new TextInputBuilder(fields.name.toJSON());
+    const descriptionField = new TextInputBuilder(fields.description.toJSON());
+    const colorField = new TextInputBuilder(fields.color.toJSON());
 
-    name.setValue(data.name);
-    description.setValue(data.description);
-    color.setValue(data.color);
+    nameField.setValue(data.name);
+    descriptionField.setValue(data.description);
+    colorField.setValue(data.color);
 
     return modal.setTextInputs(...Object.values(fields));
   }

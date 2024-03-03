@@ -1,3 +1,4 @@
+import { TextInputBuilder } from '@discordjs/builders';
 import type { APIModalInteractionResponseCallbackData } from 'discord-api-types/v10';
 import { TextInputStyle } from 'discord-api-types/v10';
 import type { ModalSubmitInteraction } from 'discord.js';
@@ -97,15 +98,17 @@ export class RequestModalCodec
     const modal = new SimplifiedModalBuilder(
       this.createModal(customId).toJSON(),
     );
-    const fields = structuredClone({ ...modalData.fields });
+    const { fields } = modalData;
 
-    const { title, description, budget } = fields;
+    const titleField = new TextInputBuilder(fields.title.toJSON());
+    const descriptionField = new TextInputBuilder(fields.description.toJSON());
+    const budgetField = new TextInputBuilder(fields.budget.toJSON());
 
-    title.setValue(data.title);
-    description.setValue(data.description);
-    budget.setValue(data.budget);
+    titleField.setValue(data.title);
+    descriptionField.setValue(data.description);
+    budgetField.setValue(data.budget);
 
-    return modal.setTextInputs(...Object.values(fields));
+    return modal.setTextInputs(titleField, descriptionField, budgetField);
   }
 
   public equals(

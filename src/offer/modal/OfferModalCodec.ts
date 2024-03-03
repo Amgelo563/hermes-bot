@@ -1,3 +1,4 @@
+import { TextInputBuilder } from '@discordjs/builders';
 import {
   type APIModalInteractionResponseCallbackData,
   TextInputStyle,
@@ -112,17 +113,27 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     const modal = new SimplifiedModalBuilder(
       this.createModal(customId).toJSON(),
     );
-    const fields = structuredClone({ ...modalData.fields });
+    const { fields } = modalData;
 
-    const { title, description, price, thumbnail, image } = fields;
+    const titleField = new TextInputBuilder(fields.title.toJSON());
+    const descriptionField = new TextInputBuilder(fields.description.toJSON());
+    const priceField = new TextInputBuilder(fields.price.toJSON());
+    const thumbnailField = new TextInputBuilder(fields.thumbnail.toJSON());
+    const imageField = new TextInputBuilder(fields.image.toJSON());
 
-    title.setValue(data.title);
-    description.setValue(data.description);
-    price.setValue(data.price);
-    thumbnail.setValue(data.thumbnail);
-    image.setValue(data.image);
+    titleField.setValue(data.title);
+    descriptionField.setValue(data.description);
+    priceField.setValue(data.price);
+    thumbnailField.setValue(data.thumbnail);
+    imageField.setValue(data.image);
 
-    return modal.setTextInputs(...Object.values(fields));
+    return modal.setTextInputs(
+      titleField,
+      descriptionField,
+      priceField,
+      thumbnailField,
+      imageField,
+    );
   }
 
   public equals(
