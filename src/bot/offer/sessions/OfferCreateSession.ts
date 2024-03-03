@@ -14,8 +14,6 @@ import type { OfferMessagesParser } from '../../../offer/message/OfferMessagesPa
 import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { OfferModalCodec } from '../../../offer/modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../../offer/requirement/OfferRequirementsChecker';
-import type { OfferRequirementsMap } from '../../../offer/requirement/OfferRequirementsMap';
-import type { RequirementCheckModeEnum } from '../../../requirement/mode/RequirementCheckMode';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { OfferCreateData } from '../../../service/offer/OfferCreateData';
@@ -59,14 +57,6 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
     this.requirements = requirements;
     this.actions = actions;
     this.selectMenuRow = this.createSelectRow(this.offerMessages);
-  }
-
-  // eslint-disable-next-line max-len
-  protected getPublishRequirementContext(): OfferRequirementsMap[typeof RequirementCheckModeEnum.Publish] {
-    return {
-      offer: this.data,
-      interaction: this.startInteraction,
-    };
   }
 
   protected mockFullData(create: OfferCreateData): OfferData {

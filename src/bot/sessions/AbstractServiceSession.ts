@@ -123,7 +123,7 @@ export abstract class AbstractServiceSession<
 
     this.data = {
       ...this.data,
-      ...this.modalCodec.extractFromModal(interaction),
+      ...this.modalCodec.extractFromModal(interaction, this.data),
     };
     this.onDataUpdate();
 
