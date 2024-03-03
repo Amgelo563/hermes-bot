@@ -5,6 +5,7 @@ import type {
   StringSelectMenuBuilder,
 } from 'discord.js';
 
+import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import type { OptionalInlineField } from '../../discord/embed/OptionalInlineField';
 import { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
@@ -228,7 +229,12 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
       },
     };
 
-    return this.parseEmbed(this.messages.post, fullContext);
+    return this.parseEmbed(
+      this.messages.post,
+      fullContext,
+      undefined,
+      DiscordEmbedLimits.ShortDescription,
+    );
   }
 
   public getDeleteCommandData() {

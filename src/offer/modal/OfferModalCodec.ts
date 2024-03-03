@@ -81,7 +81,10 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
       .setStyle(TextInputStyle.Paragraph)
       .setRequired(true)
       .setMaxLength(
-        Math.min(DiscordEmbedLimits.Description, DiscordModalLimits.MaxLength),
+        Math.min(
+          DiscordEmbedLimits.ShortDescription,
+          DiscordModalLimits.MaxLength,
+        ),
       )
       .setCustomId(OfferModalCodec.CreateFieldsIds.Description);
 

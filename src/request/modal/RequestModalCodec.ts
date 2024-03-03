@@ -73,7 +73,10 @@ export class RequestModalCodec
       .setStyle(TextInputStyle.Paragraph)
       .setRequired(true)
       .setMaxLength(
-        Math.min(DiscordEmbedLimits.Description, DiscordModalLimits.MaxLength),
+        Math.min(
+          DiscordEmbedLimits.ShortDescription,
+          DiscordModalLimits.MaxLength,
+        ),
       )
       .setCustomId(RequestModalCodec.CreateFieldsIds.Description);
 
