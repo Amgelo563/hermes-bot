@@ -23,8 +23,6 @@ import { OfferCreateSession } from './OfferCreateSession';
 export class OfferUpdateSession extends OfferCreateSession {
   protected readonly requirements: OfferRequirementsChecker;
 
-  protected readonly cachedContext: OfferPlaceholderContext;
-
   protected readonly actions: OfferActionsManager;
 
   protected readonly offerMessages: OfferMessagesParser;
@@ -32,6 +30,8 @@ export class OfferUpdateSession extends OfferCreateSession {
   protected override data: OfferData;
 
   protected readonly selectMenuRow: ActionRowWrapper<StringSelectMenuBuilder> | null;
+
+  protected cachedContext: OfferPlaceholderContext;
 
   constructor(
     bot: NyxBot,
@@ -97,5 +97,15 @@ export class OfferUpdateSession extends OfferCreateSession {
       offer: this.data,
       interaction: this.startInteraction,
     });
+  }
+
+  protected override onDataUpdate() {
+    this.cachedContext = {
+      ...this.cachedContext,
+      services: {
+        ...this.cachedContext.services,
+        offer: this.data,
+      },
+    };
   }
 }
