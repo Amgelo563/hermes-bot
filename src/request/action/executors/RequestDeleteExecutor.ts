@@ -67,6 +67,9 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
 
     if (!confirmData || !confirmData.confirmed) return;
 
+    const confirmInteraction = confirmData.button;
+
+    await confirmInteraction.update({ components: [] });
     try {
       await this.requestRepository.delete(request.id);
       await this.agent.deleteRequest(request);
@@ -82,7 +85,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
         },
       });
 
-      await confirmData.button.update({
+      await confirmInteraction.editReply({
         embeds: [embeds.user],
         components: [],
       });
@@ -93,7 +96,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
     }
 
     const embed = requestMessages.getDeleteSuccessEmbed(context);
-    await confirmData.button.update({
+    await confirmInteraction.editReply({
       embeds: [embed],
       components: [],
     });

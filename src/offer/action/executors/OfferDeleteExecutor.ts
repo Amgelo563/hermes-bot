@@ -67,6 +67,9 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
 
     if (!confirmData || !confirmData.confirmed) return;
 
+    const confirmInteraction = confirmData.button;
+
+    await confirmInteraction.update({ components: [] });
     try {
       await this.offerRepository.delete(offer.id);
       await this.agent.deleteOffer(offer);
@@ -82,7 +85,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
         },
       });
 
-      await confirmData.button.update({
+      await confirmInteraction.editReply({
         embeds: [embeds.user],
         components: [],
       });
@@ -93,7 +96,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
     }
 
     const embed = offerMessages.getDeleteSuccessEmbed(context);
-    await confirmData.button.update({
+    await confirmInteraction.editReply({
       embeds: [embed],
       components: [],
     });
