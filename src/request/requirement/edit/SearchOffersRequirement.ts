@@ -36,7 +36,7 @@ export class SearchOffersRequirement extends AbstractHermesRequirement<
   }
 
   public getId(): string {
-    return 'offerExists';
+    return 'searchOffers';
   }
 
   protected parseConfig(
