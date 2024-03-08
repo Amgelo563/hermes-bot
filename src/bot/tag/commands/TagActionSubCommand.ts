@@ -6,8 +6,8 @@ import type {
 } from 'discord.js';
 
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
+import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
 import type { TagRepository } from '../../../hermes/database/TagRepository';
-import type { ConfigCommandOption } from '../../../hermes/message/command/ConfigCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { IdentifiableTag } from '../../../tag/action/identity/IdentifiableTag';
 import { createIdentifiableTag } from '../../../tag/action/identity/IdentifiableTag';

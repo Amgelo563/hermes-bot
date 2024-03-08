@@ -6,8 +6,8 @@ import type {
 } from 'discord.js';
 
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
+import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
 import type { OfferRepository } from '../../../hermes/database/OfferRepository';
-import type { ConfigCommandOption } from '../../../hermes/message/command/ConfigCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { IdentifiableOffer } from '../../../offer/action/identity/IdentifiableOffer';
 import { createIdentifiableOffer } from '../../../offer/action/identity/IdentifiableOffer';

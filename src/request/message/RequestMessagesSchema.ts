@@ -1,20 +1,20 @@
 import { z } from 'zod';
 import { DiscordButtonSchema } from '../../discord/button/DiscordButtonSchema';
 import { DiscordLinkButtonSchema } from '../../discord/button/DiscordLinkButtonSchema';
+import {
+  CommandSchemaWithOptions,
+  DiscordCommandSchema,
+} from '../../discord/command/DiscordCommandSchema';
 
 import { DiscordEmbedSchema } from '../../discord/embed/DiscordEmbedSchema';
 import { DiscordTemplatedEmbedSchema } from '../../discord/embed/DiscordTemplatedEmbedSchema';
 import { ModalSchemaWithFields } from '../../discord/modal/schema/DiscordModalSchema';
 import { DiscordSelectMenuSchema } from '../../discord/select/DiscordSelectMenuSchema';
-import {
-  CommandSchemaWithOptions,
-  ConfigCommandSchema,
-} from '../../hermes/message/command/ConfigCommandSchema';
 
 export const RequestMessagesSchema = z.object({
   notFoundError: DiscordEmbedSchema,
   empty: z.string(),
-  parentCommand: ConfigCommandSchema,
+  parentCommand: DiscordCommandSchema,
 
   info: z.object({
     command: CommandSchemaWithOptions(['request']),
@@ -22,7 +22,7 @@ export const RequestMessagesSchema = z.object({
   }),
 
   create: z.object({
-    command: ConfigCommandSchema,
+    command: DiscordCommandSchema,
     modal: ModalSchemaWithFields(['title', 'description', 'budget']),
     tagSelect: DiscordSelectMenuSchema,
 

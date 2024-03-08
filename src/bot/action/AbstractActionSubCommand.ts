@@ -12,7 +12,7 @@ import type {
   Awaitable,
   ChatInputCommandInteraction,
 } from 'discord.js';
-import type { ConfigCommandOption } from '../../hermes/message/command/ConfigCommandOptionSchema';
+import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 
