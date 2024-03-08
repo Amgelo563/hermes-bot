@@ -108,17 +108,15 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
     return offers;
   }
 
-  public findNWithAnyTagIn(
-    tagIds: ModelId<TagData>[],
+  public findNWithTag(
+    tagId: ModelId<TagData>,
     n: number,
   ): Promise<OfferData[]> {
     return this.prisma.offer.findMany({
       where: {
         tags: {
           some: {
-            id: {
-              in: tagIds,
-            },
+            id: tagId,
           },
         },
       },
@@ -153,10 +151,6 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
     }
 
     return offers;
-  }
-
-  public findCachedFrom(userId: string, max: number): OfferData[] {
-    return this.findInCache((offer) => offer.userId === userId, max);
   }
 
   public async update(

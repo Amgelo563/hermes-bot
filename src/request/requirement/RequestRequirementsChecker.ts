@@ -15,6 +15,7 @@ import type { RequestData } from '../../service/request/RequestData';
 import { MaxServicesEditRequirement } from '../../service/requirements/MaxServicesEditRequirement';
 import { HasTagRequestEditRequirement } from './edit/HasTagRequestEditRequirement';
 import type { RequestSessionRequirement } from './edit/RequestSessionRequirement';
+import { SearchOffersRequirement } from './edit/SearchOffersRequirement';
 import type { RequestRepostRequirement } from './repost/RequestRepostRequirement';
 import type { RequestRequirementsMap } from './RequestRequirementsMap';
 
@@ -46,6 +47,7 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
         messages,
         (data) => data.interaction.member as GuildMember,
       ),
+      new SearchOffersRequirement(messages, offerRepository),
       new HasTagRequestEditRequirement(messages),
       new SearchRequirement(messages, (data) => data.request),
       new MaxServicesEditRequirement(
