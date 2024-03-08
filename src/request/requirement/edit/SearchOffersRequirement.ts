@@ -58,6 +58,12 @@ export class SearchOffersRequirement extends AbstractHermesRequirement<
     }
 
     const offers = await this.offerRepository.findNWithTag(tag.id, config.max);
+    if (!offers.length) {
+      return {
+        allowed: RequirementResultEnum.Allow,
+      };
+    }
+
     const dataContexts: OfferPlaceholderContext[] = offers.map((offer) => ({
       ...context,
       services: {
