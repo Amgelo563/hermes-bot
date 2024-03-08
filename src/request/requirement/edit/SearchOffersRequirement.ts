@@ -68,7 +68,7 @@ export class SearchOffersRequirement extends AbstractHermesRequirement<
 
     return {
       allowed:
-        offers.length > 0 ? RequirementResultEnum.Allow : this.reject(config),
+        offers.length > 0 ? this.reject(config) : RequirementResultEnum.Allow,
       message: this.parser.parseTemplatedEmbed(
         config.message,
         context,
