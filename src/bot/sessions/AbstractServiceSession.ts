@@ -198,7 +198,8 @@ export abstract class AbstractServiceSession<
 
     this.updateConfirmButton(
       requirements.result === RequirementResultEnum.Allow
-        && this.allowConfirm(),
+        || (requirements.result === RequirementResultEnum.Warn
+          && this.allowConfirm()),
     );
 
     const components: ActionRowData<any>[] = [this.buttonRow.toRowData()];
