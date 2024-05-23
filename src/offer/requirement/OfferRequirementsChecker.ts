@@ -2,6 +2,7 @@ import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import type { GuildMember } from 'discord.js';
 
 import type { OfferSessionData } from '../../bot/offer/sessions/OfferSessionData';
+import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
 import type { OfferRepository } from '../../hermes/database/OfferRepository';
 import type { RequestRepository } from '../../hermes/database/RequestRepository';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
@@ -36,6 +37,7 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
 
   public static create(
     bot: NyxBot,
+    config: HermesConfigWrapper,
     messageService: HermesMessageService,
     offerRepository: OfferRepository,
     requestRepository: RequestRepository,
@@ -46,6 +48,7 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
       new HasRolesRequirement(
         messages,
         (data) => data.interaction.member as GuildMember,
+        config.isStaff.bind(config),
       ),
       new HasTagOfferEditRequirement(messages),
       new SearchRequirement<OfferSessionData>(messages, (data) => data.offer),
@@ -61,6 +64,7 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
       new HasRolesRequirement(
         messages,
         (data) => data.interaction.member as GuildMember,
+        config.isStaff.bind(config),
       ),
     ];
 

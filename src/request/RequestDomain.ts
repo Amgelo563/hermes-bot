@@ -62,6 +62,7 @@ export class RequestDomain {
 
     const requirements = RequestRequirementsChecker.create(
       bot,
+      configWrapper,
       messagesService,
       database.getRequestRepository(),
       database.getOfferRepository(),

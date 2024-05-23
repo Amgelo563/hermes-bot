@@ -58,6 +58,7 @@ export class OfferDomain {
 
     const requirements = OfferRequirementsChecker.create(
       bot,
+      configWrapper,
       messagesService,
       database.getOfferRepository(),
       database.getRequestRepository(),

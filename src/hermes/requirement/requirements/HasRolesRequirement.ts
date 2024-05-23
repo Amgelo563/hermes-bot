@@ -11,6 +11,7 @@ import { FieldRequirementConfigSchema } from '../config/RequirementConfigSchema'
 const HasRolesConfigSchema = FieldRequirementConfigSchema.extend({
   mode: z.enum(['any', 'all', 'none']),
   roles: z.array(z.string()),
+  staffBypass: z.boolean().optional().default(true),
 });
 
 type HasRolesConfig = z.infer<typeof HasRolesConfigSchema>;
@@ -21,12 +22,16 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
 > {
   protected readonly memberGetter: (data: Data) => GuildMember;
 
+  protected readonly isStaff: (member: GuildMember) => boolean;
+
   constructor(
     parser: BasicHermesMessageParser<z.ZodTypeAny>,
     memberGetter: (data: Data) => GuildMember,
+    isStaff: (member: GuildMember) => boolean,
   ) {
     super(parser);
     this.memberGetter = memberGetter;
+    this.isStaff = isStaff;
   }
 
   public getId(): string {
@@ -44,6 +49,13 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
   ): RequirementResultData {
     let allowed: boolean = true;
     const member = this.memberGetter(data);
+
+    const bypassed = this.isStaff(member);
+    if (bypassed) {
+      return {
+        allowed: RequirementResultEnum.Allow,
+      };
+    }
 
     switch (config.mode) {
       case HasRolesConfigSchema.shape.mode.enum.any:

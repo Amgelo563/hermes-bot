@@ -23,13 +23,13 @@ export class HermesConfigWrapper {
     return request.userId === member.id || this.isStaff(member);
   }
 
-  public getConfig(): HermesConfig {
-    return this.config;
-  }
-
-  protected isStaff(member: GuildMember): boolean {
+  public isStaff(member: GuildMember): boolean {
     return this.config.discord.staffRoles.some((role) =>
       member.roles.cache.has(role),
     );
+  }
+
+  public getConfig(): HermesConfig {
+    return this.config;
   }
 }
