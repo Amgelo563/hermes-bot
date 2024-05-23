@@ -39,4 +39,4 @@ COPY . .
 RUN pnpm build
 
 # Start with volume mount point
-CMD pnpm start -c "/usr/src/app/config"
+CMD pnpm start
