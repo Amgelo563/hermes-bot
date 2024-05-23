@@ -9,7 +9,7 @@ import type { RequirementConfig } from '../config/RequirementConfigSchema';
 import { FieldRequirementConfigSchema } from '../config/RequirementConfigSchema';
 
 const HasRolesConfigSchema = FieldRequirementConfigSchema.extend({
-  mode: z.enum(['any', 'all', 'none']),
+  mode: z.enum(['any', 'all', 'none', 'only']),
   roles: z.array(z.string()),
   staffBypass: z.boolean().optional().default(true),
 });
@@ -60,6 +60,24 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
     const hasNoRoles = member.roles.cache.size === 0;
 
     switch (config.mode) {
+      case HasRolesConfigSchema.shape.mode.enum.only:
+        if (config.roles.includes('no-roles')) {
+          return {
+            allowed: hasNoRoles
+              ? RequirementResultEnum.Allow
+              : this.reject(config),
+            message: this.parser.parseEmbedField(config.message, context),
+          };
+        }
+
+        allowed =
+          config.roles.sort().join(' ')
+          === member.roles.cache
+            .map((role) => role.id)
+            .sort()
+            .join(' ');
+        break;
+
       case HasRolesConfigSchema.shape.mode.enum.any:
         if (config.roles.includes('no-roles')) {
           return {
