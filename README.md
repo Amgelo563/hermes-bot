@@ -40,7 +40,13 @@ DATABASE_URL=The connection URL to your database.
 Alternatively, use the provided Dockerfile:
 
 ```bash
-docker build -t hermes-bot . && docker run --env DATABASE_URL=<URL> hermes-bot
+# Build the image (only once or after updating)
+docker build -t hermes-bot .
+
+# Start the bot, mounting the config directory
+docker run --name hermes-bot --mount type=bind,source="$(pwd)"/config,target=/usr/src/app/config -d hermes-bot
+
+# Use `docker restart hermes-bot` to restart the bot after doing changes in config.
 ```
 
 Keep in mind that you still need to follow the first step in the manual installation.

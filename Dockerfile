@@ -6,6 +6,7 @@ ARG PNPM_VERSION=8.7.1
 
 # Setup node
 FROM node:${NODE_VERSION}-alpine
+ENV DATABASE_URL file:../database.db
 ENV NODE_ENV production
 
 # Install pnpm
@@ -14,6 +15,8 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # Setup working directory and essential files
 WORKDIR /usr/src/app
+COPY tsconfig.json .
+COPY prisma .
 COPY package.json pnpm-lock.yaml ./
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
@@ -26,11 +29,14 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     pnpm install --prod --frozen-lockfile
 
 # Setup permissions
-RUN chown -R node:node /usr/src/app
+RUN chown -R node:node /usr/src
 USER node
 
-# Copy the rest of the source
+# Copy remaining source and build
 COPY . .
 
-# Start, first checking if DATABASE_URL is set or exit with an error
-CMD if [ -z "$DATABASE_URL" ]; then echo "Error: DATABASE_URL environment variable required to start." && exit 1; else pnpm run setup && pnpm start; fi
+# Build source
+RUN pnpm build
+
+# Start with volume mount point
+CMD pnpm start -c "/usr/src/app/config"
