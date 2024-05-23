@@ -57,6 +57,15 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
       };
     }
 
+    if (member.roles.cache.size === 0) {
+      return {
+        allowed: config.roles.includes('no-roles')
+          ? RequirementResultEnum.Allow
+          : this.reject(config),
+        message: this.parser.parseEmbedField(config.message, context),
+      };
+    }
+
     switch (config.mode) {
       case HasRolesConfigSchema.shape.mode.enum.any:
         allowed = config.roles.some((role) => member.roles.cache.has(role));
