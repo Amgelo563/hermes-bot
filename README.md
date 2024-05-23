@@ -33,7 +33,7 @@ A Discord.js bot for services publishing, made with [nyx](https://github.com/nyx
 DATABASE_URL=The connection URL to your database.
 ```
 
-4. Run `pnpm install` to install the dependencies, and `pnpm start` to start the bot.
+4. Run `pnpm install` to install the dependencies, `pnpm build` to build the bot and `pnpm start` to start it.
 
 ### Docker
 
