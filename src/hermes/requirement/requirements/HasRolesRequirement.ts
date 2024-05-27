@@ -27,12 +27,13 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
     this.isStaff = isStaff;
   }
 
-  public check(
+  public async check(
     context: HermesPlaceholderContext,
     data: Data,
-  ): RequirementResultData {
+  ): Promise<RequirementResultData> {
     let allowed: boolean = true;
     const member = this.memberGetter(data);
+    await member.fetch();
 
     const bypassed = this.isStaff(member);
     if (bypassed) {
@@ -52,6 +53,12 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
             message: this.parser.parseEmbedField(config.message, context),
           };
         }
+        if (config.roles.includes('has-roles')) {
+          return {
+            allowed: hasNoRoles ? this.reject() : RequirementResultEnum.Allow,
+            message: this.parser.parseEmbedField(config.message, context),
+          };
+        }
 
         allowed =
           config.roles.sort().join(' ')
@@ -65,6 +72,12 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
         if (config.roles.includes('no-roles')) {
           return {
             allowed: hasNoRoles ? RequirementResultEnum.Allow : this.reject(),
+            message: this.parser.parseEmbedField(config.message, context),
+          };
+        }
+        if (config.roles.includes('has-roles')) {
+          return {
+            allowed: hasNoRoles ? this.reject() : RequirementResultEnum.Allow,
             message: this.parser.parseEmbedField(config.message, context),
           };
         }
