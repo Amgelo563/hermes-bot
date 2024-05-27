@@ -1,32 +1,16 @@
 import { TimestampStyles } from '@discordjs/formatters';
-import { AssertionError, IllegalStateError } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
-import { Collection, time } from 'discord.js';
-import parseDuration from 'parse-duration';
-import { z } from 'zod';
+import { IllegalStateError } from '@nyx-discord/core';
+import type { GuildMember , Collection} from 'discord.js';
+import { time } from 'discord.js';
+import type { z } from 'zod';
 
 import type { RequirementResultData } from '../../../requirement/result/RequirementResultData';
 import { RequirementResultEnum } from '../../../requirement/result/RequirementResultEnum';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { BasicHermesMessageParser } from '../../message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirement } from '../AbstractHermesRequirement';
-import type { RequirementConfig } from '../config/RequirementConfigSchema';
-import { FieldRequirementConfigSchema } from '../config/RequirementConfigSchema';
-
-const CooldownRequirementConfigSchema = FieldRequirementConfigSchema.extend({
-  cooldown: z.string(),
-  overrides: z
-    .object({
-      role: z.string(),
-      cooldown: z.string(),
-    })
-    .array()
-    .optional(),
-});
-
-type CooldownRequirementConfig = z.infer<
-  typeof CooldownRequirementConfigSchema
->;
+import type { CooldownRequirementConfig } from '../factories/CooldownRepostRequirementFactory';
 
 export class CooldownRepostRequirement extends AbstractHermesRequirement<
   CooldownRequirementConfig,
@@ -39,46 +23,28 @@ export class CooldownRepostRequirement extends AbstractHermesRequirement<
 
   protected defaultCooldown: number | null = null;
 
+  constructor(
+    parser: BasicHermesMessageParser<z.ZodTypeAny>,
+    config: CooldownRequirementConfig,
+    roleCooldowns: Collection<string, number> | null,
+    defaultCooldown: number | null,
+  ) {
+    super(parser, config);
+
+    this.roleCooldowns = roleCooldowns;
+    this.defaultCooldown = defaultCooldown;
+  }
+
   public getId(): string {
     return 'cooldown';
   }
 
-  protected parseConfig(config: RequirementConfig): CooldownRequirementConfig {
-    const parsed = CooldownRequirementConfigSchema.parse(config);
-
-    const defaultDuration = parseDuration(parsed.cooldown);
-    if (!defaultDuration) {
-      throw new AssertionError(
-        `Invalid default cooldown duration: ${parsed.cooldown}`,
-      );
-    }
-    this.defaultCooldown = defaultDuration;
-
-    if (!parsed.overrides) return parsed;
-    const roleCooldowns = new Collection<string, number>();
-
-    for (const override of parsed.overrides) {
-      const roleDuration = parseDuration(override.cooldown);
-      if (!roleDuration) {
-        throw new AssertionError(
-          `Invalid cooldown duration '${override.cooldown}' for role '${override.role}'`,
-        );
-      }
-      roleCooldowns.set(override.role, roleDuration);
-    }
-
-    this.roleCooldowns = roleCooldowns;
-
-    return parsed;
-  }
-
-  protected performCheck(
+  public check(
     context: HermesPlaceholderContext,
     checked: {
       interaction: ServiceActionInteraction;
       repost: { lastPostedAt: Date };
     },
-    config: CooldownRequirementConfig,
   ): RequirementResultData {
     const defaultCooldown = this.defaultCooldown;
     if (!defaultCooldown) {
@@ -96,13 +62,18 @@ export class CooldownRepostRequirement extends AbstractHermesRequirement<
     const allowed = Date.now() >= cooldownExpiration;
 
     return {
-      allowed: allowed ? RequirementResultEnum.Allow : this.reject(config),
-      message: this.parser.parseEmbedField(config.message, context, undefined, {
-        timeLeft: time(
-          Math.round(cooldownExpiration / 1000),
-          TimestampStyles.RelativeTime,
-        ),
-      }),
+      allowed: allowed ? RequirementResultEnum.Allow : this.reject(),
+      message: this.parser.parseEmbedField(
+        this.config.message,
+        context,
+        undefined,
+        {
+          timeLeft: time(
+            Math.round(cooldownExpiration / 1000),
+            TimestampStyles.RelativeTime,
+          ),
+        },
+      ),
     };
   }
 }

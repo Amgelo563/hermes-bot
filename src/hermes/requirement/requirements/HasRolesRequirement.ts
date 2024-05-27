@@ -1,20 +1,12 @@
 import type { GuildMember } from 'discord.js';
-import { z } from 'zod';
+import type { z } from 'zod';
 import type { RequirementResultData } from '../../../requirement/result/RequirementResultData';
 import { RequirementResultEnum } from '../../../requirement/result/RequirementResultEnum';
 import type { BasicHermesMessageParser } from '../../message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirement } from '../AbstractHermesRequirement';
-import type { RequirementConfig } from '../config/RequirementConfigSchema';
-import { FieldRequirementConfigSchema } from '../config/RequirementConfigSchema';
-
-const HasRolesConfigSchema = FieldRequirementConfigSchema.extend({
-  mode: z.enum(['any', 'all', 'none', 'only']),
-  roles: z.array(z.string()),
-  staffBypass: z.boolean().optional().default(true),
-});
-
-type HasRolesConfig = z.infer<typeof HasRolesConfigSchema>;
+import type { HasRolesConfig } from '../factories/HasRolesRequirementFactory';
+import { HasRolesMode } from '../factories/HasRolesRequirementFactory';
 
 export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
   HasRolesConfig,
@@ -26,26 +18,18 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
 
   constructor(
     parser: BasicHermesMessageParser<z.ZodTypeAny>,
+    config: HasRolesConfig,
     memberGetter: (data: Data) => GuildMember,
     isStaff: (member: GuildMember) => boolean,
   ) {
-    super(parser);
+    super(parser, config);
     this.memberGetter = memberGetter;
     this.isStaff = isStaff;
   }
 
-  public getId(): string {
-    return 'roles';
-  }
-
-  protected parseConfig(config: RequirementConfig): HasRolesConfig {
-    return HasRolesConfigSchema.parse(config);
-  }
-
-  protected performCheck(
+  public check(
     context: HermesPlaceholderContext,
     data: Data,
-    config: HasRolesConfig,
   ): RequirementResultData {
     let allowed: boolean = true;
     const member = this.memberGetter(data);
@@ -58,14 +42,13 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
     }
 
     const hasNoRoles = member.roles.cache.size === 0;
+    const config = this.config;
 
     switch (config.mode) {
-      case HasRolesConfigSchema.shape.mode.enum.only:
+      case HasRolesMode.only:
         if (config.roles.includes('no-roles')) {
           return {
-            allowed: hasNoRoles
-              ? RequirementResultEnum.Allow
-              : this.reject(config),
+            allowed: hasNoRoles ? RequirementResultEnum.Allow : this.reject(),
             message: this.parser.parseEmbedField(config.message, context),
           };
         }
@@ -78,27 +61,23 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
             .join(' ');
         break;
 
-      case HasRolesConfigSchema.shape.mode.enum.any:
+      case HasRolesMode.any:
         if (config.roles.includes('no-roles')) {
           return {
-            allowed: hasNoRoles
-              ? RequirementResultEnum.Allow
-              : this.reject(config),
+            allowed: hasNoRoles ? RequirementResultEnum.Allow : this.reject(),
             message: this.parser.parseEmbedField(config.message, context),
           };
         }
 
         allowed = config.roles.some((role) => member.roles.cache.has(role));
         break;
-      case HasRolesConfigSchema.shape.mode.enum.all:
+      case HasRolesMode.all:
         allowed = config.roles.every((role) => member.roles.cache.has(role));
         break;
-      case HasRolesConfigSchema.shape.mode.enum.none:
+      case HasRolesMode.none:
         if (config.roles.includes('no-roles')) {
           return {
-            allowed: hasNoRoles
-              ? this.reject(config)
-              : RequirementResultEnum.Allow,
+            allowed: hasNoRoles ? this.reject() : RequirementResultEnum.Allow,
             message: this.parser.parseEmbedField(config.message, context),
           };
         }
@@ -114,7 +93,7 @@ export class HasRolesRequirement<Data> extends AbstractHermesRequirement<
     }
 
     return {
-      allowed: this.reject(config),
+      allowed: this.reject(),
       message: this.parser.parseEmbedField(config.message, context),
     };
   }

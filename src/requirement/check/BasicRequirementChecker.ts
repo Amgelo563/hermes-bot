@@ -4,6 +4,7 @@ import { ZodError } from 'zod';
 import type { OptionalInlineField } from '../../discord/embed/OptionalInlineField';
 import type { RequirementConfig } from '../../hermes/requirement/config/RequirementConfigSchema';
 import { ZodErrorFormatter } from '../../zod/ZodErrorFormatter';
+import type { RequirementFactory } from '../factory/RequirementFactory';
 import type { RequirementCheckMode } from '../mode/RequirementCheckMode';
 import { RequirementCheckModeEnum } from '../mode/RequirementCheckMode';
 import type { Requirement } from '../Requirement';
@@ -21,11 +22,11 @@ type RequirementStorage<
   RequirementMap extends RequirementCheckMappings,
 > = Map<
   RequirementCheckMode,
-  Requirement<Context, RequirementMap[RequirementCheckMode]>[]
+  RequirementFactory<Context, RequirementMap[RequirementCheckMode]>[]
 > & {
   get<Stage extends RequirementCheckMode>(
     stage: Stage,
-  ): Requirement<Context, RequirementMap[Stage]>[];
+  ): RequirementFactory<Context, RequirementMap[Stage]>[];
 };
 
 export class BasicRequirementChecker<
@@ -53,16 +54,17 @@ export class BasicRequirementChecker<
       return this;
     }
 
-    const loadedRequirements = [];
+    const loadedRequirements: Requirement<
+      Context,
+      RequirementMap[typeof stage]
+    >[] = [];
 
     for (const config of configs) {
-      const requirement = registryRequirements.find(
-        (r) => r.getId() === config.id,
-      );
+      const factory = registryRequirements.find((f) => f.getId() === config.id);
 
-      if (!requirement) {
+      if (!factory) {
         throw new ObjectNotFoundError(
-          `Requirement ${
+          `Factory for requirement ${
             config.id
           } not found. Available requirements: ${registryRequirements
             .map((r) => r.getId())
@@ -70,8 +72,9 @@ export class BasicRequirementChecker<
         );
       }
 
+      let requirement: Requirement<Context, RequirementMap[typeof stage]>;
       try {
-        requirement.initialize(config);
+        requirement = factory.create(config);
       } catch (e) {
         if (e instanceof ZodError) {
           const formatted = JSON.stringify(
@@ -84,8 +87,9 @@ export class BasicRequirementChecker<
             `Validation error for requirement "${config.id}" on "${this.constructor.name}"\n ${formatted}`,
           );
         }
+
+        throw e;
       }
-      requirement.initialize(config);
       loadedRequirements.push(requirement);
     }
 
@@ -95,7 +99,7 @@ export class BasicRequirementChecker<
 
   public setAvailableRequirements<Stage extends RequirementCheckMode>(
     stage: Stage,
-    requirements: Requirement<Context, RequirementMap[Stage]>[],
+    requirements: RequirementFactory<Context, RequirementMap[Stage]>[],
   ): this {
     this.requirementRegistry.set(stage, requirements);
     return this;

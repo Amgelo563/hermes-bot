@@ -1,25 +1,24 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import type { GuildMember } from 'discord.js';
 
-import type { OfferSessionData } from '../../bot/offer/sessions/OfferSessionData';
 import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
 import type { OfferRepository } from '../../hermes/database/OfferRepository';
 import type { RequestRepository } from '../../hermes/database/RequestRepository';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { BasicHermesRequirementChecker } from '../../hermes/requirement/check/BasicHermesRequirementChecker';
+import { CooldownRepostRequirementFactory } from '../../hermes/requirement/factories/CooldownRepostRequirementFactory';
+import { HasRolesRequirementFactory } from '../../hermes/requirement/factories/HasRolesRequirementFactory';
+import { SearchRequirementFactory } from '../../hermes/requirement/factories/SearchRequirementFactory';
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
-import { CooldownRepostRequirement } from '../../hermes/requirement/requirements/CooldownRepostRequirement';
-import { HasRolesRequirement } from '../../hermes/requirement/requirements/HasRolesRequirement';
-import { SearchRequirement } from '../../hermes/requirement/requirements/SearchRequirement';
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { OfferData } from '../../service/offer/OfferData';
-import { MaxServicesEditRequirement } from '../../service/requirements/MaxServicesEditRequirement';
-import { HasTagOfferEditRequirement } from './edit/HasTagOfferEditRequirement';
-import type { OfferSessionRequirement } from './edit/OfferSessionRequirement';
+import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import type { OfferSessionRequirementFactory } from './edit/OfferSessionRequirementFactory';
+import { HasTagOfferEditRequirementFactory } from './edit/tag/HasTagOfferEditRequirementFactory';
 import type { OfferRequirementsMap } from './OfferRequirementsMap';
-import type { OfferRepostRequirement } from './repost/OfferRepostRequirement';
+import type { OfferRepostRequirementFactory } from './repost/OfferRepostRequirementFactory';
 
 export class OfferRequirementsChecker extends BasicHermesRequirementChecker<OfferRequirementsMap> {
   protected readonly handler: HermesRequirementResultHandler;
@@ -44,32 +43,32 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
   ): OfferRequirementsChecker {
     const messages = messageService.getOfferMessages();
 
-    const publishRequirements: OfferSessionRequirement[] = [
-      new HasRolesRequirement(
+    const publishRequirements: OfferSessionRequirementFactory[] = [
+      new HasRolesRequirementFactory(
         messages,
         (data) => data.interaction.member as GuildMember,
         config.isStaff.bind(config),
       ),
-      new HasTagOfferEditRequirement(messages),
-      new SearchRequirement<OfferSessionData>(messages, (data) => data.offer),
-      new MaxServicesEditRequirement(
+      new HasTagOfferEditRequirementFactory(messages),
+      new SearchRequirementFactory(messages, (data) => data.offer),
+      new MaxServicesEditRequirementFactory(
         messages,
         offerRepository,
         requestRepository,
       ),
     ];
 
-    const repostRequirements: OfferRepostRequirement[] = [
-      new CooldownRepostRequirement(messages),
-      new HasRolesRequirement(
+    const repostRequirements: OfferRepostRequirementFactory[] = [
+      new CooldownRepostRequirementFactory(messages),
+      new HasRolesRequirementFactory(
         messages,
         (data) => data.interaction.member as GuildMember,
         config.isStaff.bind(config),
       ),
     ];
 
-    const updateRequirements: OfferSessionRequirement[] = [
-      new SearchRequirement(messages, (data) => data.offer),
+    const updateRequirements: OfferSessionRequirementFactory[] = [
+      new SearchRequirementFactory(messages, (data) => data.offer),
     ];
 
     const handler = new HermesRequirementResultHandler(bot, messageService);

@@ -1,9 +1,9 @@
 import type { RequirementConfig } from '../../hermes/requirement/config/RequirementConfigSchema';
+import type { RequirementFactory } from '../factory/RequirementFactory';
 import type {
   RequirementCheckMode,
   RequirementCheckModeEnum,
 } from '../mode/RequirementCheckMode';
-import type { Requirement } from '../Requirement';
 import type { RequirementResultAggregate } from '../result/aggregate/RequirementResultAggregate';
 import type { RequirementCheckMappings } from './RequirementCheckMappings';
 
@@ -13,7 +13,10 @@ export interface RequirementChecker<
 > {
   setAvailableRequirements<const Stage extends RequirementCheckMode>(
     stage: RequirementCheckMode,
-    requirements: Requirement<Context, RequirementCheckMappings[Stage]>[],
+    requirements: RequirementFactory<
+      Context,
+      RequirementCheckMappings[Stage]
+    >[],
   ): this;
 
   initialize(stage: RequirementCheckMode, config: RequirementConfig[]): this;

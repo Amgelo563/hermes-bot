@@ -6,18 +6,18 @@ import type { RequestRepository } from '../../hermes/database/RequestRepository'
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { BasicHermesRequirementChecker } from '../../hermes/requirement/check/BasicHermesRequirementChecker';
+import { CooldownRepostRequirementFactory } from '../../hermes/requirement/factories/CooldownRepostRequirementFactory';
+import { HasRolesRequirementFactory } from '../../hermes/requirement/factories/HasRolesRequirementFactory';
+import { SearchRequirementFactory } from '../../hermes/requirement/factories/SearchRequirementFactory';
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
-import { CooldownRepostRequirement } from '../../hermes/requirement/requirements/CooldownRepostRequirement';
-import { HasRolesRequirement } from '../../hermes/requirement/requirements/HasRolesRequirement';
-import { SearchRequirement } from '../../hermes/requirement/requirements/SearchRequirement';
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { RequestData } from '../../service/request/RequestData';
-import { MaxServicesEditRequirement } from '../../service/requirements/MaxServicesEditRequirement';
-import { HasTagRequestEditRequirement } from './edit/HasTagRequestEditRequirement';
-import type { RequestSessionRequirement } from './edit/RequestSessionRequirement';
-import { SearchOffersRequirement } from './edit/SearchOffersRequirement';
-import type { RequestRepostRequirement } from './repost/RequestRepostRequirement';
+import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import type { RequestSessionRequirementFactory } from './edit/RequestSessionRequirementFactory';
+import { SearchOffersRequirementFactory } from './edit/search/SearchOffersRequirementFactory';
+import { HasTagRequestEditRequirementFactory } from './edit/tag/HasTagRequestEditRequirementFactory';
+import type { RequestRepostRequirementFactory } from './repost/RequestRepostRequirementFactory';
 import type { RequestRequirementsMap } from './RequestRequirementsMap';
 
 // eslint-disable-next-line max-len
@@ -44,33 +44,33 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
   ) {
     const messages = messageService.getRequestMessages();
 
-    const publishRequirements: RequestSessionRequirement[] = [
-      new HasRolesRequirement(
+    const publishRequirements: RequestSessionRequirementFactory[] = [
+      new HasRolesRequirementFactory(
         messages,
         (data) => data.interaction.member as GuildMember,
         config.isStaff.bind(config),
       ),
-      new SearchOffersRequirement(messages, offerRepository),
-      new HasTagRequestEditRequirement(messages),
-      new SearchRequirement(messages, (data) => data.request),
-      new MaxServicesEditRequirement(
+      new SearchOffersRequirementFactory(messages, offerRepository),
+      new HasTagRequestEditRequirementFactory(messages),
+      new SearchRequirementFactory(messages, (data) => data.request),
+      new MaxServicesEditRequirementFactory(
         messages,
         offerRepository,
         requestRepository,
       ),
     ];
 
-    const repostRequirements: RequestRepostRequirement[] = [
-      new CooldownRepostRequirement(messages),
-      new HasRolesRequirement(
+    const repostRequirements: RequestRepostRequirementFactory[] = [
+      new CooldownRepostRequirementFactory(messages),
+      new HasRolesRequirementFactory(
         messages,
         (data) => data.interaction.member as GuildMember,
         config.isStaff.bind(config),
       ),
     ];
 
-    const updateRequirements: RequestSessionRequirement[] = [
-      new SearchRequirement(messages, (data) => data.request),
+    const updateRequirements: RequestSessionRequirementFactory[] = [
+      new SearchRequirementFactory(messages, (data) => data.request),
     ];
 
     const handler = new HermesRequirementResultHandler(bot, messageService);
