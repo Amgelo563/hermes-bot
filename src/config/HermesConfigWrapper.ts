@@ -1,4 +1,5 @@
 import type { HermesMember } from '../service/member/HermesMember';
+import { HermesMemberTypeEnum } from '../service/member/HermesMemberType';
 
 import type { OfferData } from '../service/offer/OfferData';
 import type { RequestData } from '../service/request/RequestData';
@@ -12,14 +13,22 @@ export class HermesConfigWrapper {
   }
 
   public canEditTags(member: HermesMember): boolean {
-    return this.isStaff(member);
+    return member.type !== HermesMemberTypeEnum.Mock && this.isStaff(member);
   }
 
   public canEditOffer(member: HermesMember, offer: OfferData): boolean {
+    if (member.type === HermesMemberTypeEnum.Mock) {
+      return offer.userId === member.id;
+    }
+
     return offer.userId === member.id || this.isStaff(member);
   }
 
   public canEditRequest(member: HermesMember, request: RequestData): boolean {
+    if (member.type === HermesMemberTypeEnum.Mock) {
+      return request.userId === member.id;
+    }
+
     return request.userId === member.id || this.isStaff(member);
   }
 
