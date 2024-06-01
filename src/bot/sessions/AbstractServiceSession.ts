@@ -24,6 +24,7 @@ import type { HermesPlaceholderContext } from '../../hermes/message/context/Herm
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import type { RequirementResultAggregate } from '../../requirement/result/aggregate/RequirementResultAggregate';
 import { RequirementResultEnum } from '../../requirement/result/RequirementResultEnum';
+import type { HermesMember } from '../../service/member/HermesMember';
 import { AbstractHermesSession } from './AbstractHermesSession';
 
 export abstract class AbstractServiceSession<
@@ -61,8 +62,9 @@ export abstract class AbstractServiceSession<
     data: Data,
     messages: HermesMessageService,
     modalCodec: DiscordModalCodec<Data>,
+    startMember: HermesMember,
   ) {
-    super(bot, startInteraction, messages);
+    super(bot, startInteraction, messages, startMember);
 
     this.data = data;
     this.modalCodec = modalCodec;

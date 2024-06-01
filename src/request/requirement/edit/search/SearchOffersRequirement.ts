@@ -43,14 +43,11 @@ export class SearchOffersRequirement extends AbstractHermesRequirement<
       };
     }
 
-    const { client } = checked.interaction;
-
     const dataContexts: OfferPlaceholderContext[] = [];
     for (const offer of offers) {
-      const user = await client.users.fetch(offer.userId);
       dataContexts.push({
         ...context,
-        user,
+        member: checked.member,
         services: {
           ...context.services,
           offer,

@@ -1,8 +1,10 @@
 import type {
+  CommandExecutionMeta,
   Identifiable,
   ParentCommand,
   SubCommandData,
 } from '@nyx-discord/core';
+import { ObjectNotFoundError } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type {
@@ -15,6 +17,8 @@ import type {
 import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
+import type { HermesMember } from '../../service/member/HermesMember';
+import { HermesMemberFetchCommandMiddleware } from '../middleware/HermesMemberFetchCommandMiddleware';
 
 export abstract class AbstractActionSubCommand<
   Data extends Identifiable<string>,
@@ -28,12 +32,15 @@ export abstract class AbstractActionSubCommand<
 
   protected readonly action: Actions[number];
 
+  protected readonly canBeNotInGuild: boolean;
+
   constructor(
     parent: ParentCommand,
     data: SubCommandData,
     option: ConfigCommandOption,
     actionsManager: AbstractActionsManager<Data, Actions, any>,
     action: Actions[number],
+    allowsNotInGuild: boolean,
   ) {
     super(parent);
     this.data = data;
@@ -48,14 +55,25 @@ export abstract class AbstractActionSubCommand<
     this.optionId = option.name;
     this.actionsManager = actionsManager;
     this.action = action;
+    this.canBeNotInGuild = allowsNotInGuild;
   }
 
-  public async execute(interaction: ChatInputCommandInteraction) {
+  public async execute(
+    interaction: ChatInputCommandInteraction,
+    meta: CommandExecutionMeta,
+  ) {
     const stringId = interaction.options.getString(this.optionId, true);
     const id = parseInt(stringId, 10);
 
+    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
+      | HermesMember
+      | undefined;
+    if (!member) {
+      throw new ObjectNotFoundError();
+    }
+
     const context = {
-      user: interaction.user,
+      member,
     };
 
     await interaction.deferReply({ ephemeral: true });
@@ -79,7 +97,16 @@ export abstract class AbstractActionSubCommand<
       return;
     }
 
-    await this.actionsManager.executeAction(this.action, interaction, data);
+    await this.actionsManager.executeAction(
+      this.action,
+      interaction,
+      data,
+      member,
+    );
+  }
+
+  public allowsNotInGuild(): boolean {
+    return this.canBeNotInGuild;
   }
 
   public abstract autocomplete(

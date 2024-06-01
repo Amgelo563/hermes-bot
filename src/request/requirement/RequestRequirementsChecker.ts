@@ -1,5 +1,4 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
 import type { OfferRepository } from '../../hermes/database/OfferRepository';
 import type { RequestRepository } from '../../hermes/database/RequestRepository';
@@ -12,6 +11,7 @@ import { SearchRequirementFactory } from '../../hermes/requirement/factories/Sea
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { RequestData } from '../../service/request/RequestData';
 import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
 import type { RequestSessionRequirementFactory } from './edit/RequestSessionRequirementFactory';
@@ -47,7 +47,7 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
     const publishRequirements: RequestSessionRequirementFactory[] = [
       new HasRolesRequirementFactory(
         messages,
-        (data) => data.interaction.member as GuildMember,
+        (data) => data.member,
         config.isStaff.bind(config),
       ),
       new SearchOffersRequirementFactory(messages, offerRepository),
@@ -64,7 +64,7 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
       new CooldownRepostRequirementFactory(messages),
       new HasRolesRequirementFactory(
         messages,
-        (data) => data.interaction.member as GuildMember,
+        (data) => data.member,
         config.isStaff.bind(config),
       ),
     ];
@@ -97,10 +97,12 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
     context: HermesPlaceholderContext,
     request: RequestData,
     interaction: ServiceActionInteraction,
+    member: HermesMember,
   ): Promise<boolean> {
     const result = await this.checkRepost(context, {
       repost: request,
       interaction,
+      member,
     });
     const offerMessages = this.messageService.getRequestMessages();
 

@@ -6,6 +6,7 @@ import type {
   MessageComponentInteraction,
   ModalSubmitInteraction,
 } from 'discord.js';
+import type { HermesMember } from '../member/HermesMember';
 
 import type { ServiceActionsCustomIdCodec } from './codec/ServiceActionsCustomIdCodec';
 import type { ServiceActionCustomIdBuilder } from './customId/ServiceActionCustomIdBuilder';
@@ -40,8 +41,12 @@ export abstract class AbstractActionsManager<
     this.missingExecutor = missingExecutor;
   }
 
-  public async create(interaction: ServiceActionInteraction, data: CreateData) {
-    await this.createExecutor.execute(interaction, data);
+  public async create(
+    interaction: ServiceActionInteraction,
+    member: HermesMember,
+    data: CreateData,
+  ) {
+    await this.createExecutor.execute(interaction, member, data);
   }
 
   public async handleComponentInteraction(
@@ -49,6 +54,7 @@ export abstract class AbstractActionsManager<
       | AnySelectMenuInteraction
       | ButtonInteraction
       | ModalSubmitInteraction,
+    member: HermesMember,
   ): Promise<boolean> {
     const customId = this.extractCustomId(interaction);
     if (!customId) return false;
@@ -67,7 +73,7 @@ export abstract class AbstractActionsManager<
 
     const data = await this.fetch(numberId);
     if (!data) {
-      await this.missingExecutor.execute(interaction, id);
+      await this.missingExecutor.execute(interaction, member, id);
       return true;
     }
 
@@ -80,7 +86,7 @@ export abstract class AbstractActionsManager<
       );
     }
 
-    await executor.execute(interaction, data);
+    await executor.execute(interaction, member, data);
 
     return true;
   }
@@ -89,6 +95,7 @@ export abstract class AbstractActionsManager<
     action: Actions[number],
     interaction: ServiceActionInteraction,
     data: Data,
+    member: HermesMember,
   ): Promise<void> {
     const executor = this.executors.get(action);
 
@@ -98,7 +105,7 @@ export abstract class AbstractActionsManager<
       );
     }
 
-    return executor.execute(interaction, data);
+    return executor.execute(interaction, member, data);
   }
 
   public setExecutor(

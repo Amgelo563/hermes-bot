@@ -4,22 +4,26 @@ import {
   ObjectNotFoundError,
 } from '@nyx-discord/core';
 import type {
+  Client,
   EmbedBuilder,
   Guild,
   Message,
   TextBasedChannel,
-  User,
 } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
+import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { HermesMember } from '../../service/member/HermesMember';
+import { HermesMemberTypeEnum } from '../../service/member/HermesMemberType';
 import type { RequestData } from '../../service/request/RequestData';
 import type { RequestConfig } from '../config/RequestConfigSchema';
 import type { RequestMessagesParser } from '../message/RequestMessagesParser';
 
-export class DiscordRequestAgent {
-  protected readonly messages: RequestMessagesParser;
+export class DiscordRequestAgent extends DiscordServiceAgent {
+  protected readonly requestMessages: RequestMessagesParser;
 
   protected readonly requestConfig: RequestConfig;
 
@@ -27,28 +31,36 @@ export class DiscordRequestAgent {
 
   protected requestChannel: TextBasedChannel | null = null;
 
-  protected errorChannel: TextBasedChannel | null = null;
-
   protected logChannel: TextBasedChannel | null = null;
 
   constructor(
-    requestConfig: RequestConfig,
+    client: Client,
+    messages: HermesMessageService,
     discordConfig: DiscordConfig,
-    messages: RequestMessagesParser,
+    requestConfig: RequestConfig,
   ) {
+    super(client, messages, discordConfig);
     this.requestConfig = requestConfig;
     this.discordConfig = discordConfig;
-    this.messages = messages;
+    this.requestMessages = messages.getRequestMessages();
   }
 
   public static create(
+    client: Client,
+    messages: HermesMessageService,
     config: HermesConfig,
-    messages: RequestMessagesParser,
   ): DiscordRequestAgent {
-    return new DiscordRequestAgent(config.request, config.discord, messages);
+    return new DiscordRequestAgent(
+      client,
+      messages,
+      config.discord,
+      config.request,
+    );
   }
 
-  public start(guild: Guild) {
+  public start() {
+    const guild = this.guild as Guild;
+
     const requestChannel = guild.channels.cache.get(this.requestConfig.channel);
     if (!requestChannel) {
       throw new ObjectNotFoundError(
@@ -61,22 +73,6 @@ export class DiscordRequestAgent {
       );
     }
     this.requestChannel = requestChannel;
-
-    const errorChannel = guild.channels.cache.get(
-      this.discordConfig.errorLogChannel,
-    );
-    if (!errorChannel) {
-      throw new ObjectNotFoundError(
-        'Error log channel not found: ' + this.discordConfig.errorLogChannel,
-      );
-    }
-    if (!errorChannel.isTextBased()) {
-      throw new AssertionError(
-        'Error log channel is not a text channel: '
-          + this.discordConfig.errorLogChannel,
-      );
-    }
-    this.errorChannel = errorChannel;
 
     if (!this.requestConfig.log) return;
 
@@ -94,15 +90,24 @@ export class DiscordRequestAgent {
     this.logChannel = logChannel;
   }
 
-  public async postRequest(user: User, request: RequestData): Promise<Message> {
+  public async postRequest(
+    user: HermesMember | string,
+    request: RequestData,
+  ): Promise<Message> {
     if (!this.requestChannel) {
       throw new IllegalStateError(
         "Request channel not found, haven't started yet?",
       );
     }
 
-    const context = { user, services: { request } };
-    const embed = this.messages.getPostEmbed(context);
+    const member =
+      typeof user === 'string' ? await this.fetchMember(user) : user;
+    if (member.type === HermesMemberTypeEnum.Mock) {
+      throw new IllegalStateError('Member not found: ' + member.id);
+    }
+
+    const context = { member, services: { request } };
+    const embed = this.requestMessages.getPostEmbed(context);
 
     return this.requestChannel.send({ embeds: [embed] });
   }
@@ -134,13 +139,12 @@ export class DiscordRequestAgent {
       );
     }
 
-    const user = await this.requestChannel.client.users.fetch(request.userId);
     /**
      * Worst case scenario the post succeeds but the delete fails,
      * making a duplicate post. I preferred this over the alternative of "delete successful,
      * post failed" because it's more user-friendly, and we can still delete the duplicate manually.
      */
-    const newPost = await this.postRequest(user, request);
+    const newPost = await this.postRequest(request.userId, request);
     await this.deleteRequest(request);
 
     return newPost;
@@ -153,17 +157,22 @@ export class DiscordRequestAgent {
       );
     }
 
-    const user = await this.requestChannel.client.users.fetch(request.userId);
+    const member = await this.fetchMember(request.userId);
     const context = {
-      user,
+      member,
       services: {
         request,
       },
     };
 
-    const message = await this.requestChannel.messages.fetch(request.messageId);
-    const embed = this.messages.getPostEmbed(context);
+    let message;
+    try {
+      message = await this.requestChannel.messages.fetch(request.messageId);
+    } catch (e) {
+      message = await this.postRequest(member, request);
+    }
 
+    const embed = this.requestMessages.getPostEmbed(context);
     await message.edit({ embeds: [embed] });
   }
 
@@ -178,7 +187,7 @@ export class DiscordRequestAgent {
   }
 
   public async postUpdateLog(
-    user: User,
+    updater: HermesMember | string,
     newRequest: RequestData,
     oldRequest: RequestData,
   ): Promise<void> {
@@ -190,41 +199,45 @@ export class DiscordRequestAgent {
       );
     }
 
+    const updaterMember =
+      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
+    const ownerMember = await this.fetchMember(newRequest.userId);
+
     const newContext = {
-      user,
+      member: ownerMember,
       services: {
         request: newRequest,
       },
     };
     const oldContext = {
-      user,
+      member: ownerMember,
       services: {
         request: oldRequest,
       },
     };
 
-    const affected = await this.logChannel.client.users.fetch(
-      newRequest.userId,
-    );
-
     const updateContext = {
       ...newContext,
+      member: updaterMember,
       update: {
-        affected,
-        updater: user,
+        affected: ownerMember,
+        updater: updaterMember,
         new: newRequest,
         old: oldRequest,
       },
     } satisfies HermesPlaceholderContext;
 
-    const updateEmbed = this.messages.getUpdateLogEmbed(updateContext);
-    const oldPost = this.messages.getPostEmbed(oldContext);
-    const newPost = this.messages.getPostEmbed(newContext);
+    const updateEmbed = this.requestMessages.getUpdateLogEmbed(updateContext);
+    const oldPost = this.requestMessages.getPostEmbed(oldContext);
+    const newPost = this.requestMessages.getPostEmbed(newContext);
 
     await this.logChannel.send({ embeds: [updateEmbed, oldPost, newPost] });
   }
 
-  public async postDeleteLog(user: User, request: RequestData): Promise<void> {
+  public async postDeleteLog(
+    deleter: HermesMember | string,
+    request: RequestData,
+  ): Promise<void> {
     if (!this.requestConfig.log || !this.requestConfig.log.delete) return;
 
     if (!this.logChannel) {
@@ -233,10 +246,12 @@ export class DiscordRequestAgent {
       );
     }
 
-    const affected = await this.logChannel.client.users.fetch(request.userId);
+    const ownerMember = await this.fetchMember(request.userId);
+    const deleterMember =
+      typeof deleter === 'string' ? await this.fetchMember(deleter) : deleter;
 
     const context = {
-      user,
+      member: ownerMember,
       services: {
         request,
       },
@@ -244,16 +259,17 @@ export class DiscordRequestAgent {
 
     const updateContext = {
       ...context,
+      member: deleterMember,
       update: {
-        affected,
-        updater: user,
+        affected: ownerMember,
+        updater: deleterMember,
         new: {},
         old: request,
       },
     } satisfies HermesPlaceholderContext;
 
-    const deleteEmbed = this.messages.getDeleteLogEmbed(updateContext);
-    const postEmbed = this.messages.getPostEmbed(context);
+    const deleteEmbed = this.requestMessages.getDeleteLogEmbed(updateContext);
+    const postEmbed = this.requestMessages.getPostEmbed(context);
 
     await this.logChannel.send({ embeds: [deleteEmbed, postEmbed] });
   }

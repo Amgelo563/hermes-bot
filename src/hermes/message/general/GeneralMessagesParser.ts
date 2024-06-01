@@ -3,6 +3,8 @@ import type { ButtonBuilder, EmbedBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import type { z } from 'zod';
 
+import type { HermesMember } from '../../../service/member/HermesMember';
+import { HermesMemberTypeEnum } from '../../../service/member/HermesMemberType';
 import { BasicHermesMessageParser } from '../BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../context/HermesPlaceholderErrorContext';
@@ -104,5 +106,23 @@ export class GeneralMessagesParser extends BasicHermesMessageParser<
     context: HermesPlaceholderErrorContext,
   ): ErrorEmbedsData {
     return this.parseErrorEmbeds(this.messages.unknownError, context);
+  }
+
+  public getNotInGuildErrorEmbed(
+    context: HermesPlaceholderContext,
+  ): EmbedBuilder {
+    return this.parseEmbed(this.messages.notInGuildError, context);
+  }
+
+  public getUnknownMember(id: string): HermesMember {
+    const { unknownMember } = this.messages;
+    return {
+      ...unknownMember,
+      id,
+      roles: [],
+      globalName: unknownMember.username,
+      tag: `${unknownMember.username}#${unknownMember.discriminator}`,
+      type: HermesMemberTypeEnum.UnknownUser,
+    };
   }
 }

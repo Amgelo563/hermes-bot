@@ -1,5 +1,4 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { Guild } from 'discord.js';
 import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
 import type { TagRepository } from '../hermes/database/TagRepository';
 import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
@@ -47,7 +46,8 @@ export class TagDomain {
   ): TagDomain {
     const messages = messagesService.getTagsMessages();
     const tagAgent = DiscordTagAgent.create(
-      messages,
+      bot.client,
+      messagesService,
       configWrapper.getConfig(),
     );
 
@@ -75,8 +75,8 @@ export class TagDomain {
     );
   }
 
-  public async start(guild: Guild) {
-    this.tagAgent.start(guild);
+  public async start() {
+    this.tagAgent.start();
     const tags = await this.repository.findAll();
 
     if (tags.length === 0) {

@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import type { RequestRepository } from '../../../hermes/database/RequestRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
 import type { IdentifiableRequest } from '../identity/IdentifiableRequest';
@@ -27,6 +28,7 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     request: IdentifiableRequest,
   ): Promise<void> {
     if (!interaction.replied && !interaction.deferred) {
@@ -48,7 +50,7 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
     };
 
     const context = {
-      user: interaction.user,
+      member,
       services: {
         request,
       },
@@ -57,11 +59,7 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
     try {
       await this.repository.update(request.id, newRequest);
       await this.agent.refreshRequest(newRequest);
-      await this.agent.postUpdateLog(
-        interaction.user,
-        newRequest,
-        currentRequest,
-      );
+      await this.agent.postUpdateLog(member, newRequest, currentRequest);
     } catch (error) {
       const errorContext = {
         ...context,

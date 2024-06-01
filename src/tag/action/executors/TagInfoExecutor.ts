@@ -1,10 +1,11 @@
-import type { ButtonBuilder, GuildMember } from 'discord.js';
+import type { ButtonBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../service/tag/TagData';
 import type { TagActionsCustomIdCodec } from '../codec/TagActionsCustomIdCodec';
 import { TagAction } from '../TagAction';
@@ -29,19 +30,18 @@ export class TagInfoExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     tag: TagData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
       services: {
         tag,
       },
     } satisfies HermesPlaceholderContext;
 
     const embed = this.messages.getTagsMessages().getInfoEmbed(context);
-
-    const member = interaction.member as GuildMember | null;
-    if (!member || !this.configWrapper.canEditTags(member)) {
+    if (!this.configWrapper.canEditTags(member)) {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [embed] });
       } else {

@@ -6,6 +6,7 @@ import type { HermesPlaceholderErrorContext } from '../../../hermes/message/cont
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestCreateData } from '../../../service/request/RequestCreateData';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
@@ -33,6 +34,7 @@ export class RequestCreateExecutor
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     request: RequestCreateData,
   ): Promise<void> {
     if (!interaction.replied || interaction.isCommand()) {
@@ -41,8 +43,7 @@ export class RequestCreateExecutor
       await interaction.editReply({ components: [] });
     }
 
-    const { user } = interaction;
-    const context = { user };
+    const context = { member };
 
     const prisma = this.repository.getPrisma();
     let newRequest: RequestData | undefined;
@@ -69,7 +70,7 @@ export class RequestCreateExecutor
           },
         });
 
-        message = await this.agent.postRequest(user, newRequest);
+        message = await this.agent.postRequest(member, newRequest);
         const channelId: string = message.channel.id;
         const messageId: string = message.id;
         const guildId: string = message.guildId!;

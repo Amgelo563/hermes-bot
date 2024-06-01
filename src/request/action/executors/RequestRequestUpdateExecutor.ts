@@ -1,11 +1,11 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 
 import { RequestUpdateSession } from '../../../bot/request/sessions/RequestUpdateSession';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { RequestRepository } from '../../../hermes/database/RequestRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { RequestModalCodec } from '../../modal/RequestModalCodec';
 import type { RequestRequirementsChecker } from '../../requirement/RequestRequirementsChecker';
@@ -47,15 +47,15 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    hermesMember: HermesMember,
     request: RequestData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member: hermesMember,
       services: { request },
     };
 
-    const member = interaction.member as GuildMember;
-    if (!this.config.canEditRequest(member, request)) {
+    if (!this.config.canEditRequest(hermesMember, request)) {
       const notFound = this.messages
         .getRequestMessages()
         .getNotFoundErrorEmbed(context, request.id.toString());
@@ -76,6 +76,7 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
       this.modalCodec,
       this.requirements,
       this.actions,
+      hermesMember,
     );
 
     await this.bot.sessions.start(session);

@@ -3,7 +3,10 @@ import type { Client } from 'discord.js';
 import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { CommandPlaceholderReplacer } from '../hermes/message/placeholder/CommandPlaceholderReplacer';
+import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 import type { ServiceManager } from '../service/ServiceManager';
+import { HermesMemberFetchCommandMiddleware } from './middleware/HermesMemberFetchCommandMiddleware';
+import { UserNotInGuildActionCommandMiddleware } from './middleware/UserNotInGuildActionCommandMiddleware';
 import { BotOfferManager } from './offer/BotOfferManager';
 import { BotRequestManager } from './request/BotRequestManager';
 import { BotTagManager } from './tag/BotTagManager';
@@ -20,18 +23,22 @@ export class BotManager {
 
   protected readonly offer: BotOfferManager;
 
+  protected readonly discordAgent: DiscordServiceAgent;
+
   constructor(
     messages: HermesMessageService,
     bot: NyxBot,
     tag: BotTagManager,
     request: BotRequestManager,
     offer: BotOfferManager,
+    discordAgent: DiscordServiceAgent,
   ) {
     this.messages = messages;
     this.bot = bot;
     this.tag = tag;
     this.request = request;
     this.offer = offer;
+    this.discordAgent = discordAgent;
   }
 
   public static create(
@@ -59,12 +66,31 @@ export class BotManager {
       services.getTagDomain().getRepository(),
     );
 
-    return new BotManager(messages, bot, tag, request, offer);
+    return new BotManager(
+      messages,
+      bot,
+      tag,
+      request,
+      offer,
+      services.getServiceAgent(),
+    );
   }
 
   public async start(): Promise<void> {
     const replacer = CommandPlaceholderReplacer.fromBot(this.bot);
     this.messages.getPlaceholderManager().addReplacer(replacer);
+
+    const memberFetchCommandMiddleware = new HermesMemberFetchCommandMiddleware(
+      this.discordAgent,
+    );
+    const dmCheckCommandMiddleware = new UserNotInGuildActionCommandMiddleware(
+      this.messages.getGeneralMessages(),
+    );
+
+    this.bot.commands
+      .getExecutor()
+      .getMiddleware()
+      .addAll([memberFetchCommandMiddleware, dmCheckCommandMiddleware]);
 
     await this.bot.start();
     await this.tag.start();

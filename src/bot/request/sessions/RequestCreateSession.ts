@@ -17,6 +17,7 @@ import type { RequestModalCodec } from '../../../request/modal/RequestModalCodec
 import type { RequestRequirementsChecker } from '../../../request/requirement/RequestRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { RequestModalInputData } from '../../../service/request/RequestModalInputData';
 import type { TagData } from '../../../service/tag/TagData';
@@ -45,14 +46,15 @@ export class RequestCreateSession extends AbstractServiceSession<RequestModalInp
     modalCodec: RequestModalCodec,
     requirements: RequestRequirementsChecker,
     actions: RequestActionsManager,
+    startMember: HermesMember,
     tags: TagData[],
   ) {
-    super(bot, startInteraction, data, messageService, modalCodec);
+    super(bot, startInteraction, data, messageService, modalCodec, startMember);
 
     this.requestMessages = messageService.getRequestMessages();
     this.tags = tags;
     this.cachedContext = {
-      user: startInteraction.user,
+      member: startMember,
       services: {
         request: this.mockFullData(data),
       },
@@ -97,7 +99,7 @@ export class RequestCreateSession extends AbstractServiceSession<RequestModalInp
       tagId: tag.id,
     };
 
-    return this.actions.create(interaction, data);
+    return this.actions.create(interaction, this.startMember, data);
   }
 
   protected mockFullData(create: RequestModalInputData): RequestData {
@@ -179,6 +181,7 @@ export class RequestCreateSession extends AbstractServiceSession<RequestModalInp
       request: this.mockFullData(this.data),
       tag: this.selectedTag,
       interaction: this.startInteraction,
+      member: this.startMember,
     });
   }
 }

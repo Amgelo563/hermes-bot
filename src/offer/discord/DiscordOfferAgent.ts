@@ -4,22 +4,25 @@ import {
   ObjectNotFoundError,
 } from '@nyx-discord/core';
 import type {
+  Client,
   EmbedBuilder,
   Guild,
   Message,
   TextBasedChannel,
-  User,
 } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
+import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { OfferData } from '../../service/offer/OfferData';
 import type { OfferConfig } from '../config/OfferConfigSchema';
 import type { OfferMessagesParser } from '../message/OfferMessagesParser';
 
-export class DiscordOfferAgent {
-  protected readonly messages: OfferMessagesParser;
+export class DiscordOfferAgent extends DiscordServiceAgent {
+  protected readonly offerMessages: OfferMessagesParser;
 
   protected readonly offerConfig: OfferConfig;
 
@@ -27,28 +30,37 @@ export class DiscordOfferAgent {
 
   protected offerChannel: TextBasedChannel | null = null;
 
-  protected errorChannel: TextBasedChannel | null = null;
-
   protected logChannel: TextBasedChannel | null = null;
 
   constructor(
-    offerConfig: OfferConfig,
+    client: Client,
     discordConfig: DiscordConfig,
-    messages: OfferMessagesParser,
+    messages: HermesMessageService,
+    offerConfig: OfferConfig,
   ) {
+    super(client, messages, discordConfig);
+
     this.offerConfig = offerConfig;
     this.discordConfig = discordConfig;
-    this.messages = messages;
+    this.offerMessages = messages.getOfferMessages();
   }
 
   public static create(
+    client: Client,
+    messages: HermesMessageService,
     config: HermesConfig,
-    messages: OfferMessagesParser,
   ): DiscordOfferAgent {
-    return new DiscordOfferAgent(config.offer, config.discord, messages);
+    return new DiscordOfferAgent(
+      client,
+      config.discord,
+      messages,
+      config.offer,
+    );
   }
 
-  public start(guild: Guild) {
+  public start() {
+    super.start();
+    const guild = this.guild as Guild;
     const offerChannel = guild.channels.cache.get(this.offerConfig.channel);
     if (!offerChannel) {
       throw new ObjectNotFoundError(
@@ -61,22 +73,6 @@ export class DiscordOfferAgent {
       );
     }
     this.offerChannel = offerChannel;
-
-    const errorChannel = guild.channels.cache.get(
-      this.discordConfig.errorLogChannel,
-    );
-    if (!errorChannel) {
-      throw new ObjectNotFoundError(
-        'Error log channel not found: ' + this.discordConfig.errorLogChannel,
-      );
-    }
-    if (!errorChannel.isTextBased()) {
-      throw new AssertionError(
-        'Error log channel is not a text channel: '
-          + this.discordConfig.errorLogChannel,
-      );
-    }
-    this.errorChannel = errorChannel;
 
     if (!this.offerConfig.log) return;
 
@@ -94,15 +90,20 @@ export class DiscordOfferAgent {
     this.logChannel = logChannel;
   }
 
-  public async postOffer(user: User, offer: OfferData): Promise<Message> {
+  public async postOffer(
+    poster: HermesMember | string,
+    offer: OfferData,
+  ): Promise<Message> {
     if (!this.offerChannel) {
       throw new IllegalStateError(
         "Offer channel not found, haven't started yet?",
       );
     }
 
-    const context = { user, services: { offer } };
-    const embed = this.messages.getPostEmbed(context);
+    const member =
+      typeof poster === 'string' ? await this.fetchMember(poster) : poster;
+    const context = { member, services: { offer } };
+    const embed = this.offerMessages.getPostEmbed(context);
 
     return this.offerChannel.send({ embeds: [embed] });
   }
@@ -132,13 +133,13 @@ export class DiscordOfferAgent {
       );
     }
 
-    const user = await this.offerChannel.client.users.fetch(offer.userId);
+    const member = await this.fetchMember(offer.userId);
     /**
      * Worst case scenario the post succeeds but the delete fails,
      * making a duplicate post. I preferred this over the alternative of "delete successful,
      * post failed" because it's more user-friendly, and we can still delete the duplicate manually.
      */
-    const newPost = await this.postOffer(user, offer);
+    const newPost = await this.postOffer(member, offer);
     await this.deleteOffer(offer);
 
     return newPost;
@@ -151,16 +152,16 @@ export class DiscordOfferAgent {
       );
     }
 
-    const user = await this.offerChannel.client.users.fetch(offer.userId);
+    const member = await this.fetchMember(offer.userId);
     const context = {
-      user,
+      member,
       services: {
         offer,
       },
     };
 
     const message = await this.offerChannel.messages.fetch(offer.messageId);
-    const embed = this.messages.getPostEmbed(context);
+    const embed = this.offerMessages.getPostEmbed(context);
 
     await message.edit({ embeds: [embed] });
   }
@@ -176,7 +177,7 @@ export class DiscordOfferAgent {
   }
 
   public async postUpdateLog(
-    user: User,
+    updater: HermesMember | string,
     newOffer: OfferData,
     oldOffer: OfferData,
   ): Promise<void> {
@@ -188,39 +189,45 @@ export class DiscordOfferAgent {
       );
     }
 
+    const affected = await this.fetchMember(newOffer.userId);
+    const updaterMember =
+      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
+
     const newContext = {
-      user,
+      member: affected,
       services: {
         offer: newOffer,
       },
     };
     const oldContext = {
-      user,
+      member: affected,
       services: {
         offer: oldOffer,
       },
     };
 
-    const affected = await this.logChannel.client.users.fetch(newOffer.userId);
-
     const updateContext = {
       ...newContext,
+      member: updaterMember,
       update: {
         affected,
-        updater: user,
+        updater: updaterMember,
         new: newOffer,
         old: oldOffer,
       },
     } satisfies HermesPlaceholderContext;
 
-    const updateEmbed = this.messages.getUpdateLogEmbed(updateContext);
-    const oldPost = this.messages.getPostEmbed(oldContext);
-    const newPost = this.messages.getPostEmbed(newContext);
+    const updateEmbed = this.offerMessages.getUpdateLogEmbed(updateContext);
+    const oldPost = this.offerMessages.getPostEmbed(oldContext);
+    const newPost = this.offerMessages.getPostEmbed(newContext);
 
     await this.logChannel.send({ embeds: [updateEmbed, oldPost, newPost] });
   }
 
-  public async postDeleteLog(user: User, offer: OfferData): Promise<void> {
+  public async postDeleteLog(
+    deleter: HermesMember | string,
+    offer: OfferData,
+  ): Promise<void> {
     if (!this.offerConfig.log || !this.offerConfig.log.delete) return;
 
     if (!this.logChannel) {
@@ -229,27 +236,30 @@ export class DiscordOfferAgent {
       );
     }
 
-    const affected = await this.logChannel.client.users.fetch(offer.userId);
+    const affected = await this.fetchMember(offer.userId);
+    const deleterMember =
+      typeof deleter === 'string' ? await this.fetchMember(deleter) : deleter;
 
     const context = {
-      user,
+      member: affected,
       services: {
         offer,
       },
     };
 
-    const updateContext = {
+    const deleteContext = {
       ...context,
+      member: deleterMember,
       update: {
         affected,
-        updater: user,
+        updater: deleterMember,
         new: {},
         old: offer,
       },
     } satisfies HermesPlaceholderContext;
 
-    const deleteEmbed = this.messages.getDeleteLogEmbed(updateContext);
-    const postEmbed = this.messages.getPostEmbed(context);
+    const deleteEmbed = this.offerMessages.getDeleteLogEmbed(deleteContext);
+    const postEmbed = this.offerMessages.getPostEmbed(context);
 
     await this.logChannel.send({ embeds: [deleteEmbed, postEmbed] });
   }

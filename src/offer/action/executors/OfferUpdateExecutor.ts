@@ -2,6 +2,7 @@ import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 import type { OfferRepository } from '../../../hermes/database/OfferRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
@@ -26,6 +27,7 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     offer: OfferData,
   ): Promise<void> {
     if (!interaction.replied && !interaction.deferred) {
@@ -47,7 +49,7 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
     };
 
     const context = {
-      user: interaction.user,
+      member,
       services: {
         offer,
       },
@@ -56,7 +58,11 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
     try {
       await this.repository.update(offer.id, newOffer);
       await this.agent.refreshOffer(newOffer);
-      await this.agent.postUpdateLog(interaction.user, newOffer, currentOffer);
+      await this.agent.postUpdateLog(
+        interaction.user.id,
+        newOffer,
+        currentOffer,
+      );
     } catch (error) {
       const errorContext = {
         ...context,

@@ -57,6 +57,7 @@ export class BotTagManager {
     const tagAutocomplete = new PermanentAutocompleteChoiceSource([]);
     const subscriber = new ServiceActionInteractionSubscriber(
       tagDomain.getActions(),
+      tagDomain.getTagAgent(),
     );
 
     return new BotTagManager(
@@ -113,6 +114,7 @@ export class BotTagManager {
       repo,
       this.tagAutocomplete,
       TagAction.enum.Info,
+      true,
     );
 
     const deleteData = tagMessages.getDeleteCommandData();
@@ -125,6 +127,7 @@ export class BotTagManager {
       repo,
       this.tagAutocomplete,
       TagAction.enum.Delete,
+      false,
     );
 
     parent.addChildren([list, add, info, deleteSubCommand]);

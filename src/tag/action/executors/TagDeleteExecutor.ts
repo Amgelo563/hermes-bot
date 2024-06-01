@@ -1,5 +1,4 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
@@ -8,6 +7,7 @@ import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../service/tag/TagData';
 import type { WithRequired } from '../../../types/WithRequired';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
@@ -40,16 +40,16 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     tag: TagData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
       services: { tag },
     };
 
     const tagMessages = this.messages.getTagsMessages();
 
-    const member = interaction.member as GuildMember | null;
     if (!member || !this.configWrapper.canEditTags(member)) {
       const error = tagMessages.getNotAllowedErrorEmbed(context);
 
@@ -102,7 +102,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
     try {
       await this.repository.delete(tag.id);
-      await this.agent.postDeleteLog(context.user, tag);
+      await this.agent.postDeleteLog(member, tag);
     } catch (e) {
       const id = nanoid(5);
       const errorContext = {

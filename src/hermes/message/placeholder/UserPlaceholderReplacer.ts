@@ -1,4 +1,4 @@
-import { UserFormatter } from '../../../format/UserFormatter';
+import { HermesMemberFormatter } from '../../../format/HermesMemberFormatter';
 import type { MessagePlaceholder } from '../../../message/placeholder/MessagePlaceholder';
 import type { MessagePlaceholderReplacer } from '../../../message/placeholder/replace/MessagePlaceholderReplacer';
 import type { HermesPlaceholderContext } from '../context/HermesPlaceholderContext';
@@ -12,11 +12,11 @@ export class UserPlaceholderReplacer
   ): string | null {
     const option = placeholder.values[0];
 
-    if (!option || !context.user) {
+    if (!option || !context.member) {
       return null;
     }
 
-    return UserFormatter.format(context.user, option);
+    return HermesMemberFormatter.format(context.member, option);
   }
 
   public getNamespace(): string {

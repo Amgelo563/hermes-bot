@@ -76,10 +76,9 @@ export class ServiceManager {
     this.agent.start();
     this.errorAgent.start();
 
-    const guild = this.agent.getGuild();
-    this.requestDomain.start(guild);
-    this.offerDomain.start(guild);
-    await this.tagDomain.start(guild);
+    this.requestDomain.start();
+    this.offerDomain.start();
+    await this.tagDomain.start();
   }
 
   public getServiceAgent() {

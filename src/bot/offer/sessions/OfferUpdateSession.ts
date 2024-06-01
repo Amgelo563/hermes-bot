@@ -17,6 +17,7 @@ import type { OfferModalCodec } from '../../../offer/modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../../offer/requirement/OfferRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferData } from '../../../service/offer/OfferData';
 import { OfferCreateSession } from './OfferCreateSession';
 
@@ -43,6 +44,7 @@ export class OfferUpdateSession extends OfferCreateSession {
     modalCodec: OfferModalCodec,
     requirements: OfferRequirementsChecker,
     actions: OfferActionsManager,
+    startMember: HermesMember,
   ) {
     super(
       bot,
@@ -52,6 +54,7 @@ export class OfferUpdateSession extends OfferCreateSession {
       modalCodec,
       requirements,
       actions,
+      startMember,
       offer.tags,
     );
 
@@ -59,7 +62,7 @@ export class OfferUpdateSession extends OfferCreateSession {
     this.initialData = { ...offer };
     this.offerMessages = messageService.getOfferMessages();
     this.cachedContext = {
-      user: startInteraction.user,
+      member: startMember,
       services: {
         offer,
       },
@@ -74,6 +77,7 @@ export class OfferUpdateSession extends OfferCreateSession {
       OfferAction.enum.Update,
       interaction,
       createIdentifiableOffer(this.data),
+      this.startMember,
     );
   }
 
@@ -99,6 +103,7 @@ export class OfferUpdateSession extends OfferCreateSession {
     return this.requirements.checkUpdate(this.cachedContext, {
       offer: this.data,
       interaction: this.startInteraction,
+      member: this.startMember,
     });
   }
 

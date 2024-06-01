@@ -1,5 +1,4 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 
 import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
 import type { OfferRepository } from '../../hermes/database/OfferRepository';
@@ -13,6 +12,8 @@ import { SearchRequirementFactory } from '../../hermes/requirement/factories/Sea
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
+import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { OfferData } from '../../service/offer/OfferData';
 import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
 import type { OfferSessionRequirementFactory } from './edit/OfferSessionRequirementFactory';
@@ -40,13 +41,14 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
     messageService: HermesMessageService,
     offerRepository: OfferRepository,
     requestRepository: RequestRepository,
+    agent: DiscordServiceAgent,
   ): OfferRequirementsChecker {
     const messages = messageService.getOfferMessages();
 
     const publishRequirements: OfferSessionRequirementFactory[] = [
       new HasRolesRequirementFactory(
         messages,
-        (data) => data.interaction.member as GuildMember,
+        (data) => data.member,
         config.isStaff.bind(config),
       ),
       new HasTagOfferEditRequirementFactory(messages),
@@ -62,7 +64,7 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
       new CooldownRepostRequirementFactory(messages),
       new HasRolesRequirementFactory(
         messages,
-        (data) => data.interaction.member as GuildMember,
+        (data) => data.member,
         config.isStaff.bind(config),
       ),
     ];
@@ -95,10 +97,12 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
     context: HermesPlaceholderContext,
     offer: OfferData,
     interaction: ServiceActionInteraction,
+    member: HermesMember,
   ): Promise<boolean> {
     const result = await this.checkRepost(context, {
       repost: offer,
       interaction,
+      member,
     });
     const offerMessages = this.messageService.getOfferMessages();
 

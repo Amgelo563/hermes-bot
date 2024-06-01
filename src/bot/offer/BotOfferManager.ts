@@ -86,6 +86,7 @@ export class BotOfferManager {
 
     const subscriber = new ServiceActionInteractionSubscriber(
       offerDomain.getActions(),
+      offerDomain.getDiscordAgent(),
     );
 
     return new BotOfferManager(
@@ -131,6 +132,7 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.ReqUpd,
+      false,
     );
 
     const infoData = offerMessages.getInfoCommandData();
@@ -143,6 +145,7 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Info,
+      true,
     );
 
     const repostData = offerMessages.getRepostCommandData();
@@ -155,6 +158,7 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Repost,
+      false,
     );
 
     const deleteData = offerMessages.getDeleteCommandData();
@@ -167,6 +171,7 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Delete,
+      true,
     );
 
     parent.addChildren([

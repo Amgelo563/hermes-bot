@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import type { RequestRepository } from '../../../hermes/database/RequestRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
@@ -14,7 +15,7 @@ export class RequestRepostExecutor implements RequestActionExecutor {
 
   protected readonly requirements: RequestRequirementsChecker;
 
-  protected readonly messages: RequestMessagesParser;
+  protected readonly requestMessages: RequestMessagesParser;
 
   protected readonly agent: DiscordRequestAgent;
 
@@ -22,13 +23,13 @@ export class RequestRepostExecutor implements RequestActionExecutor {
 
   constructor(
     bot: NyxBot,
-    messages: RequestMessagesParser,
+    requestMessages: RequestMessagesParser,
     requirements: RequestRequirementsChecker,
     agent: DiscordRequestAgent,
     repository: RequestRepository,
   ) {
     this.bot = bot;
-    this.messages = messages;
+    this.requestMessages = requestMessages;
     this.requirements = requirements;
     this.agent = agent;
     this.repository = repository;
@@ -36,23 +37,24 @@ export class RequestRepostExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     request: RequestData,
   ): Promise<void> {
-    const context = {
-      user: interaction.user,
-      services: {
-        request,
-      },
-    };
-
     if (!interaction.replied && !interaction.deferred) {
       await interaction.deferReply({ ephemeral: true });
     }
 
+    const context = {
+      member,
+      services: {
+        request,
+      },
+    };
     const confirmed = await this.requirements.checkRepostAndHandle(
       context,
       request,
       interaction,
+      member,
     );
     if (!confirmed) return;
 
@@ -68,7 +70,8 @@ export class RequestRepostExecutor implements RequestActionExecutor {
         },
       };
 
-      const errorEmbeds = this.messages.getRepostErrorEmbeds(errorContext);
+      const errorEmbeds =
+        this.requestMessages.getRepostErrorEmbeds(errorContext);
 
       await interaction.editReply({ embeds: [errorEmbeds.user] });
       await this.agent.postError(errorEmbeds.log);
@@ -76,7 +79,7 @@ export class RequestRepostExecutor implements RequestActionExecutor {
     }
 
     await interaction.editReply({
-      embeds: [this.messages.getRepostSuccessEmbed(context)],
+      embeds: [this.requestMessages.getRepostSuccessEmbed(context)],
     });
   }
 }

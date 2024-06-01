@@ -16,6 +16,7 @@ import type { OfferModalCodec } from '../../../offer/modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../../offer/requirement/OfferRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferCreateData } from '../../../service/offer/OfferCreateData';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { TagData } from '../../../service/tag/TagData';
@@ -42,14 +43,15 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
     modalCodec: OfferModalCodec,
     requirements: OfferRequirementsChecker,
     actions: OfferActionsManager,
+    startMember: HermesMember,
     tags: TagData[],
   ) {
-    super(bot, startInteraction, data, messageService, modalCodec);
+    super(bot, startInteraction, data, messageService, modalCodec, startMember);
 
     this.offerMessages = messageService.getOfferMessages();
     this.tags = tags;
     this.cachedContext = {
-      user: startInteraction.user,
+      member: startMember,
       services: {
         offer: this.mockFullData(data),
       },
@@ -120,7 +122,7 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
   }
 
   protected async handleConfirm(interaction: ButtonInteraction): Promise<void> {
-    await this.actions.create(interaction, this.data);
+    await this.actions.create(interaction, this.startMember, this.data);
   }
 
   protected override allowConfirm(): boolean {
@@ -163,6 +165,7 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
     return this.requirements.checkPublish(this.cachedContext, {
       offer: this.data,
       interaction: this.startInteraction,
+      member: this.startMember,
     });
   }
 }

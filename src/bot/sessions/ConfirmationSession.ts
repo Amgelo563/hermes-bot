@@ -49,7 +49,7 @@ export class ConfirmationSession extends AbstractHermesSession<ConfirmResult> {
     isSafe: boolean,
     context: HermesPlaceholderContext,
   ) {
-    super(bot, startInteraction, messages);
+    super(bot, startInteraction, messages, context.member);
 
     this.isSafe = isSafe;
     this.yesId = this.customId

@@ -5,6 +5,7 @@ import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
 import type { RequestRepository } from '../../../hermes/database/RequestRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestActionExecutor } from './RequestActionExecutor';
@@ -32,13 +33,9 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     request: RequestData,
   ): Promise<void> {
-    const context = {
-      user: interaction.user,
-      services: { request },
-    };
-
     if (!interaction.deferred && !interaction.replied) {
       if (interaction.isCommand()) {
         await interaction.deferReply({ ephemeral: true });
@@ -46,6 +43,11 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
         await interaction.deferUpdate();
       }
     }
+
+    const context = {
+      member,
+      services: { request },
+    };
 
     const requestMessages = this.messages.getRequestMessages();
     const deleteConfirm = requestMessages.getDeleteConfirmEmbed(context);
@@ -73,7 +75,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
     try {
       await this.requestRepository.delete(request.id);
       await this.agent.deleteRequest(request);
-      await this.agent.postDeleteLog(context.user, request);
+      await this.agent.postDeleteLog(member, request);
     } catch (e) {
       const errorId = nanoid(5);
 

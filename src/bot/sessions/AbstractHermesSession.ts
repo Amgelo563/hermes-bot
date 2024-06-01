@@ -11,19 +11,24 @@ import type { EmbedBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
+import type { HermesMember } from '../../service/member/HermesMember';
 
 export abstract class AbstractHermesSession<
   Result = void,
 > extends AbstractSession<Result> {
   protected readonly messages: HermesMessageService;
 
+  protected readonly startMember: HermesMember;
+
   constructor(
     bot: NyxBot,
     startInteraction: SessionStartInteraction,
     messages: HermesMessageService,
+    startMember: HermesMember,
   ) {
     super(bot, AbstractHermesSession.createId(), startInteraction);
 
+    this.startMember = startMember;
     this.messages = messages;
   }
 
@@ -50,7 +55,7 @@ export abstract class AbstractHermesSession<
 
   protected getEndEmbed(): EmbedBuilder {
     const context = {
-      user: this.startInteraction.user,
+      member: this.startMember,
     };
     return this.messages.getGeneralMessages().getCancelledEmbed(context);
   }

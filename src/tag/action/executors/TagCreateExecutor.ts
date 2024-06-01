@@ -1,9 +1,9 @@
-import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagCreateData } from '../../../service/tag/TagCreateData';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagMessagesParser } from '../../message/TagMessagesParser';
@@ -31,10 +31,11 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     createData: TagCreateData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
     };
 
     if (!interaction.replied && !interaction.deferred) {
@@ -48,9 +49,7 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
       }
     }
 
-    const canDelete = this.configWrapper.canEditTags(
-      interaction.member as GuildMember,
-    );
+    const canDelete = this.configWrapper.canEditTags(member);
     if (!canDelete) {
       const error = this.tagMessages.getNotAllowedErrorEmbed(context);
 
@@ -61,7 +60,7 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
     let tag;
     try {
       tag = await this.repository.create(createData);
-      await this.agent.postCreateLog(context.user, tag);
+      await this.agent.postCreateLog(member, tag);
     } catch (e) {
       const embeds = this.tagMessages.getCreateErrorEmbeds({
         ...context,

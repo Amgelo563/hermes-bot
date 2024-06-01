@@ -17,6 +17,7 @@ import type { RequestModalCodec } from '../../../request/modal/RequestModalCodec
 import type { RequestRequirementsChecker } from '../../../request/requirement/RequestRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import { RequestCreateSession } from './RequestCreateSession';
 
@@ -43,6 +44,7 @@ export class RequestUpdateSession extends RequestCreateSession {
     modalCodec: RequestModalCodec,
     requirements: RequestRequirementsChecker,
     actions: RequestActionsManager,
+    startMember: HermesMember,
   ) {
     super(
       bot,
@@ -52,6 +54,7 @@ export class RequestUpdateSession extends RequestCreateSession {
       modalCodec,
       requirements,
       actions,
+      startMember,
       [request.tag],
     );
 
@@ -59,7 +62,7 @@ export class RequestUpdateSession extends RequestCreateSession {
     this.initialData = { ...request };
     this.requestMessages = messageService.getRequestMessages();
     this.cachedContext = {
-      user: startInteraction.user,
+      member: startMember,
       services: {
         request,
       },
@@ -75,6 +78,7 @@ export class RequestUpdateSession extends RequestCreateSession {
       RequestAction.enum.Update,
       interaction,
       createIdentifiableRequest(this.data),
+      this.startMember,
     );
   }
 
@@ -122,6 +126,7 @@ export class RequestUpdateSession extends RequestCreateSession {
       request: this.data,
       interaction: this.startInteraction,
       tag: this.selectedTag,
+      member: this.startMember,
     });
   }
 }

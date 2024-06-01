@@ -1,5 +1,5 @@
 import { ArrayFormatter } from '../../../format/ArrayFormatter';
-import { UserFormatter } from '../../../format/UserFormatter';
+import { HermesMemberFormatter } from '../../../format/HermesMemberFormatter';
 import type { MessagePlaceholder } from '../../../message/placeholder/MessagePlaceholder';
 import type { HermesPlaceholderContext } from '../context/HermesPlaceholderContext';
 import type { HermesPlaceholderReplacer } from './abstract/HermesPlaceholderReplacer';
@@ -27,12 +27,12 @@ export class UpdatePlaceholderReplacer implements HermesPlaceholderReplacer {
       case 'updater': {
         if (!arg) return null;
 
-        return UserFormatter.format(update.updater, arg);
+        return HermesMemberFormatter.format(update.updater, arg);
       }
       case 'affected': {
         if (!placeholder.values[1]) return null;
 
-        return UserFormatter.format(update.affected, arg);
+        return HermesMemberFormatter.format(update.affected, arg);
       }
       default:
         return null;

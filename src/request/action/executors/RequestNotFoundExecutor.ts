@@ -1,5 +1,6 @@
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
 
 export class RequestNotFoundExecutor implements ServiceActionExecutor<string> {
@@ -11,10 +12,11 @@ export class RequestNotFoundExecutor implements ServiceActionExecutor<string> {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     id: string,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
     };
 
     const embed = this.messages.getNotFoundErrorEmbed(context, id);

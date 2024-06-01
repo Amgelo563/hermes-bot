@@ -1,4 +1,4 @@
-import type { GuildMember } from 'discord.js';
+import type { HermesMember } from '../service/member/HermesMember';
 
 import type { OfferData } from '../service/offer/OfferData';
 import type { RequestData } from '../service/request/RequestData';
@@ -11,21 +11,21 @@ export class HermesConfigWrapper {
     this.config = config;
   }
 
-  public canEditTags(member: GuildMember): boolean {
+  public canEditTags(member: HermesMember): boolean {
     return this.isStaff(member);
   }
 
-  public canEditOffer(member: GuildMember, offer: OfferData): boolean {
+  public canEditOffer(member: HermesMember, offer: OfferData): boolean {
     return offer.userId === member.id || this.isStaff(member);
   }
 
-  public canEditRequest(member: GuildMember, request: RequestData): boolean {
+  public canEditRequest(member: HermesMember, request: RequestData): boolean {
     return request.userId === member.id || this.isStaff(member);
   }
 
-  public isStaff(member: GuildMember): boolean {
+  public isStaff(member: HermesMember): boolean {
     return this.config.discord.staffRoles.some((role) =>
-      member.roles.cache.has(role),
+      member.roles.includes(role),
     );
   }
 

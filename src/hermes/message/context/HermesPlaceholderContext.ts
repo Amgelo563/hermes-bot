@@ -1,11 +1,11 @@
-import type { User } from 'discord.js';
+import type { HermesMember } from '../../../service/member/HermesMember';
 
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { TagData } from '../../../service/tag/TagData';
 
-export type HermesPlaceholderContext = {
-  user: User;
+export type HermesPlaceholderContext<Updated = object> = {
+  member: HermesMember;
 
   services?: {
     offer?: OfferData;
@@ -30,9 +30,9 @@ export type HermesPlaceholderContext = {
   };
 
   update?: {
-    affected: User;
-    updater: User;
-    new: object;
-    old: object;
+    affected: HermesMember;
+    updater: HermesMember;
+    new: Updated;
+    old: Updated;
   };
 };

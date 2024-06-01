@@ -1,10 +1,10 @@
 import { IllegalStateError } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 import { nanoid } from 'nanoid';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../service/tag/TagData';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagMessagesParser } from '../../message/TagMessagesParser';
@@ -38,6 +38,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     tag: TagData,
   ): Promise<void> {
     if (!interaction.isModalSubmit()) {
@@ -45,7 +46,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
     }
 
     const context = {
-      user: interaction.user,
+      member,
       services: { tag },
     };
 
@@ -55,8 +56,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    const member = interaction.member as GuildMember | null;
-    if (!member || !this.configWrapper.canEditTags(member)) {
+    if (!this.configWrapper.canEditTags(member)) {
       const error = this.messages.getNotAllowedErrorEmbed(context);
 
       await interaction.editReply({ embeds: [error] });
@@ -76,7 +76,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
     try {
       await this.repository.update(tag.id, newData);
-      await this.agent.postUpdateLog(context.user, oldTag, newTag);
+      await this.agent.postUpdateLog(member, oldTag, newTag);
     } catch (e) {
       const errorId = nanoid(5);
 

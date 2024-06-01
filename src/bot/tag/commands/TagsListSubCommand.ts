@@ -1,4 +1,8 @@
 import type { ParentCommand, SubCommandData } from '@nyx-discord/core';
+import {
+  type CommandExecutionMeta,
+  ObjectNotFoundError,
+} from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
@@ -8,9 +12,11 @@ import { ActionRowBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import type { TagRepository } from '../../../hermes/database/TagRepository';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagActionsCustomIdCodec } from '../../../tag/action/codec/TagActionsCustomIdCodec';
 import { TagAction } from '../../../tag/action/TagAction';
 import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
+import { HermesMemberFetchCommandMiddleware } from '../../middleware/HermesMemberFetchCommandMiddleware';
 
 export class TagsListSubCommand extends AbstractSubCommand {
   public static readonly DefaultData = {
@@ -40,11 +46,19 @@ export class TagsListSubCommand extends AbstractSubCommand {
     this.repository = repository;
   }
 
-  public async execute(interaction: ChatInputCommandInteraction) {
-    const tags = this.repository.getTags();
+  public async execute(
+    interaction: ChatInputCommandInteraction,
+    meta: CommandExecutionMeta,
+  ) {
+    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
+      | HermesMember
+      | undefined;
+    if (!member) {
+      throw new ObjectNotFoundError();
+    }
 
-    const { user } = interaction;
-    const embed = this.messages.getListEmbed({ user }, tags);
+    const tags = this.repository.getTags();
+    const embed = this.messages.getListEmbed({ member }, tags);
 
     if (!tags.length) {
       await interaction.reply({
@@ -56,7 +70,7 @@ export class TagsListSubCommand extends AbstractSubCommand {
     }
 
     const select = this.messages
-      .getListSelect({ user }, tags)
+      .getListSelect({ member }, tags)
       .setCustomId(nanoid(5));
 
     select.addOptions(

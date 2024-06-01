@@ -4,65 +4,56 @@ import {
   ObjectNotFoundError,
 } from '@nyx-discord/core';
 import type {
+  Client,
   EmbedBuilder,
   Guild,
   Message,
   TextBasedChannel,
-  User,
 } from 'discord.js';
+
 import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
+import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { TagData } from '../../service/tag/TagData';
 import type { TagConfig } from '../config/TagConfigSchema';
 import type { TagMessagesParser } from '../message/TagMessagesParser';
 
-export class DiscordTagAgent {
+export class DiscordTagAgent extends DiscordServiceAgent {
   protected readonly tagConfig: TagConfig;
 
-  protected readonly discordConfig: DiscordConfig;
-
-  protected readonly messages: TagMessagesParser;
+  protected readonly tagMessages: TagMessagesParser;
 
   protected logChannel: TextBasedChannel | null = null;
 
   protected errorChannel: TextBasedChannel | null = null;
 
   constructor(
-    messages: TagMessagesParser,
-    tagConfig: TagConfig,
+    client: Client,
     discordConfig: DiscordConfig,
+    messages: HermesMessageService,
+    tagConfig: TagConfig,
   ) {
-    this.messages = messages;
+    super(client, messages, discordConfig);
     this.tagConfig = tagConfig;
-    this.discordConfig = discordConfig;
+    this.tagMessages = messages.getTagsMessages();
   }
 
   public static create(
-    messages: TagMessagesParser,
+    client: Client,
+    messages: HermesMessageService,
     config: HermesConfig,
   ): DiscordTagAgent {
-    return new DiscordTagAgent(messages, config.tags, config.discord);
+    return new DiscordTagAgent(client, config.discord, messages, config.tags);
   }
 
-  public start(guild: Guild) {
-    const errorChannel = guild.channels.cache.get(
-      this.discordConfig.errorLogChannel,
-    );
-    if (!errorChannel) {
-      throw new ObjectNotFoundError(
-        'Error log channel not found: ' + this.discordConfig.errorLogChannel,
-      );
-    }
-    if (!errorChannel.isTextBased()) {
-      throw new AssertionError(
-        'Error log channel is not a text channel: '
-          + this.discordConfig.errorLogChannel,
-      );
-    }
-    this.errorChannel = errorChannel;
-
+  public start() {
+    super.start();
     if (!this.tagConfig.log) return;
+
+    const guild = this.guild as Guild;
 
     const logChannel = guild.channels.cache.get(this.tagConfig.log.channel);
     if (!logChannel) {
@@ -89,7 +80,7 @@ export class DiscordTagAgent {
   }
 
   public async postUpdateLog(
-    user: User,
+    updater: string | HermesMember,
     oldTag: TagData,
     newTag: TagData,
   ): Promise<void> {
@@ -100,14 +91,16 @@ export class DiscordTagAgent {
       );
     }
 
+    const member =
+      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
     const oldContext = {
-      user,
+      member,
       services: {
         tag: oldTag,
       },
     } satisfies HermesPlaceholderContext;
     const newContext = {
-      user,
+      member,
       services: {
         tag: newTag,
       },
@@ -116,21 +109,24 @@ export class DiscordTagAgent {
     const updateContext = {
       ...newContext,
       update: {
-        affected: this.logChannel.client.user,
-        updater: user,
+        affected: this.getOwnMember(),
+        updater: member,
         new: newTag,
         old: oldTag,
       },
     } satisfies HermesPlaceholderContext;
 
-    const updateEmbed = this.messages.getUpdateLogEmbed(updateContext);
-    const oldInfo = this.messages.getInfoEmbed(oldContext);
-    const newInfo = this.messages.getInfoEmbed(newContext);
+    const updateEmbed = this.tagMessages.getUpdateLogEmbed(updateContext);
+    const oldInfo = this.tagMessages.getInfoEmbed(oldContext);
+    const newInfo = this.tagMessages.getInfoEmbed(newContext);
 
     await this.logChannel.send({ embeds: [updateEmbed, oldInfo, newInfo] });
   }
 
-  public async postDeleteLog(user: User, tag: TagData): Promise<void> {
+  public async postDeleteLog(
+    member: HermesMember,
+    tag: TagData,
+  ): Promise<void> {
     if (!this.tagConfig.log || !this.tagConfig.log.delete) return;
     if (!this.logChannel) {
       throw new IllegalStateError(
@@ -139,25 +135,28 @@ export class DiscordTagAgent {
     }
 
     const context = {
-      user,
+      member,
       services: {
         tag,
       },
       update: {
-        affected: this.logChannel.client.user,
-        updater: user,
+        affected: this.getOwnMember(),
+        updater: member,
         new: {},
         old: tag,
       },
     } satisfies HermesPlaceholderContext;
 
-    const deleteEmbed = this.messages.getDeleteLogEmbed(context);
-    const infoEmbed = this.messages.getInfoEmbed(context);
+    const deleteEmbed = this.tagMessages.getDeleteLogEmbed(context);
+    const infoEmbed = this.tagMessages.getInfoEmbed(context);
 
     await this.logChannel.send({ embeds: [deleteEmbed, infoEmbed] });
   }
 
-  public async postCreateLog(user: User, tag: TagData): Promise<void> {
+  public async postCreateLog(
+    member: HermesMember,
+    tag: TagData,
+  ): Promise<void> {
     if (!this.tagConfig.log || !this.tagConfig.log.create) return;
     if (!this.logChannel) {
       throw new IllegalStateError(
@@ -166,20 +165,20 @@ export class DiscordTagAgent {
     }
 
     const context = {
-      user,
+      member,
       services: {
         tag,
       },
       update: {
-        affected: this.logChannel.client.user,
-        updater: user,
+        affected: this.getOwnMember(),
+        updater: member,
         new: tag,
         old: {},
       },
     } satisfies HermesPlaceholderContext;
 
-    const logEmbed = this.messages.getCreateLogEmbed(context);
-    const infoEmbed = this.messages.getInfoEmbed(context);
+    const logEmbed = this.tagMessages.getCreateLogEmbed(context);
+    const infoEmbed = this.tagMessages.getInfoEmbed(context);
 
     await this.logChannel.send({ embeds: [logEmbed, infoEmbed] });
   }

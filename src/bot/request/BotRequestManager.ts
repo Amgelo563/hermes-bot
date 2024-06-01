@@ -84,6 +84,7 @@ export class BotRequestManager {
 
     const subscriber = new ServiceActionInteractionSubscriber(
       requestDomain.getActions(),
+      requestDomain.getDiscordAgent(),
     );
 
     return new BotRequestManager(
@@ -129,6 +130,7 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.ReqUpd,
+      false,
     );
 
     const infoData = requestMessages.getInfoCommandData();
@@ -141,6 +143,7 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Info,
+      true,
     );
 
     const repostData = requestMessages.getRepostCommandData();
@@ -153,6 +156,7 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Repost,
+      false,
     );
 
     const deleteData = requestMessages.getDeleteCommandData();
@@ -165,6 +169,7 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Delete,
+      false,
     );
 
     parent.addChildren([

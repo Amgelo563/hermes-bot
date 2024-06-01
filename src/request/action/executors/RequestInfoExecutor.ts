@@ -1,9 +1,10 @@
-import type { ButtonBuilder, GuildMember } from 'discord.js';
+import type { ButtonBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { RequestData } from '../../../service/request/RequestData';
 import type { RequestActionsCustomIdCodec } from '../codec/RequestActionsCustomIdCodec';
 import { RequestAction } from '../RequestAction';
@@ -28,13 +29,11 @@ export class RequestInfoExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     request: RequestData,
   ): Promise<void> {
-    const member = interaction.member as GuildMember | null;
-    if (!member) return;
-
     const context = {
-      user: interaction.user,
+      member,
       services: { request },
     };
 

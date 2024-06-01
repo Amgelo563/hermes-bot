@@ -38,8 +38,9 @@ export class TagActionSubCommand extends AbstractActionSubCommand<
     repository: TagRepository,
     autocompleteSource: AutocompleteChoiceSource,
     action: TagActionType,
+    allowsNotInGuild: boolean,
   ) {
-    super(parent, data, tagOption, actions, action);
+    super(parent, data, tagOption, actions, action, allowsNotInGuild);
 
     this.messages = messages;
     this.repository = repository;

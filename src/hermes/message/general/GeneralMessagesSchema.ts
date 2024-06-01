@@ -42,4 +42,12 @@ export const GeneralMessagesSchema = z.object({
 
   updateButton: DiscordButtonSchema,
   deleteButton: DiscordButtonSchema,
+
+  unknownMember: z.object({
+    username: z.string().max(45),
+    discriminator: z.string().max(4),
+    avatar: z.string().url(),
+  }),
+
+  notInGuildError: DiscordEmbedSchema,
 });

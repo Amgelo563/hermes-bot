@@ -58,6 +58,9 @@ export class OfferStandaloneCommand extends AbstractStandaloneCommand {
   ) {
     const data = this.offerDomain.getModalCodec().extractFromModal(interaction);
     const bot = meta.getBot();
+    const member = await this.offerDomain
+      .getDiscordAgent()
+      .fetchMember(interaction.user.id);
 
     const session = new OfferCreateSession(
       bot,
@@ -67,6 +70,7 @@ export class OfferStandaloneCommand extends AbstractStandaloneCommand {
       this.offerDomain.getModalCodec(),
       this.offerDomain.getRequirements(),
       this.offerDomain.getActions(),
+      member,
       this.tagRepository.getTags(),
     );
 

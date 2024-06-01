@@ -1,5 +1,4 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { Guild } from 'discord.js';
 import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
 import type { OfferRepository } from '../hermes/database/OfferRepository';
 import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
@@ -56,17 +55,19 @@ export class OfferDomain {
     const modalData = messages.getCreateModal();
     const modalCodec = new OfferModalCodec(modalData);
 
+    const discordAgent = DiscordOfferAgent.create(
+      bot.client,
+      messagesService,
+      configWrapper.getConfig(),
+    );
+
     const requirements = OfferRequirementsChecker.create(
       bot,
       configWrapper,
       messagesService,
       database.getOfferRepository(),
       database.getRequestRepository(),
-    );
-
-    const discordAgent = DiscordOfferAgent.create(
-      configWrapper.getConfig(),
-      messages,
+      discordAgent,
     );
 
     const actions = OfferActionsManager.create(
@@ -90,8 +91,8 @@ export class OfferDomain {
     );
   }
 
-  public start(guild: Guild) {
-    this.offerAgent.start(guild);
+  public start() {
+    this.offerAgent.start();
 
     this.requirements
       .initialize(

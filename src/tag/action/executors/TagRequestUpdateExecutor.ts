@@ -1,7 +1,7 @@
 import { IllegalStateError } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../service/tag/TagData';
 
 import type { TagModalCodec } from '../../modal/TagModalCodec';
@@ -28,10 +28,10 @@ export class TagRequestUpdateExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     tag: TagData,
   ): Promise<void> {
     if (interaction.isModalSubmit()) return;
-    const member = interaction.member as GuildMember | null;
     if (!member || !this.configWrapper.canEditTags(member)) {
       throw new IllegalStateError();
     }

@@ -5,6 +5,7 @@ import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
 import type { OfferRepository } from '../../../hermes/database/OfferRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferActionExecutor } from './OfferActionExecutor';
@@ -32,13 +33,9 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     offer: OfferData,
   ): Promise<void> {
-    const context = {
-      user: interaction.user,
-      services: { offer },
-    };
-
     if (!interaction.deferred && !interaction.replied) {
       if (interaction.isCommand()) {
         await interaction.deferReply({ ephemeral: true });
@@ -46,6 +43,11 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
         await interaction.deferUpdate();
       }
     }
+
+    const context = {
+      member,
+      services: { offer },
+    };
 
     const offerMessages = this.messages.getOfferMessages();
     const deleteConfirm = offerMessages.getDeleteConfirmEmbed(context);
@@ -73,7 +75,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
     try {
       await this.offerRepository.delete(offer.id);
       await this.agent.deleteOffer(offer);
-      await this.agent.postDeleteLog(context.user, offer);
+      await this.agent.postDeleteLog(member, offer);
     } catch (e) {
       const errorId = nanoid(5);
 

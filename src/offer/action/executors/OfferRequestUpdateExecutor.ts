@@ -1,11 +1,11 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { GuildMember } from 'discord.js';
 
 import { OfferUpdateSession } from '../../../bot/offer/sessions/OfferUpdateSession';
 import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
 import type { OfferRepository } from '../../../hermes/database/OfferRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { OfferModalCodec } from '../../modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../requirement/OfferRequirementsChecker';
@@ -47,14 +47,14 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     offer: OfferData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
       services: { offer },
     };
 
-    const member = interaction.member as GuildMember;
     if (!this.config.canEditOffer(member, offer)) {
       const notFound = this.messages
         .getOfferMessages()
@@ -76,6 +76,7 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
       this.modalCodec,
       this.requirements,
       this.actions,
+      member,
     );
 
     await this.bot.sessions.start(session);

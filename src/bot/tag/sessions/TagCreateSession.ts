@@ -8,6 +8,7 @@ import { ActionRowBuilder } from 'discord.js';
 
 import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagCreateData } from '../../../service/tag/TagCreateData';
 import type { TagData } from '../../../service/tag/TagData';
 import type { TagActionsManager } from '../../../tag/action/TagActionsManager';
@@ -46,8 +47,9 @@ export class TagCreateSession extends AbstractHermesSession {
     repository: TagRepository,
     agent: DiscordTagAgent,
     actions: TagActionsManager,
+    startMember: HermesMember,
   ) {
-    super(bot, startInteraction, messages);
+    super(bot, startInteraction, messages, startMember);
 
     this.tag = tag;
     this.modalCodec = modalCodec;
@@ -84,7 +86,7 @@ export class TagCreateSession extends AbstractHermesSession {
     }
 
     await this.selfEnd('End');
-    await this.actions.create(interaction, this.tag);
+    await this.actions.create(interaction, this.startMember, this.tag);
 
     return true;
   }
@@ -106,7 +108,7 @@ export class TagCreateSession extends AbstractHermesSession {
     const fullTag: TagData = { ...this.tag, id: 0, createdAt: new Date() };
 
     const context = {
-      user: this.startInteraction.user,
+      member: this.startMember,
       services: { tag: fullTag },
     };
 

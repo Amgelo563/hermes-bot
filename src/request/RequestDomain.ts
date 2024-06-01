@@ -1,5 +1,4 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { Guild } from 'discord.js';
 import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
 import type { RequestRepository } from '../hermes/database/RequestRepository';
 import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
@@ -58,7 +57,11 @@ export class RequestDomain {
     const modalCodec = new RequestModalCodec(modalData);
 
     const config = configWrapper.getConfig();
-    const requestAgent = DiscordRequestAgent.create(config, messages);
+    const requestAgent = DiscordRequestAgent.create(
+      bot.client,
+      messagesService,
+      config,
+    );
 
     const requirements = RequestRequirementsChecker.create(
       bot,
@@ -89,8 +92,8 @@ export class RequestDomain {
     );
   }
 
-  public start(guild: Guild) {
-    this.discordAgent.start(guild);
+  public start() {
+    this.discordAgent.start();
     this.requirements
       .initialize(
         RequirementCheckModeEnum.Publish,

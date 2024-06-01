@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import type { OfferRepository } from '../../../hermes/database/OfferRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
@@ -36,10 +37,11 @@ export class OfferRepostExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     offer: OfferData,
   ): Promise<void> {
     const context = {
-      user: interaction.user,
+      member,
       services: {
         offer,
       },
@@ -53,6 +55,7 @@ export class OfferRepostExecutor implements OfferActionExecutor {
       context,
       offer,
       interaction,
+      member,
     );
     if (!confirmed) return;
 

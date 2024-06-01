@@ -1,5 +1,6 @@
-import type { GuildMember } from 'discord.js';
+import type { Awaitable } from 'discord.js';
 import { z } from 'zod';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { BasicHermesMessageParser } from '../../message/BasicHermesMessageParser';
 import { AbstractHermesRequirementFactory } from '../AbstractHermesRequirementFactory';
 import type { RequirementConfig } from '../config/RequirementConfigSchema';
@@ -20,14 +21,14 @@ export type HasRolesConfig = z.infer<typeof HasRolesConfigSchema>;
 export class HasRolesRequirementFactory<
   Data,
 > extends AbstractHermesRequirementFactory<Data> {
-  protected readonly memberGetter: (data: Data) => GuildMember;
+  protected readonly memberGetter: (data: Data) => HermesMember;
 
-  protected readonly isStaff: (member: GuildMember) => boolean;
+  protected readonly isStaff: (member: HermesMember) => Awaitable<boolean>;
 
   constructor(
     parser: BasicHermesMessageParser<z.ZodTypeAny>,
-    memberGetter: (data: Data) => GuildMember,
-    isStaff: (member: GuildMember) => boolean,
+    memberGetter: (data: Data) => HermesMember,
+    isStaff: (member: HermesMember) => Awaitable<boolean>,
   ) {
     super(parser);
     this.memberGetter = memberGetter;

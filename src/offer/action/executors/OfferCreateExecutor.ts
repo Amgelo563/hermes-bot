@@ -6,6 +6,7 @@ import type { HermesPlaceholderErrorContext } from '../../../hermes/message/cont
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { OfferCreateData } from '../../../service/offer/OfferCreateData';
 import type { OfferData } from '../../../service/offer/OfferData';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
@@ -33,6 +34,7 @@ export class OfferCreateExecutor
 
   public async execute(
     interaction: ServiceActionInteraction,
+    member: HermesMember,
     offer: OfferCreateData,
   ): Promise<void> {
     if (!interaction.replied || interaction.isCommand()) {
@@ -41,8 +43,7 @@ export class OfferCreateExecutor
       await interaction.editReply({ components: [] });
     }
 
-    const { user } = interaction;
-    const context = { user };
+    const context = { member };
 
     const prisma = this.repository.getPrisma();
     let message: Message | undefined;
@@ -71,7 +72,7 @@ export class OfferCreateExecutor
           tags: offer.tags,
         };
 
-        message = await this.agent.postOffer(user, postOffer);
+        message = await this.agent.postOffer(member, postOffer);
         const channelId: string = message.channel.id;
         const messageId: string = message.id;
         const guildId: string = message.guildId!;
