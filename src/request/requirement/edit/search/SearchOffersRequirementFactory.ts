@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import type { RequestSessionData } from '../../../../bot/request/sessions/RequestSessionData';
-import type { OfferRepository } from '../../../../hermes/database/OfferRepository';
 import type { BasicHermesMessageParser } from '../../../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../../../hermes/message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirementFactory } from '../../../../hermes/requirement/AbstractHermesRequirementFactory';
 import type { RequirementConfig } from '../../../../hermes/requirement/config/RequirementConfigSchema';
 import { EmbedRequirementConfigSchema } from '../../../../hermes/requirement/config/RequirementConfigSchema';
+import type { OfferRepository } from '../../../../offer/database/OfferRepository';
 import type { Requirement } from '../../../../requirement/Requirement';
 import { SearchOffersRequirement } from './SearchOffersRequirement';
 

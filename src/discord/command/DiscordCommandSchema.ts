@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { DiscordCommandOptionSchema } from './DiscordCommandOptionSchema';
 
 export const DiscordCommandSchema = z.object({
@@ -17,3 +18,10 @@ export const CommandSchemaWithOptions = <T extends string>(options: T[]) => {
     options: z.object(shape),
   });
 };
+
+export type CommandSchemaType<Options extends string | undefined = undefined> =
+  z.infer<
+    Options extends string
+      ? ReturnType<typeof CommandSchemaWithOptions<Options>>
+      : typeof DiscordCommandSchema
+  >;

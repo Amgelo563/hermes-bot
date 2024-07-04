@@ -1,11 +1,12 @@
 import type { ButtonBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferData } from '../../data/OfferData';
+import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferActionsCustomIdCodec } from '../codec/OfferActionsCustomIdCodec';
 import { OfferAction } from '../OfferAction';
 import type { OfferActionExecutor } from './OfferActionExecutor';
@@ -29,9 +30,12 @@ export class OfferInfoExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferData,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: { offer },
@@ -39,11 +43,7 @@ export class OfferInfoExecutor implements OfferActionExecutor {
 
     const embed = this.messages.getOfferMessages().getPostEmbed(context);
     if (!this.config.canEditOffer(member, offer)) {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.editReply({ embeds: [embed] });
       return;
     }
 
@@ -83,14 +83,18 @@ export class OfferInfoExecutor implements OfferActionExecutor {
       deleteButton,
     );
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.editReply({ embeds: [embed], components: [row] });
-      return;
+    await interaction.editReply({ embeds: [embed], components: [row] });
+    return;
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (
+      !interaction.isCommand()
+      && (interaction.deferred || interaction.replied)
+    ) {
+      await interaction.deferUpdate();
     }
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      ephemeral: true,
-    });
+
+    await interaction.deferReply({ ephemeral: true });
   }
 }

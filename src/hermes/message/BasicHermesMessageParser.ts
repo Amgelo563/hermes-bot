@@ -12,7 +12,7 @@ import {
   StringSelectMenuBuilder,
 } from 'discord.js';
 import { z } from 'zod';
-import type { EscapeMarkdownConfig } from '../../config/escape/EscapeMarkdownConfigSchema';
+import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';
 
 import type { DiscordButtonSchema } from '../../discord/button/DiscordButtonSchema';
 import type { DiscordLinkButtonSchema } from '../../discord/button/DiscordLinkButtonSchema';
@@ -278,10 +278,6 @@ export class BasicHermesMessageParser<Schema extends z.ZodTypeAny> {
     const builder = new TextInputBuilder().setLabel(
       this.slice(config.label, DiscordModalLimits.Label),
     );
-
-    if (config.value) {
-      builder.setValue(this.slice(config.value, DiscordModalLimits.Value));
-    }
 
     if (config.placeholder) {
       builder.setPlaceholder(

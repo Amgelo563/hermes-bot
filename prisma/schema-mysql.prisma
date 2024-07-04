@@ -20,7 +20,7 @@ model Offer {
   guildId      String
   channelId    String
   messageId    String
-  userId       String
+  memberId     String
   tags         Tag[]
 }
 
@@ -35,7 +35,7 @@ model Request {
   guildId      String
   channelId    String
   messageId    String
-  userId       String
+  memberId     String
   tag          Tag      @relation(fields: [tagId], references: [id])
   tagId        Int
 }

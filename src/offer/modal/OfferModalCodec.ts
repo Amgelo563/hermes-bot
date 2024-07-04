@@ -9,7 +9,7 @@ import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import { DiscordModalLimits } from '../../discord/modal/schema/DiscordModalLimits';
-import type { OfferCreateData } from '../../service/offer/OfferCreateData';
+import type { OfferCreateData } from '../data/OfferCreateData';
 import type { OfferModalData } from './OfferModalData';
 
 export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
@@ -52,7 +52,7 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
       title,
       thumbnail,
       image,
-      userId: interaction.user.id,
+      memberId: interaction.user.id,
       tags: presentData?.tags ?? [],
     };
   }

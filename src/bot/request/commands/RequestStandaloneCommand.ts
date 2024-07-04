@@ -1,8 +1,6 @@
 import type {
   CommandExecutionMeta,
-  StandaloneCommandData} from '@nyx-discord/core';
-import {
-  ObjectNotFoundError
+  StandaloneCommandData,
 } from '@nyx-discord/core';
 import { AbstractStandaloneCommand } from '@nyx-discord/framework';
 import type {
@@ -10,12 +8,10 @@ import type {
   ModalBuilder,
   ModalSubmitInteraction,
 } from 'discord.js';
-import type { TagRepository } from '../../../hermes/database/TagRepository';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { RequestDomain } from '../../../request/RequestDomain';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import { HermesMemberFetchCommandMiddleware } from '../../middleware/HermesMemberFetchCommandMiddleware';
+import type { TagRepository } from '../../../tag/database/TagRepository';
 import { RequestCreateSession } from '../sessions/RequestCreateSession';
 
 export class RequestStandaloneCommand extends AbstractStandaloneCommand {
@@ -64,12 +60,9 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
     interaction: ModalSubmitInteraction,
     meta: CommandExecutionMeta,
   ) {
-    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
-      | HermesMember
-      | undefined;
-    if (!member) {
-      throw new ObjectNotFoundError();
-    }
+    const member = await this.requestDomain
+      .getDiscordAgent()
+      .fetchMemberFromInteraction(interaction);
 
     const data = this.requestDomain
       .getModalCodec()

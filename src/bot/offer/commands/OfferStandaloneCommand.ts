@@ -8,9 +8,10 @@ import type {
   ModalBuilder,
   ModalSubmitInteraction,
 } from 'discord.js';
-import type { TagRepository } from '../../../hermes/database/TagRepository';
+
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { OfferDomain } from '../../../offer/OfferDomain';
+import type { TagRepository } from '../../../tag/database/TagRepository';
 import { OfferCreateSession } from '../sessions/OfferCreateSession';
 
 export class OfferStandaloneCommand extends AbstractStandaloneCommand {
@@ -60,7 +61,7 @@ export class OfferStandaloneCommand extends AbstractStandaloneCommand {
     const bot = meta.getBot();
     const member = await this.offerDomain
       .getDiscordAgent()
-      .fetchMember(interaction.user.id);
+      .fetchMemberFromInteraction(interaction);
 
     const session = new OfferCreateSession(
       bot,

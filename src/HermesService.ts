@@ -3,8 +3,8 @@ import { Bot } from '@nyx-discord/framework';
 import { Client, IntentsBitField } from 'discord.js';
 
 import { BotManager } from './bot/BotManager';
-import type { HermesConfigWrapper } from './config/HermesConfigWrapper';
-import type { HermesDatabaseService } from './hermes/HermesDatabaseService';
+import type { HermesConfigWrapper } from './config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from './hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from './hermes/message/HermesMessageService';
 import { ServiceManager } from './service/ServiceManager';
 

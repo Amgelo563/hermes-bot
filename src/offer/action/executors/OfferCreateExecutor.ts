@@ -1,48 +1,38 @@
 import type { Message } from 'discord.js';
 import { nanoid } from 'nanoid';
-
-import type { OfferRepository } from '../../../hermes/database/OfferRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferCreateData } from '../../../service/offer/OfferCreateData';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferCreateData } from '../../data/OfferCreateData';
+import type { OfferData } from '../../data/OfferData';
+
+import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
-import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
 import type { OfferPlaceholderContext } from '../../message/placeholder/OfferPlaceholderContext';
+import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
 
 export class OfferCreateExecutor
-  implements ServiceActionExecutor<OfferCreateData>
+  implements ServiceActionExecutor<DiscordOfferAgent, OfferCreateData>
 {
   protected readonly messages: OfferMessagesParser;
 
   protected readonly repository: OfferRepository;
 
-  protected readonly agent: DiscordOfferAgent;
-
-  constructor(
-    messages: OfferMessagesParser,
-    repository: OfferRepository,
-    agent: DiscordOfferAgent,
-  ) {
+  constructor(messages: OfferMessagesParser, repository: OfferRepository) {
     this.messages = messages;
     this.repository = repository;
-    this.agent = agent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferCreateData,
   ): Promise<void> {
-    if (!interaction.replied || interaction.isCommand()) {
-      await interaction.deferReply({ ephemeral: true });
-    } else {
-      await interaction.editReply({ components: [] });
-    }
+    await deferReplyOrUpdate(interaction);
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = { member };
 
     const prisma = this.repository.getPrisma();
@@ -72,7 +62,7 @@ export class OfferCreateExecutor
           tags: offer.tags,
         };
 
-        message = await this.agent.postOffer(member, postOffer);
+        message = await agent.postOffer(member, postOffer);
         const channelId: string = message.channel.id;
         const messageId: string = message.id;
         const guildId: string = message.guildId!;
@@ -107,7 +97,7 @@ export class OfferCreateExecutor
       const errors = this.messages.getCreateErrorEmbeds(errorContext);
 
       await interaction.editReply({ embeds: [errors.user] });
-      await this.agent.postError(errors.log);
+      await agent.postError(errors.log);
 
       return;
     }
@@ -122,5 +112,13 @@ export class OfferCreateExecutor
     await interaction.editReply({
       embeds: [this.messages.getCreateSuccessEmbed(newContext)],
     });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (!interaction.replied || interaction.isCommand()) {
+      await interaction.deferReply({ ephemeral: true });
+    } else {
+      await interaction.editReply({ components: [] });
+    }
   }
 }

@@ -1,53 +1,43 @@
 import { nanoid } from 'nanoid';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-import type { TagRepository } from '../../../hermes/database/TagRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagCreateData } from '../../../service/tag/TagCreateData';
+import type { TagCreateData } from '../../data/TagCreateData';
+import type { TagRepository } from '../../database/TagRepository';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagMessagesParser } from '../../message/TagMessagesParser';
 
-export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
+export class TagCreateExecutor
+  implements ServiceActionExecutor<DiscordTagAgent, TagCreateData>
+{
   protected readonly tagMessages: TagMessagesParser;
 
   protected readonly repository: TagRepository;
-
-  protected readonly agent: DiscordTagAgent;
 
   protected readonly configWrapper: HermesConfigWrapper;
 
   constructor(
     tagMessages: TagMessagesParser,
     repository: TagRepository,
-    agent: DiscordTagAgent,
     configWrapper: HermesConfigWrapper,
   ) {
     this.tagMessages = tagMessages;
     this.repository = repository;
-    this.agent = agent;
     this.configWrapper = configWrapper;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordTagAgent,
     createData: TagCreateData,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
     };
-
-    if (!interaction.replied && !interaction.deferred) {
-      if (
-        interaction.isCommand()
-        || (interaction.isModalSubmit() && !interaction.isFromMessage())
-      ) {
-        await interaction.deferReply({ ephemeral: true });
-      } else {
-        await interaction.deferUpdate();
-      }
-    }
 
     const canDelete = this.configWrapper.canEditTags(member);
     if (!canDelete) {
@@ -60,7 +50,7 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
     let tag;
     try {
       tag = await this.repository.create(createData);
-      await this.agent.postCreateLog(member, tag);
+      await agent.postCreateLog(member, tag);
     } catch (e) {
       const embeds = this.tagMessages.getCreateErrorEmbeds({
         ...context,
@@ -71,7 +61,7 @@ export class TagCreateExecutor implements ServiceActionExecutor<TagCreateData> {
       });
 
       await interaction.editReply({ embeds: [embeds.user], components: [] });
-      await this.agent.postError(embeds.log);
+      await agent.postError(embeds.log);
 
       return;
     }

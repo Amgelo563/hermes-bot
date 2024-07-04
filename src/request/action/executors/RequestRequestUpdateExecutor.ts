@@ -1,12 +1,14 @@
 import type { NyxBot } from '@nyx-discord/core';
 
 import { RequestUpdateSession } from '../../../bot/request/sessions/RequestUpdateSession';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-import type { RequestRepository } from '../../../hermes/database/RequestRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { TagRepository } from '../../../tag/database/TagRepository';
+import type { RequestData } from '../../data/RequestData';
+import type { RequestRepository } from '../../database/RequestRepository';
+import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestModalCodec } from '../../modal/RequestModalCodec';
 import type { RequestRequirementsChecker } from '../../requirement/RequestRequirementsChecker';
 import type { RequestActionsManager } from '../RequestActionsManager';
@@ -27,6 +29,8 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
 
   protected readonly config: HermesConfigWrapper;
 
+  protected readonly tagRepository: TagRepository;
+
   constructor(
     bot: NyxBot,
     repository: RequestRepository,
@@ -35,6 +39,7 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
     requirements: RequestRequirementsChecker,
     actions: RequestActionsManager,
     config: HermesConfigWrapper,
+    tagRepository: TagRepository,
   ) {
     this.bot = bot;
     this.repository = repository;
@@ -43,13 +48,17 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
     this.requirements = requirements;
     this.actions = actions;
     this.config = config;
+    this.tagRepository = tagRepository;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    hermesMember: HermesMember,
+    agent: DiscordRequestAgent,
     request: RequestData,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const hermesMember = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member: hermesMember,
       services: { request },
@@ -68,6 +77,7 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
       await interaction.reply({ embeds: [notFound], ephemeral: true });
     }
 
+    const tags = request.tag ? [request.tag] : this.tagRepository.getTags();
     const session = new RequestUpdateSession(
       this.bot,
       interaction,
@@ -77,8 +87,13 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
       this.requirements,
       this.actions,
       hermesMember,
+      tags,
     );
 
     await this.bot.sessions.start(session);
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
   }
 }

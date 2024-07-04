@@ -2,7 +2,7 @@ import type { OfferSessionData } from '../../bot/offer/sessions/OfferSessionData
 import type { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { OfferData } from '../../service/offer/OfferData';
+import type { OfferData } from '../data/OfferData';
 
 export interface OfferRequirementsMap {
   [RequirementCheckModeEnum.Publish]: OfferSessionData;

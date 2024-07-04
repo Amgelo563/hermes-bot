@@ -22,4 +22,23 @@ export class SimplifiedModalBuilder extends ModalBuilder {
 
     return this;
   }
+
+  public setValueOf(customId: string, value: string): this {
+    (this.data.components ?? []).forEach((row) => {
+      row.components.find((component) => {
+        if (component.custom_id === customId) {
+          component.value = value;
+          return true;
+        }
+
+        return false;
+      });
+    });
+
+    return this;
+  }
+
+  public clone(): SimplifiedModalBuilder {
+    return new SimplifiedModalBuilder(this);
+  }
 }

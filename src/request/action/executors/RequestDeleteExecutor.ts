@@ -2,11 +2,11 @@ import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
-import type { RequestRepository } from '../../../hermes/database/RequestRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { RequestData } from '../../data/RequestData';
+import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestActionExecutor } from './RequestActionExecutor';
 
@@ -17,33 +17,24 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
 
   protected readonly messages: HermesMessageService;
 
-  protected readonly agent: DiscordRequestAgent;
-
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     requestRepository: RequestRepository,
-    requestAgent: DiscordRequestAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.requestRepository = requestRepository;
-    this.agent = requestAgent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     request: RequestData,
   ): Promise<void> {
-    if (!interaction.deferred && !interaction.replied) {
-      if (interaction.isCommand()) {
-        await interaction.deferReply({ ephemeral: true });
-      } else {
-        await interaction.deferUpdate();
-      }
-    }
+    await deferReplyOrUpdate(interaction);
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: { request },
@@ -74,8 +65,8 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
     await confirmInteraction.update({ components: [] });
     try {
       await this.requestRepository.delete(request.id);
-      await this.agent.deleteRequest(request);
-      await this.agent.postDeleteLog(member, request);
+      await agent.deleteRequest(request);
+      await agent.postDeleteLog(member, request);
     } catch (e) {
       const errorId = nanoid(5);
 
@@ -92,7 +83,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
         components: [],
       });
 
-      await this.agent.postError(embeds.log);
+      await agent.postError(embeds.log);
 
       return;
     }
@@ -102,5 +93,15 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
       embeds: [embed],
       components: [],
     });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isCommand()) {
+        await interaction.deferReply({ ephemeral: true });
+      } else {
+        await interaction.deferUpdate();
+      }
+    }
   }
 }

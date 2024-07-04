@@ -7,9 +7,9 @@ import { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessag
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { ErrorEmbedsData } from '../../hermes/message/error/ErrorEmbedsData';
-
-import type { TagData } from '../../service/tag/TagData';
 import type { WithRequired } from '../../types/WithRequired';
+
+import type { TagData } from '../data/TagData';
 import type { TagModalData } from '../modal/TagModalData';
 import type { TagPlaceholderContext } from './placeholder/TagPlaceholderContext';
 import type { TagsMessagesSchema } from './TagsMessagesSchema';
@@ -31,7 +31,7 @@ export class TagMessagesParser extends BasicHermesMessageParser<
   public getNoTagsTag(): TagData {
     return {
       ...this.messages.noTags,
-      id: 0,
+      id: -1,
       createdAt: new Date(),
     };
   }

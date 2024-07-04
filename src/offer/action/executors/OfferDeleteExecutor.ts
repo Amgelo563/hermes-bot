@@ -2,11 +2,11 @@ import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
-import type { OfferRepository } from '../../../hermes/database/OfferRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferData } from '../../data/OfferData';
+import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferActionExecutor } from './OfferActionExecutor';
 
@@ -17,33 +17,24 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
 
   protected readonly messages: HermesMessageService;
 
-  protected readonly agent: DiscordOfferAgent;
-
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     offerRepository: OfferRepository,
-    agent: DiscordOfferAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.offerRepository = offerRepository;
-    this.agent = agent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferData,
   ): Promise<void> {
-    if (!interaction.deferred && !interaction.replied) {
-      if (interaction.isCommand()) {
-        await interaction.deferReply({ ephemeral: true });
-      } else {
-        await interaction.deferUpdate();
-      }
-    }
+    await deferReplyOrUpdate(interaction);
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: { offer },
@@ -74,8 +65,8 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
     await confirmInteraction.update({ components: [] });
     try {
       await this.offerRepository.delete(offer.id);
-      await this.agent.deleteOffer(offer);
-      await this.agent.postDeleteLog(member, offer);
+      await agent.deleteOffer(offer);
+      await agent.postDeleteLog(member, offer);
     } catch (e) {
       const errorId = nanoid(5);
 
@@ -92,7 +83,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
         components: [],
       });
 
-      await this.agent.postError(embeds.log);
+      await agent.postError(embeds.log);
 
       return;
     }
@@ -102,5 +93,15 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
       embeds: [embed],
       components: [],
     });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isCommand()) {
+        await interaction.deferReply({ ephemeral: true });
+      } else {
+        await interaction.deferUpdate();
+      }
+    }
   }
 }

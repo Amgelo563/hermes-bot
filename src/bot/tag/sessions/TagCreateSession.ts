@@ -5,13 +5,13 @@ import type {
   ModalSubmitInteraction,
 } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
-
-import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagCreateData } from '../../../service/tag/TagCreateData';
-import type { TagData } from '../../../service/tag/TagData';
 import type { TagActionsManager } from '../../../tag/action/TagActionsManager';
+import type { TagCreateData } from '../../../tag/data/TagCreateData';
+import type { TagData } from '../../../tag/data/TagData';
+
+import type { TagRepository } from '../../../tag/database/TagRepository';
 import type { DiscordTagAgent } from '../../../tag/discord/DiscordTagAgent';
 import type { TagModalCodec } from '../../../tag/modal/TagModalCodec';
 import { AbstractHermesSession } from '../../sessions/AbstractHermesSession';
@@ -86,7 +86,7 @@ export class TagCreateSession extends AbstractHermesSession {
     }
 
     await this.selfEnd('End');
-    await this.actions.create(interaction, this.startMember, this.tag);
+    await this.actions.create(interaction, this.tag);
 
     return true;
   }

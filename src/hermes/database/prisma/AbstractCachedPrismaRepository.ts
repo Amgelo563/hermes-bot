@@ -27,10 +27,6 @@ export abstract class AbstractCachedPrismaRepository<RepoModel extends Model>
     this.cache.delete(id);
   }
 
-  public saveToCache(model: RepoModel): void {
-    this.cache.set(model.id as ModelId<RepoModel>, model);
-  }
-
   public getPrisma(): PrismaClient {
     return this.prisma;
   }

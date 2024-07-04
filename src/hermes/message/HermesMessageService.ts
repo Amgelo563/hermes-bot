@@ -3,36 +3,40 @@ import type {
   Logger,
 } from '@nyx-discord/core';
 import type { z } from 'zod';
+import { BlacklistPlaceholderReplacer } from '../../blacklist/message/placeholder/BlacklistPlaceholderReplacer';
+import { BlacklistMessagesParser } from '../../blacklist/message/read/BlacklistMessagesParser';
+import { BlacklistMessagesReader } from '../../blacklist/message/read/BlacklistMessagesReader';
+import type { BlacklistMessagesSchema } from '../../blacklist/message/read/BlacklistMessagesSchema';
 
-import type { EscapeMarkdownConfig } from '../../config/escape/EscapeMarkdownConfigSchema';
-import type { HermesConfig } from '../../config/HermesConfigSchema';
+import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';
+import type { HermesConfig } from '../../config/file/HermesConfigSchema';
+import { ConfigPlaceholderReplacer } from '../../config/message/ConfigPlaceholderReplacer';
+import { ErrorPlaceholderReplacer } from '../../error/message/ErrorPlaceholderReplacer';
 import { MessageService } from '../../message/MessageService';
 import { MessagePlaceholderManager } from '../../message/placeholder/MessagePlaceholderManager';
 import { MessageRepository } from '../../message/repository/MessageRepository';
 import type { MessageSource } from '../../message/source/MessageSource';
-import { OfferMessagesParser } from '../../offer/message/OfferMessagesParser';
-import { OfferMessagesReader } from '../../offer/message/OfferMessagesReader';
-import type { OfferMessagesSchema } from '../../offer/message/OfferMessagesSchema';
-import { RequestMessagesParser } from '../../request/message/RequestMessagesParser';
-import { RequestMessagesReader } from '../../request/message/RequestMessagesReader';
-import type { RequestMessagesSchema } from '../../request/message/RequestMessagesSchema';
+import { OfferPlaceholderReplacer } from '../../offer/message/placeholder/OfferPlaceholderReplacer';
+import { OfferMessagesParser } from '../../offer/message/read/OfferMessagesParser';
+import { OfferMessagesReader } from '../../offer/message/read/OfferMessagesReader';
+import type { OfferMessagesSchema } from '../../offer/message/read/OfferMessagesSchema';
+import { RequestPlaceholderReplacer } from '../../request/message/placeholder/RequestPlaceholderReplacer';
+import { RequestMessagesParser } from '../../request/message/read/RequestMessagesParser';
+import { RequestMessagesReader } from '../../request/message/read/RequestMessagesReader';
+import type { RequestMessagesSchema } from '../../request/message/read/RequestMessagesSchema';
+import { HermesMemberPlaceholderReplacer } from '../../service/member/message/HermesMemberPlaceholderReplacer';
+import { TagPlaceholderReplacer } from '../../tag/message/placeholder/TagPlaceholderReplacer';
 import { TagMessagesParser } from '../../tag/message/TagMessagesParser';
 import { TagsMessagesReader } from '../../tag/message/TagsMessagesReader';
 import type { TagsMessagesSchema } from '../../tag/message/TagsMessagesSchema';
+import { MissingRequirementPlaceholderReplacer } from '../requirement/message/MissingRequirementPlaceholderReplacer';
 import { BasicHermesMessageParser } from './BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from './context/HermesPlaceholderContext';
-import { GeneralMessagesParser } from './general/GeneralMessagesParser';
-import { GeneralMessagesReader } from './general/GeneralMessagesReader';
-import type { GeneralMessagesSchema } from './general/GeneralMessagesSchema';
-import type { HermesPlaceholderReplacer } from './placeholder/abstract/HermesPlaceholderReplacer';
-import { ConfigPlaceholderReplacer } from './placeholder/ConfigPlaceholderReplacer';
-import { ErrorPlaceholderReplacer } from './placeholder/ErrorPlaceholderReplacer';
-import { MissingRequirementPlaceholderReplacer } from './placeholder/MissingRequirementPlaceholderReplacer';
-import { OfferPlaceholderReplacer } from './placeholder/OfferPlaceholderReplacer';
-import { RequestPlaceholderReplacer } from './placeholder/RequestPlaceholderReplacer';
-import { TagPlaceholderReplacer } from './placeholder/TagPlaceholderReplacer';
+import { GeneralMessagesParser } from './messages/general/GeneralMessagesParser';
+import { GeneralMessagesReader } from './messages/general/GeneralMessagesReader';
+import type { GeneralMessagesSchema } from './messages/general/GeneralMessagesSchema';
+import type { HermesPlaceholderReplacer } from './placeholder/HermesPlaceholderReplacer';
 import { UpdatePlaceholderReplacer } from './placeholder/UpdatePlaceholderReplacer';
-import { UserPlaceholderReplacer } from './placeholder/UserPlaceholderReplacer';
 
 /** Service responsible for message reading and parsing. */
 export class HermesMessageService extends MessageService<HermesPlaceholderContext> {
@@ -49,6 +53,8 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
   protected requestParser: RequestMessagesParser | null = null;
 
   protected tagsParser: TagMessagesParser | null = null;
+
+  protected blacklistParser: BlacklistMessagesParser | null = null;
 
   constructor(
     placeholder: MessagePlaceholderManager<HermesPlaceholderContext>,
@@ -73,6 +79,7 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
       [OfferMessagesReader.ID, new OfferMessagesReader(lang)],
       [RequestMessagesReader.ID, new RequestMessagesReader(lang)],
       [TagsMessagesReader.ID, new TagsMessagesReader(lang)],
+      [BlacklistMessagesReader.ID, new BlacklistMessagesReader(lang)],
     ];
 
     const repository = new MessageRepository(new Map(sources));
@@ -89,16 +96,20 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
     }
 
     const placeholder = this.placeholderManager;
+    const noTagsTag = this.getTagsMessages().getNoTagsTag();
 
     const replacers: HermesPlaceholderReplacer[] = [
-      new UserPlaceholderReplacer(),
+      new HermesMemberPlaceholderReplacer(),
       new ErrorPlaceholderReplacer(),
       new UpdatePlaceholderReplacer(),
       new TagPlaceholderReplacer(),
-      new OfferPlaceholderReplacer(placeholder),
-      new RequestPlaceholderReplacer(placeholder),
+      new OfferPlaceholderReplacer(placeholder, noTagsTag),
+      new RequestPlaceholderReplacer(placeholder, noTagsTag),
       new MissingRequirementPlaceholderReplacer(),
       new ConfigPlaceholderReplacer(this.config),
+      new BlacklistPlaceholderReplacer(
+        this.getBlacklistMessages().getPermanentDuration(),
+      ),
     ];
 
     placeholder.addReplacers(replacers);
@@ -176,5 +187,21 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
     );
 
     return this.tagsParser;
+  }
+
+  public getBlacklistMessages(): BlacklistMessagesParser {
+    if (this.blacklistParser) {
+      return this.blacklistParser;
+    }
+
+    const config = this.repository.getFromSource(BlacklistMessagesReader.ID);
+
+    this.blacklistParser = new BlacklistMessagesParser(
+      this.placeholderManager,
+      config as z.infer<typeof BlacklistMessagesSchema>,
+      this.escapeConfig,
+    );
+
+    return this.blacklistParser;
   }
 }

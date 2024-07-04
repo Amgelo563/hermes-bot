@@ -2,7 +2,7 @@ import type { RequestSessionData } from '../../bot/request/sessions/RequestSessi
 import type { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { RequestData } from '../../service/request/RequestData';
+import type { RequestData } from '../data/RequestData';
 
 export interface RequestRequirementsMap {
   [RequirementCheckModeEnum.Publish]: RequestSessionData;

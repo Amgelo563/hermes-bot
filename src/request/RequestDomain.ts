@@ -1,13 +1,13 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
-import type { RequestRepository } from '../hermes/database/RequestRepository';
-import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
+import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { RequirementCheckModeEnum } from '../requirement/mode/RequirementCheckMode';
 import { RequestActionsManager } from './action/RequestActionsManager';
 import type { RequestConfig } from './config/RequestConfigSchema';
+import type { RequestRepository } from './database/RequestRepository';
 import { DiscordRequestAgent } from './discord/DiscordRequestAgent';
-import type { RequestMessagesParser } from './message/RequestMessagesParser';
+import type { RequestMessagesParser } from './message/read/RequestMessagesParser';
 import { RequestModalCodec } from './modal/RequestModalCodec';
 import { RequestRequirementsChecker } from './requirement/RequestRequirementsChecker';
 
@@ -67,8 +67,8 @@ export class RequestDomain {
       bot,
       configWrapper,
       messagesService,
-      database.getRequestRepository(),
-      database.getOfferRepository(),
+      database,
+      requestAgent,
     );
 
     const actions = RequestActionsManager.create(
@@ -79,6 +79,7 @@ export class RequestDomain {
       requestAgent,
       modalCodec,
       requirements,
+      database.getTagRepository(),
     );
 
     return new RequestDomain(
@@ -95,15 +96,15 @@ export class RequestDomain {
   public start() {
     this.discordAgent.start();
     this.requirements
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Publish,
         this.config.requirements.publish,
       )
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Repost,
         this.config.requirements.repost,
       )
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Update,
         this.config.requirements.update,
       );

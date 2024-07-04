@@ -7,21 +7,24 @@ import type {
 
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
 import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
-import type { TagRepository } from '../../../hermes/database/TagRepository';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
-import type { IdentifiableTag } from '../../../tag/action/identity/IdentifiableTag';
-import { createIdentifiableTag } from '../../../tag/action/identity/IdentifiableTag';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 import type {
   TagActionOptions,
   TagActionType,
 } from '../../../tag/action/TagAction';
 import type { TagActionsManager } from '../../../tag/action/TagActionsManager';
+import type { TagRepository } from '../../../tag/database/TagRepository';
+import type { DiscordTagAgent } from '../../../tag/discord/DiscordTagAgent';
+import type { IdentifiableTag } from '../../../tag/identity/IdentifiableTag';
+import { createIdentifiableTag } from '../../../tag/identity/IdentifiableTag';
 import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
 import { AbstractActionSubCommand } from '../../action/AbstractActionSubCommand';
 
 export class TagActionSubCommand extends AbstractActionSubCommand<
   IdentifiableTag,
-  TagActionOptions
+  TagActionOptions,
+  DiscordTagAgent
 > {
   protected readonly messages: TagMessagesParser;
 
@@ -38,9 +41,10 @@ export class TagActionSubCommand extends AbstractActionSubCommand<
     repository: TagRepository,
     autocompleteSource: AutocompleteChoiceSource,
     action: TagActionType,
-    allowsNotInGuild: boolean,
+    agent: DiscordServiceAgent,
+    allowNonMembers: boolean = true,
   ) {
-    super(parent, data, tagOption, actions, action, allowsNotInGuild);
+    super(parent, data, tagOption, actions, action, agent, allowNonMembers);
 
     this.messages = messages;
     this.repository = repository;

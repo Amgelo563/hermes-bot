@@ -1,8 +1,8 @@
 import { IllegalStateError } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../data/TagData';
+import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 
 import type { TagModalCodec } from '../../modal/TagModalCodec';
 import type { TagActionsCustomIdCodec } from '../codec/TagActionsCustomIdCodec';
@@ -28,10 +28,13 @@ export class TagRequestUpdateExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordTagAgent,
     tag: TagData,
   ): Promise<void> {
     if (interaction.isModalSubmit()) return;
+
+    // Technically sync, since the interaction will always come from a modal in a guild
+    const member = await agent.fetchMemberFromInteraction(interaction);
     if (!member || !this.configWrapper.canEditTags(member)) {
       throw new IllegalStateError();
     }
@@ -43,5 +46,10 @@ export class TagRequestUpdateExecutor implements TagActionExecutor {
 
     const modal = this.modalCodec.createFromData(tag, modalId);
     await interaction.showModal(modal);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async defer(_interaction: ServiceActionInteraction): Promise<void> {
+    return;
   }
 }

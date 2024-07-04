@@ -1,10 +1,10 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
-import type { TagRepository } from '../hermes/database/TagRepository';
-import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
+import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { TagActionsManager } from './action/TagActionsManager';
 import type { TagConfig } from './config/TagConfigSchema';
+import type { TagRepository } from './database/TagRepository';
 import { DiscordTagAgent } from './discord/DiscordTagAgent';
 import type { TagMessagesParser } from './message/TagMessagesParser';
 import { TagModalCodec } from './modal/TagModalCodec';

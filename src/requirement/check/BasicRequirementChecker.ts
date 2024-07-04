@@ -34,21 +34,26 @@ export class BasicRequirementChecker<
   RequirementMap extends RequirementCheckMappings,
 > implements RequirementChecker<Context, RequirementMap>
 {
-  protected readonly requirementRegistry: RequirementStorage<
+  protected readonly requirementFactories: RequirementStorage<
     Context,
     RequirementMap
   > = new Map();
 
-  protected readonly loadedRequirements: Map<
+  protected readonly loadedSystemRequirements: Map<
     RequirementCheckMode,
     Requirement<Context, any>[]
   > = new Map();
 
-  public initialize(
+  protected readonly loadedUserRequirements: Map<
+    RequirementCheckMode,
+    Requirement<Context, any>[]
+  > = new Map();
+
+  public setupFromConfigs(
     stage: RequirementCheckMode,
     configs: RequirementConfig[],
   ): this {
-    const registryRequirements = this.requirementRegistry.get(stage);
+    const registryRequirements = this.requirementFactories.get(stage);
 
     if (!registryRequirements) {
       return this;
@@ -93,15 +98,32 @@ export class BasicRequirementChecker<
       loadedRequirements.push(requirement);
     }
 
-    this.loadedRequirements.set(stage, loadedRequirements);
+    this.loadedUserRequirements.set(stage, loadedRequirements);
     return this;
   }
 
-  public setAvailableRequirements<Stage extends RequirementCheckMode>(
+  public setUserAvailableRequirements<Stage extends RequirementCheckMode>(
     stage: Stage,
     requirements: RequirementFactory<Context, RequirementMap[Stage]>[],
   ): this {
-    this.requirementRegistry.set(stage, requirements);
+    this.requirementFactories.set(stage, requirements);
+    return this;
+  }
+
+  public setSystemRequirements<Stage extends RequirementCheckMode>(
+    requirements: Requirement<Context, RequirementMap[Stage]>[],
+  ): this {
+    for (const stage of Object.values(RequirementCheckModeEnum)) {
+      this.loadedSystemRequirements.set(stage, requirements);
+    }
+    return this;
+  }
+
+  public setSystemRequirementsForStage<Stage extends RequirementCheckMode>(
+    stage: Stage,
+    requirements: Requirement<Context, RequirementMap[Stage]>[],
+  ): this {
+    this.loadedSystemRequirements.set(stage, requirements);
     return this;
   }
 
@@ -131,7 +153,10 @@ export class BasicRequirementChecker<
     context: Context,
     object: RequirementMap[Stage],
   ): Promise<RequirementResultAggregate> {
-    const requirements = this.loadedRequirements.get(stage);
+    const systemRequirements = this.loadedSystemRequirements.get(stage) ?? [];
+    const userRequirements = this.loadedUserRequirements.get(stage) ?? [];
+
+    const requirements = [...systemRequirements, ...userRequirements];
 
     if (!requirements || requirements.length === 0) {
       return {

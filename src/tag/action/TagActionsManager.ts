@@ -1,30 +1,32 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
-import type { TagRepository } from '../../hermes/database/TagRepository';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
 import { ServiceActionCustomIdBuilder } from '../../service/action/customId/ServiceActionCustomIdBuilder';
 import type { ServiceActionExecutor } from '../../service/action/executor/ServiceActionExecutor';
 import { ServiceObject } from '../../service/ServiceObject';
-import type { TagCreateData } from '../../service/tag/TagCreateData';
+import type { TagCreateData } from '../data/TagCreateData';
+import type { TagRepository } from '../database/TagRepository';
 import type { DiscordTagAgent } from '../discord/DiscordTagAgent';
+import type { IdentifiableTag } from '../identity/IdentifiableTag';
+import { createIdentifiableTag } from '../identity/IdentifiableTag';
 import type { TagModalCodec } from '../modal/TagModalCodec';
 import type { TagActionsCustomIdCodec } from './codec/TagActionsCustomIdCodec';
+import type { TagActionExecutor } from './executors/TagActionExecutor';
 import { TagCreateExecutor } from './executors/TagCreateExecutor';
 import { TagDeleteExecutor } from './executors/TagDeleteExecutor';
 import { TagInfoExecutor } from './executors/TagInfoExecutor';
 import { TagNotFoundExecutor } from './executors/TagNotFoundExecutor';
 import { TagRequestUpdateExecutor } from './executors/TagRequestUpdateExecutor';
 import { TagUpdateExecutor } from './executors/TagUpdateExecutor';
-import type { IdentifiableTag } from './identity/IdentifiableTag';
-import { createIdentifiableTag } from './identity/IdentifiableTag';
 import type { TagActionOptions, TagActionType } from './TagAction';
 import { TagAction } from './TagAction';
 
 export class TagActionsManager extends AbstractActionsManager<
   IdentifiableTag,
   TagActionOptions,
+  DiscordTagAgent,
   TagCreateData
 > {
   protected readonly repository: TagRepository;
@@ -32,11 +34,12 @@ export class TagActionsManager extends AbstractActionsManager<
   constructor(
     repository: TagRepository,
     codec: TagActionsCustomIdCodec,
-    executors: Map<TagActionType, ServiceActionExecutor<IdentifiableTag>>,
-    createExecutor: ServiceActionExecutor<TagCreateData>,
-    missingExecutor: ServiceActionExecutor<string>,
+    executors: Map<TagActionType, TagActionExecutor>,
+    createExecutor: ServiceActionExecutor<DiscordTagAgent, TagCreateData>,
+    missingExecutor: ServiceActionExecutor<DiscordTagAgent, string>,
+    agent: DiscordTagAgent,
   ) {
-    super(codec, executors, createExecutor, missingExecutor);
+    super(codec, executors, createExecutor, missingExecutor, agent);
     this.repository = repository;
   }
 
@@ -53,19 +56,10 @@ export class TagActionsManager extends AbstractActionsManager<
       TagActionOptions
     >(ServiceObject.enum.Tag);
 
-    const executors = new Map<
-      TagActionType,
-      ServiceActionExecutor<IdentifiableTag>
-    >([
+    const executors = new Map<TagActionType, TagActionExecutor>([
       [
         TagAction.enum.Delete,
-        new TagDeleteExecutor(
-          bot,
-          messageService,
-          repository,
-          tagAgent,
-          configWrapper,
-        ),
+        new TagDeleteExecutor(bot, messageService, repository, configWrapper),
       ],
       [
         TagAction.enum.ReqUpd,
@@ -81,7 +75,6 @@ export class TagActionsManager extends AbstractActionsManager<
           messageService.getTagsMessages(),
           modalCodec,
           repository,
-          tagAgent,
           configWrapper,
         ),
       ],
@@ -92,7 +85,6 @@ export class TagActionsManager extends AbstractActionsManager<
     const createExecutor = new TagCreateExecutor(
       messageService.getTagsMessages(),
       repository,
-      tagAgent,
       configWrapper,
     );
 
@@ -102,6 +94,7 @@ export class TagActionsManager extends AbstractActionsManager<
       executors,
       createExecutor,
       notFoundExecutor,
+      tagAgent,
     );
   }
 

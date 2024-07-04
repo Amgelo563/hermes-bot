@@ -3,7 +3,7 @@ import { TextInputStyle } from 'discord-api-types/v10';
 import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
-import type { TagCreateData } from '../../service/tag/TagCreateData';
+import type { TagCreateData } from '../data/TagCreateData';
 import type { TagModalData } from './TagModalData';
 
 export class TagModalCodec implements DiscordModalCodec<TagCreateData> {

@@ -16,3 +16,7 @@ export const ModalSchemaWithFields = <T extends string>(fields: T[]) => {
     fields: z.object(shape),
   });
 };
+
+export type ModalDataWithFields<T extends string> = z.infer<
+  ReturnType<typeof ModalSchemaWithFields<T>>
+>;

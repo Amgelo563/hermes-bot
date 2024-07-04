@@ -1,9 +1,11 @@
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
+import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
+import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
 
-export class OfferNotFoundExecutor implements ServiceActionExecutor<string> {
+export class OfferNotFoundExecutor
+  implements ServiceActionExecutor<DiscordOfferAgent, string>
+{
   protected readonly messages: OfferMessagesParser;
 
   constructor(messages: OfferMessagesParser) {
@@ -12,17 +14,18 @@ export class OfferNotFoundExecutor implements ServiceActionExecutor<string> {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     id: string,
   ): Promise<void> {
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
     };
     const embed = this.messages.getNotFoundErrorEmbed(context, id);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.editReply({ embeds: [embed] });
-    } else {
-      await interaction.reply({ embeds: [embed], ephemeral: true });
-    }
+    await interaction.editReply({ embeds: [embed] });
   }
 }

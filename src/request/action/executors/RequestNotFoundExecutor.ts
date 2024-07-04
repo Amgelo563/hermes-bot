@@ -1,9 +1,12 @@
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
+import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
+import type { RequestMessagesParser } from '../../message/read/RequestMessagesParser';
 
-export class RequestNotFoundExecutor implements ServiceActionExecutor<string> {
+export class RequestNotFoundExecutor
+  implements ServiceActionExecutor<DiscordRequestAgent, string>
+{
   protected readonly messages: RequestMessagesParser;
 
   constructor(messages: RequestMessagesParser) {
@@ -12,9 +15,12 @@ export class RequestNotFoundExecutor implements ServiceActionExecutor<string> {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     id: string,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
     };

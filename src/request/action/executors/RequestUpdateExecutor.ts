@@ -1,43 +1,30 @@
 import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-
-import type { RequestRepository } from '../../../hermes/database/RequestRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
+
+import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
-import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
-import type { IdentifiableRequest } from '../identity/IdentifiableRequest';
+import type { IdentifiableRequest } from '../../identity/IdentifiableRequest';
+import type { RequestMessagesParser } from '../../message/read/RequestMessagesParser';
 import type { RequestActionExecutor } from './RequestActionExecutor';
 
 export class RequestUpdateExecutor implements RequestActionExecutor {
   protected readonly repository: RequestRepository;
 
-  protected readonly agent: DiscordRequestAgent;
-
   protected readonly messages: RequestMessagesParser;
 
-  constructor(
-    repository: RequestRepository,
-    messages: RequestMessagesParser,
-    agent: DiscordRequestAgent,
-  ) {
+  constructor(repository: RequestRepository, messages: RequestMessagesParser) {
     this.repository = repository;
     this.messages = messages;
-    this.agent = agent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     request: IdentifiableRequest,
   ): Promise<void> {
-    if (!interaction.replied && !interaction.deferred) {
-      if (interaction.isChatInputCommand()) {
-        await interaction.deferReply({ ephemeral: true });
-      } else {
-        await interaction.deferUpdate();
-      }
-    }
+    await deferReplyOrUpdate(interaction);
 
     const currentRequest = await this.repository.find(request.id);
     if (!currentRequest) {
@@ -49,6 +36,7 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
       getId: undefined,
     };
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: {
@@ -58,8 +46,8 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
 
     try {
       await this.repository.update(request.id, newRequest);
-      await this.agent.refreshRequest(newRequest);
-      await this.agent.postUpdateLog(member, newRequest, currentRequest);
+      await agent.refreshRequest(newRequest);
+      await agent.postUpdateLog(member, newRequest, currentRequest);
     } catch (error) {
       const errorContext = {
         ...context,
@@ -71,12 +59,20 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
 
       const errorEmbeds = this.messages.getUpdateErrorEmbeds(errorContext);
       await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await this.agent.postError(errorEmbeds.log);
+      await agent.postError(errorEmbeds.log);
 
       return;
     }
 
     const success = this.messages.getUpdateSuccessEmbed(context);
     await interaction.editReply({ embeds: [success], components: [] });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (interaction.isChatInputCommand()) {
+      await interaction.deferReply({ ephemeral: true });
+    } else {
+      await interaction.deferUpdate();
+    }
   }
 }

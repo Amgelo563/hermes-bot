@@ -1,48 +1,38 @@
 import type { Message } from 'discord.js';
 import { nanoid } from 'nanoid';
-
-import type { RequestRepository } from '../../../hermes/database/RequestRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestCreateData } from '../../../service/request/RequestCreateData';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { RequestCreateData } from '../../data/RequestCreateData';
+import type { RequestData } from '../../data/RequestData';
+
+import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestPlaceholderContext } from '../../message/placeholder/RequestPlaceholderContext';
-import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
+import type { RequestMessagesParser } from '../../message/read/RequestMessagesParser';
 
 export class RequestCreateExecutor
-  implements ServiceActionExecutor<RequestCreateData>
+  implements ServiceActionExecutor<DiscordRequestAgent, RequestCreateData>
 {
   protected readonly messages: RequestMessagesParser;
 
   protected readonly repository: RequestRepository;
 
-  protected readonly agent: DiscordRequestAgent;
-
-  constructor(
-    messages: RequestMessagesParser,
-    repository: RequestRepository,
-    agent: DiscordRequestAgent,
-  ) {
+  constructor(messages: RequestMessagesParser, repository: RequestRepository) {
     this.messages = messages;
     this.repository = repository;
-    this.agent = agent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     request: RequestCreateData,
   ): Promise<void> {
-    if (!interaction.replied || interaction.isCommand()) {
-      await interaction.deferReply({ ephemeral: true });
-    } else {
-      await interaction.editReply({ components: [] });
-    }
+    await deferReplyOrUpdate(interaction);
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = { member };
 
     const prisma = this.repository.getPrisma();
@@ -55,11 +45,10 @@ export class RequestCreateExecutor
           data: {
             ...request,
             tagId: undefined,
-            tag: {
-              connect: {
-                id: request.tagId,
-              },
-            },
+            tag:
+              request.tagId === null
+                ? undefined
+                : { connect: { id: request.tagId } },
 
             channelId: '',
             messageId: '',
@@ -70,7 +59,7 @@ export class RequestCreateExecutor
           },
         });
 
-        message = await this.agent.postRequest(member, newRequest);
+        message = await agent.postRequest(member, newRequest);
         const channelId: string = message.channel.id;
         const messageId: string = message.id;
         const guildId: string = message.guildId!;
@@ -105,7 +94,7 @@ export class RequestCreateExecutor
       const errors = this.messages.getCreateErrorEmbeds(errorContext);
 
       await interaction.editReply({ embeds: [errors.user] });
-      await this.agent.postError(errors.log);
+      await agent.postError(errors.log);
     }
 
     const newContext: RequestPlaceholderContext = {
@@ -118,5 +107,13 @@ export class RequestCreateExecutor
     await interaction.editReply({
       embeds: [this.messages.getCreateSuccessEmbed(newContext)],
     });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    if (!interaction.replied || interaction.isCommand()) {
+      await interaction.deferReply({ ephemeral: true });
+    } else {
+      await interaction.editReply({ components: [] });
+    }
   }
 }

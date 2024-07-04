@@ -1,7 +1,7 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
-import type { OfferRepository } from '../../hermes/database/OfferRepository';
-import type { RequestRepository } from '../../hermes/database/RequestRepository';
+import { BlacklistRequirement } from '../../blacklist/requirement/BlacklistRequirement';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from '../../hermes/database/HermesDatabaseService';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { BasicHermesRequirementChecker } from '../../hermes/requirement/check/BasicHermesRequirementChecker';
@@ -12,8 +12,10 @@ import { HermesRequirementResultHandler } from '../../hermes/requirement/handler
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { RequestData } from '../../service/request/RequestData';
 import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import type { RequestData } from '../data/RequestData';
+import type { DiscordRequestAgent } from '../discord/DiscordRequestAgent';
+import type { RequestSessionRequirement } from './edit/RequestSessionRequirement';
 import type { RequestSessionRequirementFactory } from './edit/RequestSessionRequirementFactory';
 import { SearchOffersRequirementFactory } from './edit/search/SearchOffersRequirementFactory';
 import { HasTagRequestEditRequirementFactory } from './edit/tag/HasTagRequestEditRequirementFactory';
@@ -39,56 +41,67 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
     bot: NyxBot,
     config: HermesConfigWrapper,
     messageService: HermesMessageService,
-    requestRepository: RequestRepository,
-    offerRepository: OfferRepository,
+    databaseService: HermesDatabaseService,
+    agent: DiscordRequestAgent,
   ) {
-    const messages = messageService.getRequestMessages();
+    const offerRepository = databaseService.getOfferRepository();
+    const requestRepository = databaseService.getRequestRepository();
+    const requestMessages = messageService.getRequestMessages();
 
     const publishRequirements: RequestSessionRequirementFactory[] = [
       new HasRolesRequirementFactory(
-        messages,
+        requestMessages,
         (data) => data.member,
         config.isStaff.bind(config),
       ),
-      new SearchOffersRequirementFactory(messages, offerRepository),
-      new HasTagRequestEditRequirementFactory(messages),
-      new SearchRequirementFactory(messages, (data) => data.request),
+      new SearchOffersRequirementFactory(requestMessages, offerRepository),
+      new HasTagRequestEditRequirementFactory(requestMessages),
+      new SearchRequirementFactory(requestMessages, (data) => data.request),
       new MaxServicesEditRequirementFactory(
-        messages,
+        requestMessages,
         offerRepository,
         requestRepository,
       ),
     ];
 
     const repostRequirements: RequestRepostRequirementFactory[] = [
-      new CooldownRepostRequirementFactory(messages),
+      new CooldownRepostRequirementFactory(requestMessages),
       new HasRolesRequirementFactory(
-        messages,
+        requestMessages,
         (data) => data.member,
         config.isStaff.bind(config),
       ),
     ];
 
     const updateRequirements: RequestSessionRequirementFactory[] = [
-      new SearchRequirementFactory(messages, (data) => data.request),
+      new SearchRequirementFactory(requestMessages, (data) => data.request),
+    ];
+
+    const systemRequirements: RequestSessionRequirement[] = [
+      new BlacklistRequirement(
+        messageService.getBlacklistMessages(),
+        databaseService.getBlacklistRepository(),
+        agent,
+      ),
     ];
 
     const handler = new HermesRequirementResultHandler(bot, messageService);
     const checker = new RequestRequirementsChecker(handler, messageService);
 
     checker
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Publish,
         publishRequirements,
       )
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Repost,
         repostRequirements,
       )
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Update,
         updateRequirements,
-      );
+      )
+      .setSystemRequirements(systemRequirements);
 
     return checker;
   }

@@ -1,12 +1,12 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { Client } from 'discord.js';
-import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
-import { CommandPlaceholderReplacer } from '../hermes/message/placeholder/CommandPlaceholderReplacer';
 import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 import type { ServiceManager } from '../service/ServiceManager';
-import { HermesMemberFetchCommandMiddleware } from './middleware/HermesMemberFetchCommandMiddleware';
-import { UserNotInGuildActionCommandMiddleware } from './middleware/UserNotInGuildActionCommandMiddleware';
+import { BotBlacklistManager } from './blacklist/BotBlacklistManager';
+import { BotCommandPlaceholderReplacer } from './message/BotCommandPlaceholderReplacer';
+import { NonMemberActionSubCommandMiddleware } from './middleware/NonMemberActionSubCommandMiddleware';
 import { BotOfferManager } from './offer/BotOfferManager';
 import { BotRequestManager } from './request/BotRequestManager';
 import { BotTagManager } from './tag/BotTagManager';
@@ -17,27 +17,31 @@ export class BotManager {
 
   protected readonly bot: NyxBot;
 
+  protected readonly discordAgent: DiscordServiceAgent;
+
   protected readonly tag: BotTagManager;
 
   protected readonly request: BotRequestManager;
 
   protected readonly offer: BotOfferManager;
 
-  protected readonly discordAgent: DiscordServiceAgent;
+  protected readonly blacklist: BotBlacklistManager;
 
   constructor(
     messages: HermesMessageService,
     bot: NyxBot,
+    discordAgent: DiscordServiceAgent,
     tag: BotTagManager,
     request: BotRequestManager,
     offer: BotOfferManager,
-    discordAgent: DiscordServiceAgent,
+    blacklist: BotBlacklistManager,
   ) {
     this.messages = messages;
     this.bot = bot;
     this.tag = tag;
     this.request = request;
     this.offer = offer;
+    this.blacklist = blacklist;
     this.discordAgent = discordAgent;
   }
 
@@ -56,41 +60,44 @@ export class BotManager {
     const request = BotRequestManager.create(
       bot,
       messages,
+      config,
       services.getRequestDomain(),
       services.getTagDomain().getRepository(),
     );
     const offer = BotOfferManager.create(
       bot,
       messages,
+      config,
       services.getOfferDomain(),
       services.getTagDomain().getRepository(),
+    );
+    const blacklist = BotBlacklistManager.create(
+      bot,
+      messages,
+      config,
+      services.getBlacklistDomain(),
     );
 
     return new BotManager(
       messages,
       bot,
+      services.getServiceAgent(),
       tag,
       request,
       offer,
-      services.getServiceAgent(),
+      blacklist,
     );
   }
 
   public async start(): Promise<void> {
-    const replacer = CommandPlaceholderReplacer.fromBot(this.bot);
+    const replacer = BotCommandPlaceholderReplacer.fromBot(this.bot);
     this.messages.getPlaceholderManager().addReplacer(replacer);
 
-    const memberFetchCommandMiddleware = new HermesMemberFetchCommandMiddleware(
+    const middleware = new NonMemberActionSubCommandMiddleware(
+      this.messages.getGeneralMessages(),
       this.discordAgent,
     );
-    const dmCheckCommandMiddleware = new UserNotInGuildActionCommandMiddleware(
-      this.messages.getGeneralMessages(),
-    );
-
-    this.bot.commands
-      .getExecutor()
-      .getMiddleware()
-      .addAll([memberFetchCommandMiddleware, dmCheckCommandMiddleware]);
+    this.bot.commands.getExecutor().getMiddleware().add(middleware);
 
     await this.bot.start();
     await this.tag.start();

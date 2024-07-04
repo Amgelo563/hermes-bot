@@ -5,10 +5,10 @@ import path from 'node:path';
 // @ts-expect-error tslog doesn't support cjs, see https://github.com/fullstack-build/tslog/issues/267
 import { Logger } from 'tslog';
 import { ZodError } from 'zod';
-import { HermesConfigReader } from './config/HermesConfigReader';
-import type { HermesConfig } from './config/HermesConfigSchema';
-import type { HermesConfigWrapper } from './config/HermesConfigWrapper';
-import { HermesDatabaseService } from './hermes/HermesDatabaseService';
+import { HermesConfigReader } from './config/file/HermesConfigReader';
+import type { HermesConfig } from './config/file/HermesConfigSchema';
+import type { HermesConfigWrapper } from './config/file/HermesConfigWrapper';
+import { HermesDatabaseService } from './hermes/database/HermesDatabaseService';
 import { HermesMessageService } from './hermes/message/HermesMessageService';
 import { HermesService } from './HermesService';
 import { ZodErrorFormatter } from './zod/ZodErrorFormatter';

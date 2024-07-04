@@ -8,17 +8,18 @@ import type {
 
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
-import { createIdentifiableRequest } from '../../../request/action/identity/IdentifiableRequest';
 import { RequestAction } from '../../../request/action/RequestAction';
 import type { RequestActionsManager } from '../../../request/action/RequestActionsManager';
+import type { RequestData } from '../../../request/data/RequestData';
+import { createIdentifiableRequest } from '../../../request/identity/IdentifiableRequest';
 import type { RequestPlaceholderContext } from '../../../request/message/placeholder/RequestPlaceholderContext';
-import type { RequestMessagesParser } from '../../../request/message/RequestMessagesParser';
+import type { RequestMessagesParser } from '../../../request/message/read/RequestMessagesParser';
 import type { RequestModalCodec } from '../../../request/modal/RequestModalCodec';
 import type { RequestRequirementsChecker } from '../../../request/requirement/RequestRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { TagData } from '../../../tag/data/TagData';
 import { RequestCreateSession } from './RequestCreateSession';
 
 export class RequestUpdateSession extends RequestCreateSession {
@@ -45,6 +46,7 @@ export class RequestUpdateSession extends RequestCreateSession {
     requirements: RequestRequirementsChecker,
     actions: RequestActionsManager,
     startMember: HermesMember,
+    tags: TagData[],
   ) {
     super(
       bot,
@@ -55,7 +57,7 @@ export class RequestUpdateSession extends RequestCreateSession {
       requirements,
       actions,
       startMember,
-      [request.tag],
+      tags,
     );
 
     this.data = { ...request };
@@ -70,7 +72,12 @@ export class RequestUpdateSession extends RequestCreateSession {
     this.requirements = requirements;
     this.actions = actions;
     this.selectedTag = request.tag;
-    this.selectMenuRow = null;
+
+    // If request has no tag, allow user to select one, otherwise do not
+    this.selectMenuRow =
+      this.data.tag === null
+        ? this.createSelectRow(this.requestMessages)
+        : null;
   }
 
   protected async handleConfirm(interaction: ButtonInteraction): Promise<void> {
@@ -78,7 +85,6 @@ export class RequestUpdateSession extends RequestCreateSession {
       RequestAction.enum.Update,
       interaction,
       createIdentifiableRequest(this.data),
-      this.startMember,
     );
   }
 

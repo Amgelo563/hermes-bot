@@ -1,8 +1,4 @@
 import type { ParentCommand, SubCommandData } from '@nyx-discord/core';
-import {
-  type CommandExecutionMeta,
-  ObjectNotFoundError,
-} from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
@@ -10,13 +6,12 @@ import type {
 } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
-
-import type { TagRepository } from '../../../hermes/database/TagRepository';
-import type { HermesMember } from '../../../service/member/HermesMember';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 import type { TagActionsCustomIdCodec } from '../../../tag/action/codec/TagActionsCustomIdCodec';
 import { TagAction } from '../../../tag/action/TagAction';
+
+import type { TagRepository } from '../../../tag/database/TagRepository';
 import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
-import { HermesMemberFetchCommandMiddleware } from '../../middleware/HermesMemberFetchCommandMiddleware';
 
 export class TagsListSubCommand extends AbstractSubCommand {
   public static readonly DefaultData = {
@@ -32,11 +27,14 @@ export class TagsListSubCommand extends AbstractSubCommand {
 
   protected readonly repository: TagRepository;
 
+  protected readonly agent: DiscordServiceAgent;
+
   constructor(
     parent: ParentCommand,
     messages: TagMessagesParser,
     actions: TagActionsCustomIdCodec,
     repository: TagRepository,
+    agent: DiscordServiceAgent,
   ) {
     super(parent);
 
@@ -44,19 +42,11 @@ export class TagsListSubCommand extends AbstractSubCommand {
     this.messages = messages;
     this.actions = actions;
     this.repository = repository;
+    this.agent = agent;
   }
 
-  public async execute(
-    interaction: ChatInputCommandInteraction,
-    meta: CommandExecutionMeta,
-  ) {
-    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
-      | HermesMember
-      | undefined;
-    if (!member) {
-      throw new ObjectNotFoundError();
-    }
-
+  public async execute(interaction: ChatInputCommandInteraction) {
+    const member = await this.agent.fetchMemberFromInteraction(interaction);
     const tags = this.repository.getTags();
     const embed = this.messages.getListEmbed({ member }, tags);
 

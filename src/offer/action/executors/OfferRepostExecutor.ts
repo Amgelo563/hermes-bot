@@ -1,12 +1,11 @@
 import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-
-import type { OfferRepository } from '../../../hermes/database/OfferRepository';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferData } from '../../data/OfferData';
+
+import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
-import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
+import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
 import type { OfferRequirementsChecker } from '../../requirement/OfferRequirementsChecker';
 import type { OfferActionExecutor } from './OfferActionExecutor';
 
@@ -17,39 +16,36 @@ export class OfferRepostExecutor implements OfferActionExecutor {
 
   protected readonly messages: OfferMessagesParser;
 
-  protected readonly agent: DiscordOfferAgent;
-
   protected readonly repository: OfferRepository;
 
   constructor(
     bot: NyxBot,
     messages: OfferMessagesParser,
     requirements: OfferRequirementsChecker,
-    agent: DiscordOfferAgent,
     repository: OfferRepository,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.requirements = requirements;
-    this.agent = agent;
     this.repository = repository;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferData,
   ): Promise<void> {
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: {
         offer,
       },
     };
-
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.deferReply({ ephemeral: true });
-    }
 
     const confirmed = await this.requirements.checkRepostAndHandle(
       context,
@@ -60,7 +56,7 @@ export class OfferRepostExecutor implements OfferActionExecutor {
     if (!confirmed) return;
 
     try {
-      const newPostMessage = await this.agent.repostOffer(offer);
+      const newPostMessage = await agent.repostOffer(offer);
       await this.repository.updateRepost(offer.id, newPostMessage);
     } catch (error) {
       const errorContext = {
@@ -74,7 +70,7 @@ export class OfferRepostExecutor implements OfferActionExecutor {
       const errorEmbeds = this.messages.getRepostErrorEmbeds(errorContext);
 
       await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await this.agent.postError(errorEmbeds.log);
+      await agent.postError(errorEmbeds.log);
       return;
     }
 

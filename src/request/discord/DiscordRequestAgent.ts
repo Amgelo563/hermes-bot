@@ -3,24 +3,18 @@ import {
   IllegalStateError,
   ObjectNotFoundError,
 } from '@nyx-discord/core';
-import type {
-  Client,
-  EmbedBuilder,
-  Guild,
-  Message,
-  TextBasedChannel,
-} from 'discord.js';
+import type { Client, Guild, Message, TextBasedChannel } from 'discord.js';
 
-import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
-import type { HermesConfig } from '../../config/HermesConfigSchema';
+import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
+import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../service/member/HermesMember';
 import { HermesMemberTypeEnum } from '../../service/member/HermesMemberType';
-import type { RequestData } from '../../service/request/RequestData';
 import type { RequestConfig } from '../config/RequestConfigSchema';
-import type { RequestMessagesParser } from '../message/RequestMessagesParser';
+import type { RequestData } from '../data/RequestData';
+import type { RequestMessagesParser } from '../message/read/RequestMessagesParser';
 
 export class DiscordRequestAgent extends DiscordServiceAgent {
   protected readonly requestMessages: RequestMessagesParser;
@@ -101,7 +95,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     }
 
     const member =
-      typeof user === 'string' ? await this.fetchMember(user) : user;
+      typeof user === 'string' ? await this.fetchMember(user, true) : user;
     if (member.type === HermesMemberTypeEnum.Mock) {
       throw new IllegalStateError('Member not found: ' + member.id);
     }
@@ -144,7 +138,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
      * making a duplicate post. I preferred this over the alternative of "delete successful,
      * post failed" because it's more user-friendly, and we can still delete the duplicate manually.
      */
-    const newPost = await this.postRequest(request.userId, request);
+    const newPost = await this.postRequest(request.memberId, request);
     await this.deleteRequest(request);
 
     return newPost;
@@ -157,7 +151,9 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
       );
     }
 
-    const member = await this.fetchMember(request.userId);
+    const member =
+      (await this.fetchMember(request.memberId))
+      ?? this.getUnknownMember(request.memberId);
     const context = {
       member,
       services: {
@@ -176,16 +172,6 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     await message.edit({ embeds: [embed] });
   }
 
-  public async postError(embed: EmbedBuilder): Promise<Message> {
-    if (!this.errorChannel) {
-      throw new IllegalStateError(
-        "Error log channel not found, haven't started yet?",
-      );
-    }
-
-    return this.errorChannel.send({ embeds: [embed] });
-  }
-
   public async postUpdateLog(
     updater: HermesMember | string,
     newRequest: RequestData,
@@ -200,8 +186,12 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     }
 
     const updaterMember =
-      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
-    const ownerMember = await this.fetchMember(newRequest.userId);
+      typeof updater === 'string'
+        ? await this.fetchMember(updater, true)
+        : updater;
+    const ownerMember =
+      (await this.fetchMember(newRequest.memberId))
+      ?? this.getUnknownMember(newRequest.memberId);
 
     const newContext = {
       member: ownerMember,
@@ -246,9 +236,13 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
       );
     }
 
-    const ownerMember = await this.fetchMember(request.userId);
+    const ownerMember =
+      (await this.fetchMember(request.memberId))
+      ?? this.getUnknownMember(request.memberId);
     const deleterMember =
-      typeof deleter === 'string' ? await this.fetchMember(deleter) : deleter;
+      typeof deleter === 'string'
+        ? await this.fetchMember(deleter, true)
+        : deleter;
 
     const context = {
       member: ownerMember,

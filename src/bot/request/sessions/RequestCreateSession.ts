@@ -11,16 +11,16 @@ import type {
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { RequestActionsManager } from '../../../request/action/RequestActionsManager';
+import type { RequestData } from '../../../request/data/RequestData';
 import type { RequestPlaceholderContext } from '../../../request/message/placeholder/RequestPlaceholderContext';
-import type { RequestMessagesParser } from '../../../request/message/RequestMessagesParser';
+import type { RequestMessagesParser } from '../../../request/message/read/RequestMessagesParser';
 import type { RequestModalCodec } from '../../../request/modal/RequestModalCodec';
+import type { RequestModalInputData } from '../../../request/modal/RequestModalInputData';
 import type { RequestRequirementsChecker } from '../../../request/requirement/RequestRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
-import type { RequestModalInputData } from '../../../service/request/RequestModalInputData';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../../tag/data/TagData';
 import { AbstractServiceSession } from '../../sessions/AbstractServiceSession';
 
 export class RequestCreateSession extends AbstractServiceSession<RequestModalInputData> {
@@ -99,7 +99,7 @@ export class RequestCreateSession extends AbstractServiceSession<RequestModalInp
       tagId: tag.id,
     };
 
-    return this.actions.create(interaction, this.startMember, data);
+    return this.actions.create(interaction, data);
   }
 
   protected mockFullData(create: RequestModalInputData): RequestData {

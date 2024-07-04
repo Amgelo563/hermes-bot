@@ -8,17 +8,17 @@ import type {
 
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
-import { createIdentifiableOffer } from '../../../offer/action/identity/IdentifiableOffer';
 import { OfferAction } from '../../../offer/action/OfferAction';
 import type { OfferActionsManager } from '../../../offer/action/OfferActionsManager';
-import type { OfferMessagesParser } from '../../../offer/message/OfferMessagesParser';
+import type { OfferData } from '../../../offer/data/OfferData';
+import { createIdentifiableOffer } from '../../../offer/identity/IdentifiableOffer';
 import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
+import type { OfferMessagesParser } from '../../../offer/message/read/OfferMessagesParser';
 import type { OfferModalCodec } from '../../../offer/modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../../offer/requirement/OfferRequirementsChecker';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
 import { OfferCreateSession } from './OfferCreateSession';
 
 export class OfferUpdateSession extends OfferCreateSession {
@@ -69,7 +69,12 @@ export class OfferUpdateSession extends OfferCreateSession {
     };
     this.requirements = requirements;
     this.actions = actions;
-    this.selectMenuRow = null;
+
+    // If offer has no tags, allow user to select one, otherwise do not
+    this.selectMenuRow =
+      this.data.tags.length > 0
+        ? null
+        : this.createSelectRow(this.offerMessages);
   }
 
   protected async handleConfirm(interaction: ButtonInteraction): Promise<void> {
@@ -77,7 +82,6 @@ export class OfferUpdateSession extends OfferCreateSession {
       OfferAction.enum.Update,
       interaction,
       createIdentifiableOffer(this.data),
-      this.startMember,
     );
   }
 

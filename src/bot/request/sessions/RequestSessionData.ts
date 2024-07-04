@@ -1,8 +1,8 @@
 import type { SessionStartInteraction } from '@nyx-discord/core';
+import type { RequestModalInputData } from '../../../request/modal/RequestModalInputData';
 
 import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestModalInputData } from '../../../service/request/RequestModalInputData';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../../tag/data/TagData';
 
 export type RequestSessionData = {
   request: RequestModalInputData;

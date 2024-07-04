@@ -6,9 +6,7 @@ export interface DiscordModalCodec<Data> {
     presentData?: Data,
   ): Data;
 
-  createModal(customId: string): ModalBuilder;
-
-  createFromData(data: Data, customId: string): ModalBuilder;
+  createModal(customId: string, presentData?: Data): ModalBuilder;
 
   equals(data: Data, interaction: ModalSubmitInteraction): boolean;
 }

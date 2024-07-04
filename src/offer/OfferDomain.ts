@@ -1,13 +1,14 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
-import type { OfferRepository } from '../hermes/database/OfferRepository';
-import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
+
+import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { RequirementCheckModeEnum } from '../requirement/mode/RequirementCheckMode';
 import { OfferActionsManager } from './action/OfferActionsManager';
 import type { OfferConfig } from './config/OfferConfigSchema';
+import type { OfferRepository } from './database/OfferRepository';
 import { DiscordOfferAgent } from './discord/DiscordOfferAgent';
-import type { OfferMessagesParser } from './message/OfferMessagesParser';
+import type { OfferMessagesParser } from './message/read/OfferMessagesParser';
 import { OfferModalCodec } from './modal/OfferModalCodec';
 import { OfferRequirementsChecker } from './requirement/OfferRequirementsChecker';
 
@@ -65,8 +66,7 @@ export class OfferDomain {
       bot,
       configWrapper,
       messagesService,
-      database.getOfferRepository(),
-      database.getRequestRepository(),
+      database,
       discordAgent,
     );
 
@@ -95,15 +95,15 @@ export class OfferDomain {
     this.offerAgent.start();
 
     this.requirements
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Publish,
         this.config.requirements.publish,
       )
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Repost,
         this.config.requirements.repost,
       )
-      .initialize(
+      .setupFromConfigs(
         RequirementCheckModeEnum.Update,
         this.config.requirements.update,
       );

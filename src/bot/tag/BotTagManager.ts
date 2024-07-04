@@ -4,13 +4,13 @@ import { SubscriberCallbackWrapper } from '@nyx-discord/framework';
 import type { Events } from 'discord.js';
 
 import { PermanentAutocompleteChoiceSource } from '../../autocomplete/PermanentAutocompleteChoiceSource';
-import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import { DiscordCommandLimits } from '../../discord/command/DiscordCommandLimits';
 import type { RepositoryEventArgs } from '../../hermes/database/event/RepositoryEvent';
 import { RepositoryEventEnum } from '../../hermes/database/event/RepositoryEvent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
-import type { TagData } from '../../service/tag/TagData';
 import { TagAction } from '../../tag/action/TagAction';
+import type { TagData } from '../../tag/data/TagData';
 import type { TagDomain } from '../../tag/TagDomain';
 import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
 import { TagActionSubCommand } from './commands/TagActionSubCommand';
@@ -57,7 +57,6 @@ export class BotTagManager {
     const tagAutocomplete = new PermanentAutocompleteChoiceSource([]);
     const subscriber = new ServiceActionInteractionSubscriber(
       tagDomain.getActions(),
-      tagDomain.getTagAgent(),
     );
 
     return new BotTagManager(
@@ -93,6 +92,7 @@ export class BotTagManager {
       tagMessages,
       actions.getCodec(),
       repo,
+      agent,
     );
     const add = new TagsCreateSubCommand(
       parent,
@@ -114,7 +114,7 @@ export class BotTagManager {
       repo,
       this.tagAutocomplete,
       TagAction.enum.Info,
-      true,
+      agent,
     );
 
     const deleteData = tagMessages.getDeleteCommandData();
@@ -127,6 +127,7 @@ export class BotTagManager {
       repo,
       this.tagAutocomplete,
       TagAction.enum.Delete,
+      agent,
       false,
     );
 

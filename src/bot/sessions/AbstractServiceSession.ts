@@ -94,7 +94,7 @@ export abstract class AbstractServiceSession<
       Cancel: cancelId,
     };
 
-    this.modal = modalCodec.createFromData(this.data, this.customId.build());
+    this.modal = modalCodec.createModal(this.customId.build(), this.data);
 
     this.buttonRow = this.createButtonRow();
   }
@@ -129,10 +129,7 @@ export abstract class AbstractServiceSession<
     };
     this.onDataUpdate();
 
-    this.modal = this.modalCodec.createFromData(
-      this.data,
-      this.customId.build(),
-    );
+    this.modal = this.modalCodec.createModal(this.customId.build(), this.data);
 
     await this.buildAndReply(interaction);
 

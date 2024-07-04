@@ -1,12 +1,12 @@
 import type { SessionStartInteraction } from '@nyx-discord/core';
 import type { GuildMember } from 'discord.js';
 import type { z } from 'zod';
-
-import type { OfferRepository } from '../../hermes/database/OfferRepository';
-import type { RequestRepository } from '../../hermes/database/RequestRepository';
 import type { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirement } from '../../hermes/requirement/AbstractHermesRequirement';
+
+import type { OfferRepository } from '../../offer/database/OfferRepository';
+import type { RequestRepository } from '../../request/database/RequestRepository';
 import type { RequirementResultData } from '../../requirement/result/RequirementResultData';
 import { RequirementResultEnum } from '../../requirement/result/RequirementResultEnum';
 import type { MaxOffersRequirementConfig } from './MaxServicesEditRequirementFactory';

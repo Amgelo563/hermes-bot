@@ -6,7 +6,10 @@ ARG PNPM_VERSION=8.7.1
 
 # Setup node
 FROM node:${NODE_VERSION}-alpine
-ENV DATABASE_URL file:../database.db
+
+# Setup environment
+ARG DATABASE=file:../database.db
+ENV DATABASE_URL=$DATABASE
 ENV NODE_ENV production
 
 # Install pnpm

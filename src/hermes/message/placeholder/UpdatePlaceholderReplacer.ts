@@ -2,7 +2,7 @@ import { ArrayFormatter } from '../../../format/ArrayFormatter';
 import { HermesMemberFormatter } from '../../../format/HermesMemberFormatter';
 import type { MessagePlaceholder } from '../../../message/placeholder/MessagePlaceholder';
 import type { HermesPlaceholderContext } from '../context/HermesPlaceholderContext';
-import type { HermesPlaceholderReplacer } from './abstract/HermesPlaceholderReplacer';
+import type { HermesPlaceholderReplacer } from './HermesPlaceholderReplacer';
 
 export class UpdatePlaceholderReplacer implements HermesPlaceholderReplacer {
   public getNamespace(): string {

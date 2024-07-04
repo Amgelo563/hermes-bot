@@ -1,15 +1,16 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
-import type { Events } from 'discord.js';
+import type { Events, GuildMember } from 'discord.js';
 
 import { UserAutocompleteChoiceSource } from '../../autocomplete/UserAutocompleteChoiceSource';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import { DiscordCommandLimits } from '../../discord/command/DiscordCommandLimits';
-import type { TagRepository } from '../../hermes/database/TagRepository';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { OfferAction } from '../../offer/action/OfferAction';
 import type { OfferDomain } from '../../offer/OfferDomain';
+import type { TagRepository } from '../../tag/database/TagRepository';
 import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
-import { OffersActionSubCommand } from './commands/OffersActionSubCommand';
+import { OfferActionSubCommand } from './commands/OfferActionSubCommand';
 import { OffersParentCommand } from './commands/OffersParentCommand';
 import { OfferStandaloneCommand } from './commands/OfferStandaloneCommand';
 
@@ -45,20 +46,25 @@ export class BotOfferManager {
   public static create(
     bot: NyxBot,
     messages: HermesMessageService,
+    config: HermesConfigWrapper,
     offerDomain: OfferDomain,
     tagRepository: TagRepository,
   ) {
     const repository = offerDomain.getRepository();
-
     const emptyMessage = messages.getOfferMessages().getEmptyMessage();
     const maxLabelLength = DiscordCommandLimits.Autocomplete.Label;
+
     const requestAutocomplete = UserAutocompleteChoiceSource.create(
       async (interaction) => {
+        const member = interaction.member as GuildMember | null;
         const userId = interaction.user.id;
-        const offers = await repository.fetchFrom(
-          userId,
-          DiscordCommandLimits.Autocomplete.Max,
-        );
+        const offers =
+          member && config.isStaff(member)
+            ? await repository.findAll(DiscordCommandLimits.Autocomplete.Max)
+            : await repository.fetchFrom(
+                userId,
+                DiscordCommandLimits.Autocomplete.Max,
+              );
         if (!offers.length) {
           return [
             {
@@ -86,7 +92,6 @@ export class BotOfferManager {
 
     const subscriber = new ServiceActionInteractionSubscriber(
       offerDomain.getActions(),
-      offerDomain.getDiscordAgent(),
     );
 
     return new BotOfferManager(
@@ -118,12 +123,13 @@ export class BotOfferManager {
   protected async setupParentCommand(): Promise<void> {
     const offerMessages = this.messages.getOfferMessages();
     const actions = this.offerDomain.getActions();
+    const agent = this.offerDomain.getDiscordAgent();
 
     const parentData = offerMessages.getParentCommandData();
     const parent = new OffersParentCommand(parentData);
 
     const updateData = offerMessages.getUpdateCommandData();
-    const updateSubCommand = new OffersActionSubCommand(
+    const updateSubCommand = new OfferActionSubCommand(
       parent,
       updateData,
       updateData.options.offer,
@@ -132,11 +138,12 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.ReqUpd,
+      agent,
       false,
     );
 
     const infoData = offerMessages.getInfoCommandData();
-    const infoSubCommand = new OffersActionSubCommand(
+    const infoSubCommand = new OfferActionSubCommand(
       parent,
       infoData,
       infoData.options.offer,
@@ -145,11 +152,11 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Info,
-      true,
+      agent,
     );
 
     const repostData = offerMessages.getRepostCommandData();
-    const repostSubCommand = new OffersActionSubCommand(
+    const repostSubCommand = new OfferActionSubCommand(
       parent,
       repostData,
       repostData.options.offer,
@@ -158,11 +165,12 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Repost,
+      agent,
       false,
     );
 
     const deleteData = offerMessages.getDeleteCommandData();
-    const deleteSubCommand = new OffersActionSubCommand(
+    const deleteSubCommand = new OfferActionSubCommand(
       parent,
       deleteData,
       deleteData.options.offer,
@@ -171,7 +179,7 @@ export class BotOfferManager {
       this.offerDomain.getRepository(),
       this.requestAutocomplete,
       OfferAction.enum.Delete,
-      true,
+      agent,
     );
 
     parent.addChildren([

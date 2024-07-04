@@ -1,12 +1,12 @@
 import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-
-import type { RequestRepository } from '../../../hermes/database/RequestRepository';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { RequestData } from '../../data/RequestData';
+
+import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
-import type { RequestMessagesParser } from '../../message/RequestMessagesParser';
+import type { RequestMessagesParser } from '../../message/read/RequestMessagesParser';
 import type { RequestRequirementsChecker } from '../../requirement/RequestRequirementsChecker';
 import type { RequestActionExecutor } from './RequestActionExecutor';
 
@@ -37,13 +37,12 @@ export class RequestRepostExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     request: RequestData,
   ): Promise<void> {
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.deferReply({ ephemeral: true });
-    }
+    await deferReplyOrUpdate(interaction);
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: {
@@ -81,5 +80,9 @@ export class RequestRepostExecutor implements RequestActionExecutor {
     await interaction.editReply({
       embeds: [this.requestMessages.getRepostSuccessEmbed(context)],
     });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
   }
 }

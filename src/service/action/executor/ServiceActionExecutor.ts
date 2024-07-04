@@ -1,10 +1,10 @@
-import type { HermesMember } from '../../member/HermesMember';
+import type { DiscordServiceAgent } from '../../discord/DiscordServiceAgent';
 import type { ServiceActionInteraction } from '../interaction/ServiceActionInteraction';
 
-export interface ServiceActionExecutor<Of> {
+export interface ServiceActionExecutor<Agent extends DiscordServiceAgent, Of> {
   execute(
     interaction: ServiceActionInteraction,
-    invoker: HermesMember,
+    agent: Agent,
     object: Of,
   ): Promise<void>;
 }

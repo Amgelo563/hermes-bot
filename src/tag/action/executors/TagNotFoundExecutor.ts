@@ -1,9 +1,11 @@
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 import type { TagMessagesParser } from '../../message/TagMessagesParser';
 
-export class TagNotFoundExecutor implements ServiceActionExecutor<string> {
+export class TagNotFoundExecutor
+  implements ServiceActionExecutor<DiscordServiceAgent, string>
+{
   protected readonly messages: TagMessagesParser;
 
   constructor(messages: TagMessagesParser) {
@@ -12,9 +14,12 @@ export class TagNotFoundExecutor implements ServiceActionExecutor<string> {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordServiceAgent,
     id: string,
   ): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
     };

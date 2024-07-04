@@ -1,10 +1,8 @@
 import type {
-  CommandExecutionMeta,
   Identifiable,
   ParentCommand,
   SubCommandData,
 } from '@nyx-discord/core';
-import { ObjectNotFoundError } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type {
@@ -14,17 +12,23 @@ import type {
   Awaitable,
   ChatInputCommandInteraction,
 } from 'discord.js';
+
 import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
-import type { HermesMember } from '../../service/member/HermesMember';
-import { HermesMemberFetchCommandMiddleware } from '../middleware/HermesMemberFetchCommandMiddleware';
+import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 
 export abstract class AbstractActionSubCommand<
-  Data extends Identifiable<string>,
+  Data extends Identifiable<string> & { id: unknown },
   Actions extends [string, ...string[]],
+  Agent extends DiscordServiceAgent,
 > extends AbstractSubCommand {
-  protected readonly actionsManager: AbstractActionsManager<Data, Actions, any>;
+  protected readonly actionsManager: AbstractActionsManager<
+    Data,
+    Actions,
+    Agent,
+    any
+  >;
 
   protected readonly data: SubCommandData;
 
@@ -32,15 +36,18 @@ export abstract class AbstractActionSubCommand<
 
   protected readonly action: Actions[number];
 
-  protected readonly canBeNotInGuild: boolean;
+  protected readonly agent: DiscordServiceAgent;
+
+  protected readonly allowNonMembers: boolean;
 
   constructor(
     parent: ParentCommand,
     data: SubCommandData,
     option: ConfigCommandOption,
-    actionsManager: AbstractActionsManager<Data, Actions, any>,
+    actionsManager: AbstractActionsManager<Data, Actions, Agent, any>,
     action: Actions[number],
-    allowsNotInGuild: boolean,
+    agent: DiscordServiceAgent,
+    allowNonMembers: boolean = true,
   ) {
     super(parent);
     this.data = data;
@@ -55,28 +62,19 @@ export abstract class AbstractActionSubCommand<
     this.optionId = option.name;
     this.actionsManager = actionsManager;
     this.action = action;
-    this.canBeNotInGuild = allowsNotInGuild;
+    this.agent = agent;
+    this.allowNonMembers = allowNonMembers;
   }
 
-  public async execute(
-    interaction: ChatInputCommandInteraction,
-    meta: CommandExecutionMeta,
-  ) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     const stringId = interaction.options.getString(this.optionId, true);
     const id = parseInt(stringId, 10);
 
-    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
-      | HermesMember
-      | undefined;
-    if (!member) {
-      throw new ObjectNotFoundError();
-    }
-
+    await interaction.deferReply({ ephemeral: true });
+    const member = await this.agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
     };
-
-    await interaction.deferReply({ ephemeral: true });
 
     if (isNaN(id)) {
       await this.replyNotFound(context, interaction, stringId);
@@ -97,16 +95,7 @@ export abstract class AbstractActionSubCommand<
       return;
     }
 
-    await this.actionsManager.executeAction(
-      this.action,
-      interaction,
-      data,
-      member,
-    );
-  }
-
-  public allowsNotInGuild(): boolean {
-    return this.canBeNotInGuild;
+    await this.actionsManager.executeAction(this.action, interaction, data);
   }
 
   public abstract autocomplete(
@@ -114,11 +103,15 @@ export abstract class AbstractActionSubCommand<
     interaction: AutocompleteInteraction,
   ): Awaitable<ApplicationCommandOptionChoiceData[]>;
 
+  public allowsNonMembers(): boolean {
+    return this.allowNonMembers;
+  }
+
   protected abstract replyNotFound(
     context: HermesPlaceholderContext,
     interaction: ChatInputCommandInteraction,
     id: string,
   ): Promise<void>;
 
-  protected abstract find(id: number): Promise<Data | null>;
+  protected abstract find(id: Data['id']): Promise<Data | null>;
 }

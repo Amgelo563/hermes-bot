@@ -1,8 +1,8 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 
-import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
-import type { OfferRepository } from '../../hermes/database/OfferRepository';
-import type { RequestRepository } from '../../hermes/database/RequestRepository';
+import { BlacklistRequirement } from '../../blacklist/requirement/BlacklistRequirement';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesDatabaseService } from '../../hermes/database/HermesDatabaseService';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { BasicHermesRequirementChecker } from '../../hermes/requirement/check/BasicHermesRequirementChecker';
@@ -12,10 +12,11 @@ import { SearchRequirementFactory } from '../../hermes/requirement/factories/Sea
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
-import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { OfferData } from '../../service/offer/OfferData';
 import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import type { OfferData } from '../data/OfferData';
+import type { DiscordOfferAgent } from '../discord/DiscordOfferAgent';
+import type { OfferSessionRequirement } from './edit/OfferSessionRequirement';
 import type { OfferSessionRequirementFactory } from './edit/OfferSessionRequirementFactory';
 import { HasTagOfferEditRequirementFactory } from './edit/tag/HasTagOfferEditRequirementFactory';
 import type { OfferRequirementsMap } from './OfferRequirementsMap';
@@ -39,56 +40,67 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
     bot: NyxBot,
     config: HermesConfigWrapper,
     messageService: HermesMessageService,
-    offerRepository: OfferRepository,
-    requestRepository: RequestRepository,
-    agent: DiscordServiceAgent,
+    databaseService: HermesDatabaseService,
+    agent: DiscordOfferAgent,
   ): OfferRequirementsChecker {
-    const messages = messageService.getOfferMessages();
+    const offerMessages = messageService.getOfferMessages();
+
+    const offerRepository = databaseService.getOfferRepository();
+    const requestRepository = databaseService.getRequestRepository();
 
     const publishRequirements: OfferSessionRequirementFactory[] = [
       new HasRolesRequirementFactory(
-        messages,
+        offerMessages,
         (data) => data.member,
         config.isStaff.bind(config),
       ),
-      new HasTagOfferEditRequirementFactory(messages),
-      new SearchRequirementFactory(messages, (data) => data.offer),
+      new HasTagOfferEditRequirementFactory(offerMessages),
+      new SearchRequirementFactory(offerMessages, (data) => data.offer),
       new MaxServicesEditRequirementFactory(
-        messages,
+        offerMessages,
         offerRepository,
         requestRepository,
       ),
     ];
 
     const repostRequirements: OfferRepostRequirementFactory[] = [
-      new CooldownRepostRequirementFactory(messages),
+      new CooldownRepostRequirementFactory(offerMessages),
       new HasRolesRequirementFactory(
-        messages,
+        offerMessages,
         (data) => data.member,
         config.isStaff.bind(config),
       ),
     ];
 
     const updateRequirements: OfferSessionRequirementFactory[] = [
-      new SearchRequirementFactory(messages, (data) => data.offer),
+      new SearchRequirementFactory(offerMessages, (data) => data.offer),
+    ];
+
+    const systemRequirements: OfferSessionRequirement[] = [
+      new BlacklistRequirement(
+        messageService.getBlacklistMessages(),
+        databaseService.getBlacklistRepository(),
+        agent,
+      ),
     ];
 
     const handler = new HermesRequirementResultHandler(bot, messageService);
     const checker = new OfferRequirementsChecker(handler, messageService);
 
     checker
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Publish,
         publishRequirements,
       )
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Repost,
         repostRequirements,
       )
-      .setAvailableRequirements(
+      .setUserAvailableRequirements(
         RequirementCheckModeEnum.Update,
         updateRequirements,
-      );
+      )
+      .setSystemRequirements(systemRequirements);
 
     return checker;
   }

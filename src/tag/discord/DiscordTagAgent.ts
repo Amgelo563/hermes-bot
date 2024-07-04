@@ -3,22 +3,16 @@ import {
   IllegalStateError,
   ObjectNotFoundError,
 } from '@nyx-discord/core';
-import type {
-  Client,
-  EmbedBuilder,
-  Guild,
-  Message,
-  TextBasedChannel,
-} from 'discord.js';
+import type { Client, Guild, TextBasedChannel } from 'discord.js';
 
-import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
-import type { HermesConfig } from '../../config/HermesConfigSchema';
+import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
+import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { TagData } from '../../service/tag/TagData';
 import type { TagConfig } from '../config/TagConfigSchema';
+import type { TagData } from '../data/TagData';
 import type { TagMessagesParser } from '../message/TagMessagesParser';
 
 export class DiscordTagAgent extends DiscordServiceAgent {
@@ -69,16 +63,6 @@ export class DiscordTagAgent extends DiscordServiceAgent {
     this.logChannel = logChannel;
   }
 
-  public postError(embed: EmbedBuilder): Promise<Message> {
-    if (!this.errorChannel) {
-      throw new IllegalStateError(
-        "Error log channel not found, haven't started yet?",
-      );
-    }
-
-    return this.errorChannel.send({ embeds: [embed] });
-  }
-
   public async postUpdateLog(
     updater: string | HermesMember,
     oldTag: TagData,
@@ -92,7 +76,9 @@ export class DiscordTagAgent extends DiscordServiceAgent {
     }
 
     const member =
-      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
+      typeof updater === 'string'
+        ? await this.fetchMember(updater, true)
+        : updater;
     const oldContext = {
       member,
       services: {

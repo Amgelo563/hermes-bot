@@ -2,14 +2,14 @@ import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-import type { TagRepository } from '../../../hermes/database/TagRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagData } from '../../../service/tag/TagData';
 import type { WithRequired } from '../../../types/WithRequired';
+import type { TagData } from '../../data/TagData';
+import type { TagRepository } from '../../database/TagRepository';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagActionExecutor } from './TagActionExecutor';
 
@@ -20,29 +20,28 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
   protected readonly repository: TagRepository;
 
-  protected readonly agent: DiscordTagAgent;
-
   protected readonly configWrapper: HermesConfigWrapper;
 
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     repository: TagRepository,
-    agent: DiscordTagAgent,
     configWrapper: HermesConfigWrapper,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.repository = repository;
-    this.agent = agent;
     this.configWrapper = configWrapper;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordTagAgent,
     tag: TagData,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: { tag },
@@ -53,11 +52,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
     if (!member || !this.configWrapper.canEditTags(member)) {
       const error = tagMessages.getNotAllowedErrorEmbed(context);
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [error] });
-      } else {
-        await interaction.reply({ embeds: [error], ephemeral: true });
-      }
+      await interaction.editReply({ embeds: [error] });
       return;
     }
 
@@ -66,12 +61,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
     if (tags.length === 1) {
       const error = tagMessages.getDeleteProtectedErrorEmbed(context);
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [error] });
-      } else {
-        await interaction.reply({ embeds: [error], ephemeral: true });
-      }
-
+      await interaction.editReply({ embeds: [error] });
       return;
     }
 
@@ -102,7 +92,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
     try {
       await this.repository.delete(tag.id);
-      await this.agent.postDeleteLog(member, tag);
+      await agent.postDeleteLog(member, tag);
     } catch (e) {
       const id = nanoid(5);
       const errorContext = {
@@ -115,7 +105,7 @@ export class TagDeleteExecutor implements TagActionExecutor {
       const error = tagMessages.getDeleteErrorEmbeds(errorContext);
 
       await buttonInteraction.editReply({ embeds: [error.user] });
-      await this.agent.postError(error.log);
+      await agent.postError(error.log);
 
       return;
     }

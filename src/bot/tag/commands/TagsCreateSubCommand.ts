@@ -10,15 +10,13 @@ import type {
   ModalBuilder,
   ModalSubmitInteraction,
 } from 'discord.js';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-
-import type { TagRepository } from '../../../hermes/database/TagRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
-import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagActionsManager } from '../../../tag/action/TagActionsManager';
+
+import type { TagRepository } from '../../../tag/database/TagRepository';
 import type { DiscordTagAgent } from '../../../tag/discord/DiscordTagAgent';
 import type { TagModalCodec } from '../../../tag/modal/TagModalCodec';
-import { HermesMemberFetchCommandMiddleware } from '../../middleware/HermesMemberFetchCommandMiddleware';
 import { TagCreateSession } from '../sessions/TagCreateSession';
 
 export class TagsCreateSubCommand extends AbstractSubCommand {
@@ -62,12 +60,7 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
     interaction: ChatInputCommandInteraction,
     meta: CommandExecutionMeta,
   ) {
-    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
-      | HermesMember
-      | undefined;
-    if (!member) {
-      throw new ObjectNotFoundError();
-    }
+    const member = await this.agent.fetchMemberFromInteraction(interaction);
 
     if (!member || !this.config.canEditTags(member)) {
       const context = {
@@ -93,9 +86,7 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
     interaction: ModalSubmitInteraction,
     meta: CommandExecutionMeta,
   ) {
-    const member = meta.get(HermesMemberFetchCommandMiddleware.Key) as
-      | HermesMember
-      | undefined;
+    const member = await this.agent.fetchMemberFromInteraction(interaction);
     if (!member) {
       throw new ObjectNotFoundError();
     }

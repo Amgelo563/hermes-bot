@@ -1,9 +1,10 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { Client } from 'discord.js';
-import type { HermesConfigWrapper } from '../config/HermesConfigWrapper';
+import { BlacklistDomain } from '../blacklist/BlacklistDomain';
+import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
 import { HermesBotErrorAgent } from '../error/HermesBotErrorAgent';
 
-import type { HermesDatabaseService } from '../hermes/HermesDatabaseService';
+import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { OfferDomain } from '../offer/OfferDomain';
 import { RequestDomain } from '../request/RequestDomain';
@@ -24,6 +25,8 @@ export class ServiceManager {
 
   protected readonly tagDomain: TagDomain;
 
+  protected readonly blacklistDomain: BlacklistDomain;
+
   constructor(
     database: HermesDatabaseService,
     agent: DiscordServiceAgent,
@@ -31,6 +34,7 @@ export class ServiceManager {
     request: RequestDomain,
     offer: OfferDomain,
     tagDomain: TagDomain,
+    blacklist: BlacklistDomain,
   ) {
     this.database = database;
     this.agent = agent;
@@ -38,6 +42,7 @@ export class ServiceManager {
     this.requestDomain = request;
     this.offerDomain = offer;
     this.tagDomain = tagDomain;
+    this.blacklistDomain = blacklist;
   }
 
   public static create(
@@ -61,6 +66,12 @@ export class ServiceManager {
     );
     const offer = OfferDomain.create(bot, configWrapper, database, messages);
     const tag = TagDomain.create(bot, configWrapper, database, messages);
+    const blacklist = BlacklistDomain.create(
+      bot,
+      configWrapper,
+      database,
+      messages,
+    );
 
     return new ServiceManager(
       database,
@@ -69,6 +80,7 @@ export class ServiceManager {
       request,
       offer,
       tag,
+      blacklist,
     );
   }
 
@@ -78,6 +90,7 @@ export class ServiceManager {
 
     this.requestDomain.start();
     this.offerDomain.start();
+    this.blacklistDomain.start();
     await this.tagDomain.start();
   }
 
@@ -95,5 +108,9 @@ export class ServiceManager {
 
   public getTagDomain() {
     return this.tagDomain;
+  }
+
+  public getBlacklistDomain() {
+    return this.blacklistDomain;
   }
 }

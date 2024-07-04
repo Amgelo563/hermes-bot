@@ -3,23 +3,17 @@ import {
   IllegalStateError,
   ObjectNotFoundError,
 } from '@nyx-discord/core';
-import type {
-  Client,
-  EmbedBuilder,
-  Guild,
-  Message,
-  TextBasedChannel,
-} from 'discord.js';
+import type { Client, Guild, Message, TextBasedChannel } from 'discord.js';
 
-import type { DiscordConfig } from '../../config/discord/DiscordConfigSchema';
-import type { HermesConfig } from '../../config/HermesConfigSchema';
+import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
+import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../service/member/HermesMember';
-import type { OfferData } from '../../service/offer/OfferData';
 import type { OfferConfig } from '../config/OfferConfigSchema';
-import type { OfferMessagesParser } from '../message/OfferMessagesParser';
+import type { OfferData } from '../data/OfferData';
+import type { OfferMessagesParser } from '../message/read/OfferMessagesParser';
 
 export class DiscordOfferAgent extends DiscordServiceAgent {
   protected readonly offerMessages: OfferMessagesParser;
@@ -101,7 +95,9 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     }
 
     const member =
-      typeof poster === 'string' ? await this.fetchMember(poster) : poster;
+      typeof poster === 'string'
+        ? await this.fetchMember(poster, true)
+        : poster;
     const context = { member, services: { offer } };
     const embed = this.offerMessages.getPostEmbed(context);
 
@@ -133,7 +129,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
       );
     }
 
-    const member = await this.fetchMember(offer.userId);
+    const member = await this.fetchMember(offer.memberId, true);
     /**
      * Worst case scenario the post succeeds but the delete fails,
      * making a duplicate post. I preferred this over the alternative of "delete successful,
@@ -152,7 +148,9 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
       );
     }
 
-    const member = await this.fetchMember(offer.userId);
+    const member =
+      (await this.fetchMember(offer.memberId))
+      ?? this.getUnknownMember(offer.memberId);
     const context = {
       member,
       services: {
@@ -164,16 +162,6 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     const embed = this.offerMessages.getPostEmbed(context);
 
     await message.edit({ embeds: [embed] });
-  }
-
-  public postError(embed: EmbedBuilder): Promise<Message> {
-    if (!this.errorChannel) {
-      throw new IllegalStateError(
-        "Error log channel not found, haven't started yet?",
-      );
-    }
-
-    return this.errorChannel.send({ embeds: [embed] });
   }
 
   public async postUpdateLog(
@@ -189,9 +177,13 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
       );
     }
 
-    const affected = await this.fetchMember(newOffer.userId);
+    const affected =
+      (await this.fetchMember(newOffer.memberId))
+      ?? this.getUnknownMember(newOffer.memberId);
     const updaterMember =
-      typeof updater === 'string' ? await this.fetchMember(updater) : updater;
+      typeof updater === 'string'
+        ? await this.fetchMember(updater, true)
+        : updater;
 
     const newContext = {
       member: affected,
@@ -236,9 +228,13 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
       );
     }
 
-    const affected = await this.fetchMember(offer.userId);
+    const affected =
+      (await this.fetchMember(offer.memberId))
+      ?? this.getUnknownMember(offer.memberId);
     const deleterMember =
-      typeof deleter === 'string' ? await this.fetchMember(deleter) : deleter;
+      typeof deleter === 'string'
+        ? await this.fetchMember(deleter, true)
+        : deleter;
 
     const context = {
       member: affected,

@@ -1,15 +1,16 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
-import type { Events } from 'discord.js';
+import type { Events, GuildMember } from 'discord.js';
 
 import { UserAutocompleteChoiceSource } from '../../autocomplete/UserAutocompleteChoiceSource';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import { DiscordCommandLimits } from '../../discord/command/DiscordCommandLimits';
-import type { TagRepository } from '../../hermes/database/TagRepository';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { RequestAction } from '../../request/action/RequestAction';
 import type { RequestDomain } from '../../request/RequestDomain';
+import type { TagRepository } from '../../tag/database/TagRepository';
 import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
-import { RequestsActionSubCommand } from './commands/RequestsActionSubCommand';
+import { RequestActionSubCommand } from './commands/RequestActionSubCommand';
 import { RequestsParentCommand } from './commands/RequestsParentCommand';
 import { RequestStandaloneCommand } from './commands/RequestStandaloneCommand';
 
@@ -45,6 +46,7 @@ export class BotRequestManager {
   public static create(
     bot: NyxBot,
     messages: HermesMessageService,
+    config: HermesConfigWrapper,
     requestDomain: RequestDomain,
     tagRepository: TagRepository,
   ) {
@@ -52,13 +54,19 @@ export class BotRequestManager {
 
     const emptyMessage = messages.getRequestMessages().getEmptyMessage();
     const maxLabelLength = DiscordCommandLimits.Autocomplete.Label;
+    const noTagsTag = messages.getTagsMessages().getNoTagsTag();
+
     const requestAutocomplete = UserAutocompleteChoiceSource.create(
       async (interaction) => {
+        const member = interaction.member as GuildMember | null;
         const userId = interaction.user.id;
-        const requests = await repository.fetchFrom(
-          userId,
-          DiscordCommandLimits.Autocomplete.Max,
-        );
+        const requests =
+          member && config.isStaff(member)
+            ? await repository.findAll(DiscordCommandLimits.Autocomplete.Max)
+            : await repository.fetchFrom(
+                userId,
+                DiscordCommandLimits.Autocomplete.Max,
+              );
         if (!requests.length) {
           return [
             {
@@ -69,7 +77,9 @@ export class BotRequestManager {
         }
 
         return requests.map((request) => {
-          let name = `${request.title} - ${request.tag.name}`;
+          const tag = request.tag ?? noTagsTag;
+
+          let name = `${request.title} - ${tag.name}`;
           if (name.length > maxLabelLength) {
             name = name.slice(0, maxLabelLength - 1) + '…';
           }
@@ -84,7 +94,6 @@ export class BotRequestManager {
 
     const subscriber = new ServiceActionInteractionSubscriber(
       requestDomain.getActions(),
-      requestDomain.getDiscordAgent(),
     );
 
     return new BotRequestManager(
@@ -116,12 +125,13 @@ export class BotRequestManager {
   protected async setupParentCommand(): Promise<void> {
     const requestMessages = this.messages.getRequestMessages();
     const actions = this.requestDomain.getActions();
+    const agent = this.requestDomain.getDiscordAgent();
 
     const parentData = requestMessages.getParentCommandData();
     const parent = new RequestsParentCommand(parentData);
 
     const updateData = requestMessages.getUpdateCommandData();
-    const updateSubCommand = new RequestsActionSubCommand(
+    const updateSubCommand = new RequestActionSubCommand(
       parent,
       updateData,
       updateData.options.request,
@@ -130,11 +140,12 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.ReqUpd,
+      agent,
       false,
     );
 
     const infoData = requestMessages.getInfoCommandData();
-    const infoSubCommand = new RequestsActionSubCommand(
+    const infoSubCommand = new RequestActionSubCommand(
       parent,
       infoData,
       infoData.options.request,
@@ -143,11 +154,11 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Info,
-      true,
+      agent,
     );
 
     const repostData = requestMessages.getRepostCommandData();
-    const repostSubCommand = new RequestsActionSubCommand(
+    const repostSubCommand = new RequestActionSubCommand(
       parent,
       repostData,
       repostData.options.request,
@@ -156,11 +167,12 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Repost,
+      agent,
       false,
     );
 
     const deleteData = requestMessages.getDeleteCommandData();
-    const deleteSubCommand = new RequestsActionSubCommand(
+    const deleteSubCommand = new RequestActionSubCommand(
       parent,
       deleteData,
       deleteData.options.request,
@@ -169,7 +181,7 @@ export class BotRequestManager {
       this.requestDomain.getRepository(),
       this.requestAutocomplete,
       RequestAction.enum.Delete,
-      false,
+      agent,
     );
 
     parent.addChildren([

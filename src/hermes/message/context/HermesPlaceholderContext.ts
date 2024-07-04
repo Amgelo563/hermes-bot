@@ -1,8 +1,8 @@
+import type { BlacklistPlaceholderData } from '../../../blacklist/message/placeholder/BlacklistPlaceholderData';
+import type { OfferData } from '../../../offer/data/OfferData';
+import type { RequestData } from '../../../request/data/RequestData';
 import type { HermesMember } from '../../../service/member/HermesMember';
-
-import type { OfferData } from '../../../service/offer/OfferData';
-import type { RequestData } from '../../../service/request/RequestData';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../../tag/data/TagData';
 
 export type HermesPlaceholderContext<Updated = object> = {
   member: HermesMember;
@@ -35,4 +35,6 @@ export type HermesPlaceholderContext<Updated = object> = {
     new: Updated;
     old: Updated;
   };
+
+  blacklist?: BlacklistPlaceholderData;
 };

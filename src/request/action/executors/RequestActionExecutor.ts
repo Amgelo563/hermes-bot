@@ -1,5 +1,6 @@
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
-import type { IdentifiableRequest } from '../identity/IdentifiableRequest';
+import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
+import type { IdentifiableRequest } from '../../identity/IdentifiableRequest';
 
 export interface RequestActionExecutor
-  extends ServiceActionExecutor<IdentifiableRequest> {}
+  extends ServiceActionExecutor<DiscordRequestAgent, IdentifiableRequest> {}

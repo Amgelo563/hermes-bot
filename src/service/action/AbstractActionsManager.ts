@@ -6,47 +6,48 @@ import type {
   MessageComponentInteraction,
   ModalSubmitInteraction,
 } from 'discord.js';
-import type { HermesMember } from '../member/HermesMember';
 
+import type { DiscordServiceAgent } from '../discord/DiscordServiceAgent';
 import type { ServiceActionsCustomIdCodec } from './codec/ServiceActionsCustomIdCodec';
 import type { ServiceActionCustomIdBuilder } from './customId/ServiceActionCustomIdBuilder';
 import type { ServiceActionExecutor } from './executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from './interaction/ServiceActionInteraction';
 
 export abstract class AbstractActionsManager<
-  Data extends Identifiable<string>,
+  Data extends Identifiable<string> & { id: unknown },
   Actions extends [string, ...string[]],
+  Agent extends DiscordServiceAgent,
   CreateData,
 > {
   protected readonly codec: ServiceActionsCustomIdCodec<Data, Actions>;
 
   protected readonly executors: Map<
     Actions[number],
-    ServiceActionExecutor<Data>
+    ServiceActionExecutor<Agent, Data>
   >;
 
-  protected readonly createExecutor: ServiceActionExecutor<CreateData>;
+  protected readonly createExecutor: ServiceActionExecutor<Agent, CreateData>;
 
-  protected readonly missingExecutor: ServiceActionExecutor<string>;
+  protected readonly missingExecutor: ServiceActionExecutor<Agent, string>;
+
+  protected readonly agent: Agent;
 
   constructor(
     codec: ServiceActionsCustomIdCodec<Data, Actions>,
-    executors: Map<Actions[number], ServiceActionExecutor<Data>>,
-    createExecutor: ServiceActionExecutor<CreateData>,
-    missingExecutor: ServiceActionExecutor<string>,
+    executors: Map<Actions[number], ServiceActionExecutor<Agent, Data>>,
+    createExecutor: ServiceActionExecutor<Agent, CreateData>,
+    missingExecutor: ServiceActionExecutor<Agent, string>,
+    agent: Agent,
   ) {
     this.codec = codec;
     this.executors = executors;
     this.createExecutor = createExecutor;
     this.missingExecutor = missingExecutor;
+    this.agent = agent;
   }
 
-  public async create(
-    interaction: ServiceActionInteraction,
-    member: HermesMember,
-    data: CreateData,
-  ) {
-    await this.createExecutor.execute(interaction, member, data);
+  public async create(interaction: ServiceActionInteraction, data: CreateData) {
+    await this.createExecutor.execute(interaction, this.agent, data);
   }
 
   public async handleComponentInteraction(
@@ -54,7 +55,6 @@ export abstract class AbstractActionsManager<
       | AnySelectMenuInteraction
       | ButtonInteraction
       | ModalSubmitInteraction,
-    member: HermesMember,
   ): Promise<boolean> {
     const customId = this.extractCustomId(interaction);
     if (!customId) return false;
@@ -64,16 +64,15 @@ export abstract class AbstractActionsManager<
       return false;
     }
 
-    const id = builder.getObjectId();
-    const numberId = Number.parseInt(id);
-
-    if (Number.isNaN(numberId)) {
+    const stringId = builder.getObjectId();
+    const id = this.parseId(stringId);
+    if (!id) {
       return false;
     }
 
-    const data = await this.fetch(numberId);
+    const data = await this.fetch(id);
     if (!data) {
-      await this.missingExecutor.execute(interaction, member, id);
+      await this.missingExecutor.execute(interaction, this.agent, stringId);
       return true;
     }
 
@@ -86,7 +85,7 @@ export abstract class AbstractActionsManager<
       );
     }
 
-    await executor.execute(interaction, member, data);
+    await executor.execute(interaction, this.agent, data);
 
     return true;
   }
@@ -95,7 +94,6 @@ export abstract class AbstractActionsManager<
     action: Actions[number],
     interaction: ServiceActionInteraction,
     data: Data,
-    member: HermesMember,
   ): Promise<void> {
     const executor = this.executors.get(action);
 
@@ -105,12 +103,19 @@ export abstract class AbstractActionsManager<
       );
     }
 
-    return executor.execute(interaction, member, data);
+    return executor.execute(interaction, this.agent, data);
+  }
+
+  public async executeNotFound(
+    interaction: ServiceActionInteraction,
+    id: string,
+  ): Promise<void> {
+    return this.missingExecutor.execute(interaction, this.agent, id);
   }
 
   public setExecutor(
     action: Actions[number],
-    executor: ServiceActionExecutor<Data>,
+    executor: ServiceActionExecutor<Agent, Data>,
   ): void {
     this.executors.set(action, executor);
   }
@@ -119,25 +124,28 @@ export abstract class AbstractActionsManager<
     return this.codec;
   }
 
-  public getExecutors(): Map<Actions[number], ServiceActionExecutor<Data>> {
-    return this.executors;
-  }
-
   protected extractCustomId(
     interaction: MessageComponentInteraction | ModalSubmitInteraction,
   ): string | null {
     if (interaction.isStringSelectMenu()) {
       if (interaction.values.length !== 1) return null;
-
       return interaction.values[0];
     }
 
     return interaction.customId;
   }
 
+  protected parseId(id: string): Data['id'] | null {
+    const numberId = Number.parseInt(id);
+
+    if (Number.isNaN(numberId)) {
+      return null;
+    }
+  }
+
   protected abstract createBuilderFromCustomId(
     customId: string,
   ): ServiceActionCustomIdBuilder<Actions> | null;
 
-  protected abstract fetch(id: number): Promise<Data | null>;
+  protected abstract fetch(id: Data['id']): Promise<Data | null>;
 }

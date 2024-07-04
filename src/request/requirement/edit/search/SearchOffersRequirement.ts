@@ -1,9 +1,9 @@
 import type { z } from 'zod';
 import type { RequestSessionData } from '../../../../bot/request/sessions/RequestSessionData';
-import type { OfferRepository } from '../../../../hermes/database/OfferRepository';
 import type { BasicHermesMessageParser } from '../../../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../../../hermes/message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirement } from '../../../../hermes/requirement/AbstractHermesRequirement';
+import type { OfferRepository } from '../../../../offer/database/OfferRepository';
 import type { OfferPlaceholderContext } from '../../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { RequirementResultData } from '../../../../requirement/result/RequirementResultData';
 import { RequirementResultEnum } from '../../../../requirement/result/RequirementResultEnum';

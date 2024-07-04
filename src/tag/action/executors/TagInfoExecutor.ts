@@ -1,12 +1,12 @@
 import type { ButtonBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../data/TagData';
+import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagActionsCustomIdCodec } from '../codec/TagActionsCustomIdCodec';
 import { TagAction } from '../TagAction';
 import type { TagActionExecutor } from './TagActionExecutor';
@@ -30,9 +30,12 @@ export class TagInfoExecutor implements TagActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordTagAgent,
     tag: TagData,
   ): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: {
@@ -42,11 +45,7 @@ export class TagInfoExecutor implements TagActionExecutor {
 
     const embed = this.messages.getTagsMessages().getInfoEmbed(context);
     if (!this.configWrapper.canEditTags(member)) {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [embed] });
-      } else {
-        await interaction.reply({ embeds: [embed], ephemeral: true });
-      }
+      await interaction.editReply({ embeds: [embed] });
 
       return;
     }
@@ -77,14 +76,6 @@ export class TagInfoExecutor implements TagActionExecutor {
       deleteButton,
     ]);
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.editReply({ embeds: [embed], components: [row] });
-    } else {
-      await interaction.reply({
-        embeds: [embed],
-        components: [row],
-        ephemeral: true,
-      });
-    }
+    await interaction.editReply({ embeds: [embed], components: [row] });
   }
 }

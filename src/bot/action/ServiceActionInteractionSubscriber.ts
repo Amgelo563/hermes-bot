@@ -10,24 +10,22 @@ export class ServiceActionInteractionSubscriber extends AbstractDJSClientSubscri
   protected readonly event = Events.InteractionCreate;
 
   protected readonly actions: AbstractActionsManager<
-    Identifiable<string>,
+    Identifiable<string> & { id: unknown },
     [string, ...string[]],
+    DiscordServiceAgent,
     unknown
   >;
 
-  protected readonly agent: DiscordServiceAgent;
-
   constructor(
     actions: AbstractActionsManager<
-      Identifiable<string>,
+      Identifiable<string> & { id: unknown },
       [string, ...string[]],
+      DiscordServiceAgent,
       unknown
     >,
-    agent: DiscordServiceAgent,
   ) {
     super();
     this.actions = actions;
-    this.agent = agent;
   }
 
   public async handleEvent(
@@ -41,14 +39,7 @@ export class ServiceActionInteractionSubscriber extends AbstractDJSClientSubscri
     )
       return;
 
-    const member = interaction.member
-      ? await this.agent.fetchMember(interaction.member)
-      : await this.agent.fetchMember(interaction.user.id);
-
-    const handled = await this.actions.handleComponentInteraction(
-      interaction,
-      member,
-    );
+    const handled = await this.actions.handleComponentInteraction(interaction);
 
     if (handled) meta.setHandled();
   }

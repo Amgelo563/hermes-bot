@@ -20,7 +20,7 @@ model Offer {
   guildId      String
   channelId    String
   messageId    String
-  userId       String
+  memberId     String
   tags         Tag[]
 }
 
@@ -35,9 +35,9 @@ model Request {
   guildId      String
   channelId    String
   messageId    String
-  userId       String
-  tag          Tag      @relation(fields: [tagId], references: [id])
-  tagId        Int
+  memberId     String
+  tag          Tag?     @relation(fields: [tagId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  tagId        Int?
 }
 
 model Tag {
@@ -48,4 +48,12 @@ model Tag {
   createdAt   DateTime  @default(now())
   requests    Request[]
   offers      Offer[]
+}
+
+model Blacklist {
+  id        String    @id
+  reason    String
+  createdAt DateTime  @default(now())
+  createdBy String
+  expiresAt DateTime?
 }

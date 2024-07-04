@@ -1,12 +1,12 @@
 import type { NyxBot } from '@nyx-discord/core';
 
 import { OfferUpdateSession } from '../../../bot/offer/sessions/OfferUpdateSession';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-import type { OfferRepository } from '../../../hermes/database/OfferRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferData } from '../../data/OfferData';
+import type { OfferRepository } from '../../database/OfferRepository';
+import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferModalCodec } from '../../modal/OfferModalCodec';
 import type { OfferRequirementsChecker } from '../../requirement/OfferRequirementsChecker';
 import type { OfferActionsManager } from '../OfferActionsManager';
@@ -47,9 +47,14 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferData,
   ): Promise<void> {
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: { offer },
@@ -60,12 +65,8 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
         .getOfferMessages()
         .getNotFoundErrorEmbed(context, offer.id.toString());
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [notFound] });
-        return;
-      }
-
-      await interaction.reply({ embeds: [notFound], ephemeral: true });
+      await interaction.editReply({ embeds: [notFound] });
+      return;
     }
 
     const session = new OfferUpdateSession(

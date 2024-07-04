@@ -1,11 +1,11 @@
 import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
-
-import type { TagRepository } from '../../../hermes/database/TagRepository';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { TagData } from '../../../service/tag/TagData';
+import type { TagData } from '../../data/TagData';
+
+import type { TagRepository } from '../../database/TagRepository';
 import type { DiscordTagAgent } from '../../discord/DiscordTagAgent';
 import type { TagMessagesParser } from '../../message/TagMessagesParser';
 import type { TagModalCodec } from '../../modal/TagModalCodec';
@@ -18,43 +18,36 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
   protected readonly repository: TagRepository;
 
-  protected readonly agent: DiscordTagAgent;
-
   protected readonly configWrapper: HermesConfigWrapper;
 
   constructor(
     messages: TagMessagesParser,
     modalCodec: TagModalCodec,
     repository: TagRepository,
-    agent: DiscordTagAgent,
     configWrapper: HermesConfigWrapper,
   ) {
     this.modalCodec = modalCodec;
     this.messages = messages;
     this.repository = repository;
-    this.agent = agent;
     this.configWrapper = configWrapper;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordTagAgent,
     tag: TagData,
   ): Promise<void> {
     if (!interaction.isModalSubmit()) {
       throw new TypeError();
     }
 
+    await deferReplyOrUpdate(interaction);
+    const member = await agent.fetchMemberFromInteraction(interaction);
+
     const context = {
       member,
       services: { tag },
     };
-
-    if (interaction.isFromMessage()) {
-      await interaction.deferUpdate();
-    } else {
-      await interaction.deferReply({ ephemeral: true });
-    }
 
     if (!this.configWrapper.canEditTags(member)) {
       const error = this.messages.getNotAllowedErrorEmbed(context);
@@ -76,7 +69,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
     try {
       await this.repository.update(tag.id, newData);
-      await this.agent.postUpdateLog(member, oldTag, newTag);
+      await agent.postUpdateLog(member, oldTag, newTag);
     } catch (e) {
       const errorId = nanoid(5);
 
@@ -93,7 +86,7 @@ export class TagUpdateExecutor implements TagActionExecutor {
         components: [],
       });
 
-      await this.agent.postError(errors.log);
+      await agent.postError(errors.log);
     }
 
     const newEmbed = this.messages.getInfoEmbed(context);

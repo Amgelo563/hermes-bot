@@ -1,42 +1,30 @@
 import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-import type { OfferRepository } from '../../../hermes/database/OfferRepository';
+
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { OfferData } from '../../../service/offer/OfferData';
+import type { OfferData } from '../../data/OfferData';
+import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
-import type { OfferMessagesParser } from '../../message/OfferMessagesParser';
+import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
 import type { OfferActionExecutor } from './OfferActionExecutor';
 
 export class OfferUpdateExecutor implements OfferActionExecutor {
   protected readonly repository: OfferRepository;
 
-  protected readonly agent: DiscordOfferAgent;
-
   protected readonly messages: OfferMessagesParser;
 
-  constructor(
-    repository: OfferRepository,
-    messages: OfferMessagesParser,
-    agent: DiscordOfferAgent,
-  ) {
+  constructor(repository: OfferRepository, messages: OfferMessagesParser) {
     this.repository = repository;
     this.messages = messages;
-    this.agent = agent;
   }
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordOfferAgent,
     offer: OfferData,
   ): Promise<void> {
-    if (!interaction.replied && !interaction.deferred) {
-      if (interaction.isChatInputCommand()) {
-        await interaction.deferReply({ ephemeral: true });
-      } else {
-        await interaction.deferUpdate();
-      }
-    }
+    await deferReplyOrUpdate(interaction);
 
     const currentOffer = await this.repository.find(offer.id);
     if (!currentOffer) {
@@ -48,6 +36,7 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
       getId: undefined,
     };
 
+    const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
       member,
       services: {
@@ -57,12 +46,8 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
 
     try {
       await this.repository.update(offer.id, newOffer);
-      await this.agent.refreshOffer(newOffer);
-      await this.agent.postUpdateLog(
-        interaction.user.id,
-        newOffer,
-        currentOffer,
-      );
+      await agent.refreshOffer(newOffer);
+      await agent.postUpdateLog(interaction.user.id, newOffer, currentOffer);
     } catch (error) {
       const errorContext = {
         ...context,
@@ -74,7 +59,7 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
 
       const errorEmbeds = this.messages.getUpdateErrorEmbeds(errorContext);
       await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await this.agent.postError(errorEmbeds.log);
+      await agent.postError(errorEmbeds.log);
 
       return;
     }

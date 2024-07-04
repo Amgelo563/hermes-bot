@@ -1,18 +1,22 @@
 import type { NyxBot } from '@nyx-discord/core';
-import type { HermesConfigWrapper } from '../../config/HermesConfigWrapper';
-
-import type { RequestRepository } from '../../hermes/database/RequestRepository';
+import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
 import { ServiceActionCustomIdBuilder } from '../../service/action/customId/ServiceActionCustomIdBuilder';
 import type { ServiceActionExecutor } from '../../service/action/executor/ServiceActionExecutor';
-import type { RequestCreateData } from '../../service/request/RequestCreateData';
 import { ServiceObject } from '../../service/ServiceObject';
+import type { TagRepository } from '../../tag/database/TagRepository';
+import type { RequestCreateData } from '../data/RequestCreateData';
+
+import type { RequestRepository } from '../database/RequestRepository';
 import type { DiscordRequestAgent } from '../discord/DiscordRequestAgent';
+import type { IdentifiableRequest } from '../identity/IdentifiableRequest';
+import { createIdentifiableRequest } from '../identity/IdentifiableRequest';
 import type { RequestModalCodec } from '../modal/RequestModalCodec';
 import type { RequestRequirementsChecker } from '../requirement/RequestRequirementsChecker';
 import type { RequestActionsCustomIdCodec } from './codec/RequestActionsCustomIdCodec';
+import type { RequestActionExecutor } from './executors/RequestActionExecutor';
 import { RequestCreateExecutor } from './executors/RequestCreateExecutor';
 import { RequestDeleteExecutor } from './executors/RequestDeleteExecutor';
 import { RequestInfoExecutor } from './executors/RequestInfoExecutor';
@@ -20,14 +24,13 @@ import { RequestNotFoundExecutor } from './executors/RequestNotFoundExecutor';
 import { RequestRepostExecutor } from './executors/RequestRepostExecutor';
 import { RequestRequestUpdateExecutor } from './executors/RequestRequestUpdateExecutor';
 import { RequestUpdateExecutor } from './executors/RequestUpdateExecutor';
-import type { IdentifiableRequest } from './identity/IdentifiableRequest';
-import { createIdentifiableRequest } from './identity/IdentifiableRequest';
 import type { RequestActionOptions, RequestActionType } from './RequestAction';
 import { RequestAction } from './RequestAction';
 
 export class RequestActionsManager extends AbstractActionsManager<
   IdentifiableRequest,
   RequestActionOptions,
+  DiscordRequestAgent,
   RequestCreateData
 > {
   protected readonly repository: RequestRepository;
@@ -35,14 +38,15 @@ export class RequestActionsManager extends AbstractActionsManager<
   constructor(
     repository: RequestRepository,
     codec: RequestActionsCustomIdCodec,
-    executors: Map<
-      RequestActionType,
-      ServiceActionExecutor<IdentifiableRequest>
+    executors: Map<RequestActionType, RequestActionExecutor>,
+    createExecutor: ServiceActionExecutor<
+      DiscordRequestAgent,
+      RequestCreateData
     >,
-    createExecutor: ServiceActionExecutor<RequestCreateData>,
-    missingExecutor: ServiceActionExecutor<string>,
+    missingExecutor: ServiceActionExecutor<DiscordRequestAgent, string>,
+    agent: DiscordRequestAgent,
   ) {
-    super(codec, executors, createExecutor, missingExecutor);
+    super(codec, executors, createExecutor, missingExecutor, agent);
     this.repository = repository;
   }
 
@@ -54,6 +58,7 @@ export class RequestActionsManager extends AbstractActionsManager<
     agent: DiscordRequestAgent,
     modalCodec: RequestModalCodec,
     requirements: RequestRequirementsChecker,
+    tagRepository: TagRepository,
   ): RequestActionsManager {
     const requestMessages = messageService.getRequestMessages();
 
@@ -62,13 +67,10 @@ export class RequestActionsManager extends AbstractActionsManager<
       RequestActionOptions
     >(ServiceObject.enum.Request);
 
-    const executors = new Map<
-      RequestActionType,
-      ServiceActionExecutor<IdentifiableRequest>
-    >([
+    const executors = new Map<RequestActionType, RequestActionExecutor>([
       [
         RequestAction.enum.Update,
-        new RequestUpdateExecutor(repository, requestMessages, agent),
+        new RequestUpdateExecutor(repository, requestMessages),
       ],
       [
         RequestAction.enum.Info,
@@ -86,13 +88,12 @@ export class RequestActionsManager extends AbstractActionsManager<
       ],
       [
         RequestAction.enum.Delete,
-        new RequestDeleteExecutor(bot, messageService, repository, agent),
+        new RequestDeleteExecutor(bot, messageService, repository),
       ],
     ]);
     const createExecutor = new RequestCreateExecutor(
       requestMessages,
       repository,
-      agent,
     );
     const notFoundExecutor = new RequestNotFoundExecutor(requestMessages);
 
@@ -102,6 +103,7 @@ export class RequestActionsManager extends AbstractActionsManager<
       executors,
       createExecutor,
       notFoundExecutor,
+      agent,
     );
 
     manager.setExecutor(
@@ -114,6 +116,7 @@ export class RequestActionsManager extends AbstractActionsManager<
         requirements,
         manager,
         configWrapper,
+        tagRepository,
       ),
     );
 

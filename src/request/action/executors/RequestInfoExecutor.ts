@@ -1,11 +1,12 @@
 import type { ButtonBuilder } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
-import type { HermesConfigWrapper } from '../../../config/HermesConfigWrapper';
+import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { HermesMember } from '../../../service/member/HermesMember';
-import type { RequestData } from '../../../service/request/RequestData';
+import type { RequestData } from '../../data/RequestData';
+import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestActionsCustomIdCodec } from '../codec/RequestActionsCustomIdCodec';
 import { RequestAction } from '../RequestAction';
 import type { RequestActionExecutor } from './RequestActionExecutor';
@@ -29,9 +30,13 @@ export class RequestInfoExecutor implements RequestActionExecutor {
 
   public async execute(
     interaction: ServiceActionInteraction,
-    member: HermesMember,
+    agent: DiscordRequestAgent,
     request: RequestData,
   ): Promise<void> {
+    await deferReplyOrUpdate(interaction);
+
+    const member = await agent.fetchMemberFromInteraction(interaction);
+
     const context = {
       member,
       services: { request },
@@ -39,11 +44,7 @@ export class RequestInfoExecutor implements RequestActionExecutor {
 
     const embed = this.messages.getRequestMessages().getPostEmbed(context);
     if (!this.config.canEditRequest(member, request)) {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.editReply({ embeds: [embed] });
       return;
     }
     const generalMessages = this.messages.getGeneralMessages();
@@ -82,14 +83,10 @@ export class RequestInfoExecutor implements RequestActionExecutor {
       deleteButton,
     );
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.editReply({ embeds: [embed], components: [row] });
-      return;
-    }
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      ephemeral: true,
-    });
+    await interaction.editReply({ embeds: [embed], components: [row] });
+  }
+
+  public async defer(interaction: ServiceActionInteraction): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
   }
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { GeneralServiceAction } from '../../service/action/action/GeneralServiceAction';
 
 export const OfferAction = z.enum(['Repost', ...GeneralServiceAction.options]);

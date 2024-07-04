@@ -7,8 +7,8 @@ import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import { DiscordModalLimits } from '../../discord/modal/schema/DiscordModalLimits';
-import type { RequestModalInputData } from '../../service/request/RequestModalInputData';
 import type { RequestModalData } from './RequestModalData';
+import type { RequestModalInputData } from './RequestModalInputData';
 
 export class RequestModalCodec
   implements DiscordModalCodec<RequestModalInputData>
@@ -45,7 +45,7 @@ export class RequestModalCodec
       description,
       budget,
       title,
-      userId: interaction.user.id,
+      memberId: interaction.user.id,
     };
   }
 
