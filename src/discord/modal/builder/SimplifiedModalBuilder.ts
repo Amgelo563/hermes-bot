@@ -39,6 +39,6 @@ export class SimplifiedModalBuilder extends ModalBuilder {
   }
 
   public clone(): SimplifiedModalBuilder {
-    return new SimplifiedModalBuilder(this);
+    return new SimplifiedModalBuilder(this.toJSON());
   }
 }
