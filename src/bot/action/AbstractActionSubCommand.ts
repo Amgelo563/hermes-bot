@@ -105,7 +105,7 @@ export abstract class AbstractActionSubCommand<
       .setDescription(this.data.description)
       .addStringOption((builder) =>
         builder
-          .setName(option.description)
+          .setName(option.name)
           .setDescription(option.description)
           .setRequired(true)
           .setAutocomplete(true),
