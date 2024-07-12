@@ -90,9 +90,6 @@ export class BotManager {
   }
 
   public async start(): Promise<void> {
-    const replacer = await BotCommandPlaceholderReplacer.fromBot(this.bot);
-    this.messages.getPlaceholderManager().addReplacer(replacer);
-
     const middleware = new NonMemberActionSubCommandMiddleware(
       this.messages.getGeneralMessages(),
       this.discordAgent,
@@ -100,6 +97,9 @@ export class BotManager {
     this.bot.getCommandManager().getExecutor().getMiddleware().add(middleware);
 
     await this.bot.start();
+    const replacer = await BotCommandPlaceholderReplacer.fromBot(this.bot);
+    this.messages.getPlaceholderManager().addReplacer(replacer);
+    
     await this.tag.start();
     await this.request.start();
     await this.offer.start();
