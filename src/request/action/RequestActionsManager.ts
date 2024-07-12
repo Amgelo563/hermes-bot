@@ -129,7 +129,7 @@ export class RequestActionsManager extends AbstractActionsManager<
     return ServiceActionCustomIdBuilder.fromServiceCustomId<RequestActionOptions>(
       customId,
       this.codec.getSeparator(),
-      this.codec.getDataSeparator(),
+      this.codec.getMetadataSeparator(),
       RequestAction,
       ServiceObject.enum.Request,
     );

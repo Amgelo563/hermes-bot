@@ -77,7 +77,7 @@ export class HermesRequirementResultHandler {
         context,
       );
 
-      await this.bot.sessions.start(confirmSession);
+      await this.bot.getSessionManager().start(confirmSession);
 
       const endData = await confirmSession.getEndPromise();
       const { result: confirmData } = endData;

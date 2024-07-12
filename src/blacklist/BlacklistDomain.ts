@@ -51,7 +51,7 @@ export class BlacklistDomain {
     const modalCodec = new BlacklistModalCodec(modalData);
 
     const discordAgent = DiscordBlacklistAgent.create(
-      bot.client,
+      bot.getClient(),
       messagesService,
       configWrapper.getConfig(),
     );

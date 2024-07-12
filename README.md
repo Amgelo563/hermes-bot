@@ -50,3 +50,18 @@ docker run --name hermes-bot --mount type=bind,source="$(pwd)"/config,target=/us
 ```
 
 Keep in mind that you still need to follow the first step in the manual installation.
+
+### Post installation
+
+When starting, you can use the `--deploy` flag if you want it to deploy commands. For example:
+
+```bash
+pnpm start --deploy
+```
+
+Or when running with Docker:
+
+```bash
+docker run --name hermes-bot --mount type=bind,source="$(pwd)"/config,target=/usr/src/app/config -d hermes-bot --deploy
+```
+

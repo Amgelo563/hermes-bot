@@ -59,7 +59,7 @@ export class BotBlacklistManager {
   public async start(): Promise<void> {
     await this.setupParentCommand();
     await this.setupExpireSchedule();
-    await this.bot.events.subscribeClient(this.actionsSubscriber);
+    await this.bot.getEventManager().subscribeClient(this.actionsSubscriber);
   }
 
   protected async setupParentCommand(): Promise<void> {
@@ -118,14 +118,14 @@ export class BotBlacklistManager {
       this.messages,
     );
 
-    parent.addChildren([
+    parent.addChildren(
       infoSubCommand,
       deleteSubCommand,
       createSubCommand,
       listSubCommand,
-    ]);
+    );
 
-    await this.bot.commands.addCommand(parent);
+    await this.bot.getCommandManager().addCommands(parent);
   }
 
   protected async setupExpireSchedule(): Promise<void> {
@@ -135,6 +135,6 @@ export class BotBlacklistManager {
       this.messages.getBlacklistMessages(),
     );
 
-    await this.bot.schedules.addSchedule(schedule);
+    await this.bot.getScheduleManager().addSchedule(schedule);
   }
 }

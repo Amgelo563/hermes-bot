@@ -57,7 +57,7 @@ export class OfferDomain {
     const modalCodec = new OfferModalCodec(modalData);
 
     const discordAgent = DiscordOfferAgent.create(
-      bot.client,
+      bot.getClient(),
       messagesService,
       configWrapper.getConfig(),
     );

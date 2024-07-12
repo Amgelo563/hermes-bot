@@ -1,13 +1,16 @@
-import type {
-  CommandExecutionMeta,
-  StandaloneCommandData,
-} from '@nyx-discord/core';
-import { AbstractStandaloneCommand } from '@nyx-discord/framework';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import type { CommandExecutionMeta } from '@nyx-discord/core';
+import {
+  AbstractStandaloneCommand,
+  NotImplementedError,
+} from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
   ModalBuilder,
   ModalSubmitInteraction,
+  SlashCommandOptionsOnlyBuilder,
 } from 'discord.js';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { RequestDomain } from '../../../request/RequestDomain';
@@ -15,7 +18,7 @@ import type { TagRepository } from '../../../tag/database/TagRepository';
 import { RequestCreateSession } from '../sessions/RequestCreateSession';
 
 export class RequestStandaloneCommand extends AbstractStandaloneCommand {
-  protected readonly data: StandaloneCommandData;
+  protected readonly data: CommandSchemaType;
 
   protected readonly messages: HermesMessageService;
 
@@ -32,11 +35,7 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
   ) {
     super();
 
-    this.data = {
-      ...messages.getRequestMessages().getCreateCommandData(),
-      dmPermission: false,
-    };
-
+    this.data = messages.getRequestMessages().getCreateCommandData();
     this.requestDomain = requestDomain;
     this.messages = messages;
     this.tagRepository = tagRepository;
@@ -54,6 +53,10 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
     }
 
     await interaction.showModal(this.cachedModal);
+  }
+
+  public autocomplete(): void {
+    throw new NotImplementedError();
   }
 
   protected override async handleModal(
@@ -81,6 +84,13 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
       this.tagRepository.getTags(),
     );
 
-    await bot.sessions.start(session);
+    await bot.getSessionManager().start(session);
+  }
+
+  protected createData(): SlashCommandOptionsOnlyBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .setDMPermission(true);
   }
 }

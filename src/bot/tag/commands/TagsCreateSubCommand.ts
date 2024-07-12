@@ -1,8 +1,4 @@
-import type {
-  CommandExecutionMeta,
-  ParentCommand,
-  SubCommandData,
-} from '@nyx-discord/core';
+import type { CommandExecutionMeta, ParentCommand } from '@nyx-discord/core';
 import { ObjectNotFoundError } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
@@ -10,17 +6,19 @@ import type {
   ModalBuilder,
   ModalSubmitInteraction,
 } from 'discord.js';
+import { SlashCommandSubcommandBuilder } from 'discord.js';
+
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { TagActionsManager } from '../../../tag/action/TagActionsManager';
-
 import type { TagRepository } from '../../../tag/database/TagRepository';
 import type { DiscordTagAgent } from '../../../tag/discord/DiscordTagAgent';
 import type { TagModalCodec } from '../../../tag/modal/TagModalCodec';
 import { TagCreateSession } from '../sessions/TagCreateSession';
 
 export class TagsCreateSubCommand extends AbstractSubCommand {
-  protected readonly data: SubCommandData;
+  protected readonly data: CommandSchemaType;
 
   protected readonly messages: HermesMessageService;
 
@@ -106,6 +104,12 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
       member,
     );
 
-    await bot.sessions.start(session);
+    await bot.getSessionManager().start(session);
+  }
+
+  protected createData(): SlashCommandSubcommandBuilder {
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description);
   }
 }

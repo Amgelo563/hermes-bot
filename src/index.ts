@@ -29,11 +29,14 @@ class Main {
     const messages = await this.setupMessageService(config, logger);
     const database = await this.setupDatabaseService(logger);
 
+    const deployCommands = process.argv.includes('--deploy');
+
     const hermes = HermesService.create(
       logger,
       configWrapper,
       messages,
       database,
+      deployCommands,
     );
 
     logger.debug('Starting main Hermes service...');

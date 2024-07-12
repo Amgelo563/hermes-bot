@@ -90,19 +90,20 @@ export class BotManager {
   }
 
   public async start(): Promise<void> {
-    const replacer = BotCommandPlaceholderReplacer.fromBot(this.bot);
+    const replacer = await BotCommandPlaceholderReplacer.fromBot(this.bot);
     this.messages.getPlaceholderManager().addReplacer(replacer);
 
     const middleware = new NonMemberActionSubCommandMiddleware(
       this.messages.getGeneralMessages(),
       this.discordAgent,
     );
-    this.bot.commands.getExecutor().getMiddleware().add(middleware);
+    this.bot.getCommandManager().getExecutor().getMiddleware().add(middleware);
 
     await this.bot.start();
     await this.tag.start();
     await this.request.start();
     await this.offer.start();
+    await this.blacklist.start();
   }
 
   public getBot(): NyxBot {
@@ -110,6 +111,6 @@ export class BotManager {
   }
 
   public getClient(): Client {
-    return this.bot.client;
+    return this.bot.getClient();
   }
 }

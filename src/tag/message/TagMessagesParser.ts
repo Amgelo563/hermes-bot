@@ -1,8 +1,9 @@
-import type { CommandData } from '@nyx-discord/core';
 import { IllegalStateError } from '@nyx-discord/core';
 import type { EmbedBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
+
 import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
+import type { CommandSchemaType } from '../../discord/command/DiscordCommandSchema';
 import { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../../hermes/message/context/HermesPlaceholderErrorContext';
@@ -50,11 +51,11 @@ export class TagMessagesParser extends BasicHermesMessageParser<
     return this.parseEmbed(this.messages.notAllowed, errorContext);
   }
 
-  public getParentCommandData(): CommandData {
+  public getParentCommandData(): CommandSchemaType {
     return this.messages.command;
   }
 
-  public getListCommandData(): CommandData {
+  public getListCommandData(): CommandSchemaType {
     return this.messages.list.command;
   }
 
@@ -104,7 +105,7 @@ export class TagMessagesParser extends BasicHermesMessageParser<
     );
   }
 
-  public getCreateCommandData(): CommandData {
+  public getCreateCommandData(): CommandSchemaType {
     return this.messages.create.command;
   }
 
@@ -157,7 +158,7 @@ export class TagMessagesParser extends BasicHermesMessageParser<
     return this.parseEmbed(this.messages.info.embed, context);
   }
 
-  public getUpdateCommandData(): CommandData {
+  public getUpdateCommandData(): CommandSchemaType {
     return this.messages.update.command;
   }
 

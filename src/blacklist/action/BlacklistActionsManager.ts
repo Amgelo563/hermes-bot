@@ -85,7 +85,7 @@ export class BlacklistActionsManager extends AbstractActionsManager<
     return ServiceActionCustomIdBuilder.fromServiceCustomId<BlacklistActionOptions>(
       customId,
       this.codec.getSeparator(),
-      this.codec.getDataSeparator(),
+      this.codec.getMetadataSeparator(),
       BlacklistAction,
       ServiceObject.enum.Blacklist,
     );

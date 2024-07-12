@@ -1,13 +1,13 @@
 import type {
   Identifier,
-  Logger,
+  NyxLogger,
 } from '@nyx-discord/core';
 import type { z } from 'zod';
+
 import { BlacklistPlaceholderReplacer } from '../../blacklist/message/placeholder/BlacklistPlaceholderReplacer';
 import { BlacklistMessagesParser } from '../../blacklist/message/read/BlacklistMessagesParser';
 import { BlacklistMessagesReader } from '../../blacklist/message/read/BlacklistMessagesReader';
 import type { BlacklistMessagesSchema } from '../../blacklist/message/read/BlacklistMessagesSchema';
-
 import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';
 import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import { ConfigPlaceholderReplacer } from '../../config/message/ConfigPlaceholderReplacer';
@@ -40,7 +40,7 @@ import { UpdatePlaceholderReplacer } from './placeholder/UpdatePlaceholderReplac
 
 /** Service responsible for message reading and parsing. */
 export class HermesMessageService extends MessageService<HermesPlaceholderContext> {
-  protected readonly logger: Logger;
+  protected readonly logger: NyxLogger;
 
   protected readonly escapeConfig: EscapeMarkdownConfig;
 
@@ -59,7 +59,7 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
   constructor(
     placeholder: MessagePlaceholderManager<HermesPlaceholderContext>,
     repository: MessageRepository,
-    logger: Logger,
+    logger: NyxLogger,
     config: HermesConfig,
   ) {
     super(placeholder, repository);
@@ -70,7 +70,7 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
 
   public static create(
     config: HermesConfig,
-    logger: Logger,
+    logger: NyxLogger,
   ): HermesMessageService {
     const lang = config.general.language;
 

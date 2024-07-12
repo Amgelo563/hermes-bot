@@ -15,11 +15,11 @@ dependencies:
     specifier: ^1.4.1
     version: 1.4.1
   '@nyx-discord/core':
-    specifier: 1.5.1
-    version: 1.5.1(discord.js@14.14.1)
+    specifier: 2.0.0
+    version: 2.0.0(discord.js@14.14.1)
   '@nyx-discord/framework':
-    specifier: 1.5.1
-    version: 1.5.1(discord.js@14.14.1)
+    specifier: 2.0.0
+    version: 2.0.0(discord.js@14.14.1)
   '@prisma/client':
     specifier: ^5.8.0
     version: 5.8.0(prisma@5.8.0)
@@ -308,22 +308,22 @@ packages:
     dev: false
     optional: true
 
-  /@nyx-discord/core@1.5.1(discord.js@14.14.1):
-    resolution: {integrity: sha512-3p9rnG0y1QywJ9XuRDZxuvAiPbkBxqEiN96b2UtuxOYKMMtuqo1I+nKKGwHld8rQZRXQQcrmx4vFZ/jYomHmmg==}
+  /@nyx-discord/core@2.0.0(discord.js@14.14.1):
+    resolution: {integrity: sha512-qE8vE6SOcup6SBcYCjtPDIB0CQQ/LQ548Rl2ZbNUpmbG+O3cLEMgjaXPXdAmHv+jhBH9U7lUwoUnCOZPcMrXsg==}
     peerDependencies:
       discord.js: ^14.14.1
     dependencies:
       discord.js: 14.14.1
     dev: false
 
-  /@nyx-discord/framework@1.5.1(discord.js@14.14.1):
-    resolution: {integrity: sha512-CAccKdSTjtLXqGAcsMs0ZFlD6Zh5O7QAMo1/sFAUCQSajqVEd+QclOKafa3J6hW1PIkt33/Il8avl/tqGLYj/w==}
+  /@nyx-discord/framework@2.0.0(discord.js@14.14.1):
+    resolution: {integrity: sha512-9x1fi3qgADPRBGYN6EJoOCEzTaVymqdLpbXNnrpoc2sg4wAL0Ex8oAVUd9z4IkSF7kEUHXNoMRRqi+fAOqSrIw==}
     peerDependencies:
       discord.js: ^14.14.1
     dependencies:
       '@discordjs/collection': 1.5.3
       '@isaacs/ttlcache': 1.4.1
-      '@nyx-discord/core': 1.5.1(discord.js@14.14.1)
+      '@nyx-discord/core': 2.0.0(discord.js@14.14.1)
       cron: 3.0.0
       discord.js: 14.14.1
     dev: false
@@ -2502,9 +2502,6 @@ packages:
   /sqlite3@5.1.6:
     resolution: {integrity: sha512-olYkWoKFVNSSSQNvxVUfjiVbz3YtBwTJj+mfV5zpHmqW3sELx2Cf4QCdirMelhM5Zh+KDVaKgQHqCxrqiWHybw==}
     requiresBuild: true
-    peerDependenciesMeta:
-      node-gyp:
-        optional: true
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
       node-addon-api: 4.3.0

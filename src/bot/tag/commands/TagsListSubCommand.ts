@@ -1,25 +1,21 @@
-import type { ParentCommand, SubCommandData } from '@nyx-discord/core';
+import type { ParentCommand } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
   StringSelectMenuBuilder,
 } from 'discord.js';
-import { ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, SlashCommandSubcommandBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
+
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 import type { TagActionsCustomIdCodec } from '../../../tag/action/codec/TagActionsCustomIdCodec';
 import { TagAction } from '../../../tag/action/TagAction';
-
 import type { TagRepository } from '../../../tag/database/TagRepository';
 import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
 
 export class TagsListSubCommand extends AbstractSubCommand {
-  public static readonly DefaultData = {
-    name: 'list',
-    description: 'List all tags',
-  };
-
-  protected readonly data: SubCommandData = TagsListSubCommand.DefaultData;
+  protected readonly data: CommandSchemaType;
 
   protected readonly messages: TagMessagesParser;
 
@@ -80,5 +76,11 @@ export class TagsListSubCommand extends AbstractSubCommand {
       components: [row],
       ephemeral: true,
     });
+  }
+
+  protected createData(): SlashCommandSubcommandBuilder {
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description);
   }
 }

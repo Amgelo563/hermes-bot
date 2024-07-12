@@ -1,20 +1,21 @@
-import type { ParentCommandData, SubCommand } from '@nyx-discord/core';
+import type { SlashCommandSubcommandsOnlyBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { AbstractParentCommand } from '@nyx-discord/framework';
 
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
+
 export class TagsParentCommand extends AbstractParentCommand {
-  protected readonly data: ParentCommandData = {
-    name: 'tags',
-    description: 'Manage tags',
-  };
+  protected readonly data: CommandSchemaType;
 
-  protected children: SubCommand[] = [];
-
-  constructor(data: ParentCommandData) {
+  constructor(data: CommandSchemaType) {
     super();
+    this.data = data;
+  }
 
-    this.data = {
-      ...data,
-      dmPermission: false,
-    };
+  protected createData(): SlashCommandSubcommandsOnlyBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .setDMPermission(false);
   }
 }

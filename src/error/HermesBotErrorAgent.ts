@@ -19,16 +19,23 @@ export class HermesBotErrorAgent {
   public start() {
     const bot = this.bot;
 
-    const commandErrorHandler = bot.commands.getExecutor().getErrorHandler();
+    const commandErrorHandler = bot
+      .getCommandManager()
+      .getExecutor()
+      .getErrorHandler();
 
-    const clientEventErrorHandler = bot.events
+    const clientEventErrorHandler = bot
+      .getEventManager()
       .getClientBus()
       .getDispatcher()
       .getErrorHandler();
 
-    const scheduleErrorHandler = bot.schedules.getExecutor().getErrorHandler();
+    const scheduleErrorHandler = bot
+      .getScheduleManager()
+      .getExecutor()
+      .getErrorHandler();
 
-    const sessionExecutor = bot.sessions.getExecutor();
+    const sessionExecutor = bot.getSessionManager().getExecutor();
     const sessionStartErrorHandler = sessionExecutor.getStartErrorHandler();
     const sessionUpdateErrorHandler = sessionExecutor.getUpdateErrorHandler();
     const sessionEndErrorHandler = sessionExecutor.getEndErrorHandler();
@@ -68,7 +75,7 @@ export class HermesBotErrorAgent {
   }
 
   public consume(error: object, meta: Identifiable) {
-    this.bot.logger.error(error);
+    this.bot.getLogger().error(error);
     void this.agent.postGenericError(error as Error, String(meta.getId()));
   }
 
@@ -77,7 +84,7 @@ export class HermesBotErrorAgent {
     error: object,
     meta: Identifiable,
   ) {
-    this.bot.logger.error(error);
+    this.bot.getLogger().error(error);
     void this.agent.handleError(interaction, error as Error, meta);
   }
 }

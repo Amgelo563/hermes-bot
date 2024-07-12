@@ -1,14 +1,13 @@
-import type {
-  CommandExecutionMeta,
-  ParentCommand,
-  SubCommandData,
-} from '@nyx-discord/core';
+import type { CommandExecutionMeta, ParentCommand } from '@nyx-discord/core';
 import { IllegalStateError, ObjectNotFoundError } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
-import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type {
   ChatInputCommandInteraction,
   ModalSubmitInteraction,
+} from 'discord.js';
+import {
+  SlashCommandSubcommandBuilder,
+  SlashCommandUserOption,
 } from 'discord.js';
 import parseDuration from 'parse-duration';
 
@@ -24,7 +23,7 @@ import type { CommandSchemaType } from '../../../discord/command/DiscordCommandS
 export class BlacklistCreateSubCommand extends AbstractSubCommand {
   protected static readonly BlacklistedIndex = 0;
 
-  protected readonly data: SubCommandData;
+  protected readonly data: CommandSchemaType<'user'>;
 
   protected readonly optionName: string;
 
@@ -52,13 +51,6 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
   ) {
     super(parent);
     this.data = data;
-    this.options = [
-      {
-        ...data.options.user,
-        type: ApplicationCommandOptionType.User,
-        required: true,
-      },
-    ];
     this.optionName = data.options.user.name;
     this.actions = actions;
     this.repository = repository;
@@ -118,7 +110,7 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
     meta: CommandExecutionMeta,
   ): Promise<void> {
     const bot = meta.getBot();
-    const customIdCodec = bot.commands.getCustomIdCodec();
+    const customIdCodec = bot.getCommandManager().getCustomIdCodec();
 
     const customIdIterator = customIdCodec.createIteratorFromCustomId(
       interaction.customId,
@@ -157,5 +149,19 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
     };
 
     await this.actions.create(interaction, createData);
+  }
+
+  protected createData(): SlashCommandSubcommandBuilder {
+    const option = this.data.options.user;
+
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .addUserOption(
+        new SlashCommandUserOption()
+          .setName(option.name)
+          .setDescription(option.description)
+          .setRequired(true),
+      );
   }
 }

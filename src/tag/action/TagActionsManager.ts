@@ -104,7 +104,7 @@ export class TagActionsManager extends AbstractActionsManager<
     return ServiceActionCustomIdBuilder.fromServiceCustomId<TagActionOptions>(
       customId,
       this.codec.getSeparator(),
-      this.codec.getDataSeparator(),
+      this.codec.getMetadataSeparator(),
       TagAction,
       ServiceObject.enum.Tag,
     );

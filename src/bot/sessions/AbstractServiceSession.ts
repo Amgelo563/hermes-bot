@@ -3,7 +3,6 @@ import type {
   SessionStartInteraction,
   SessionUpdateInteraction,
 } from '@nyx-discord/core';
-import { SessionSelfEndCode } from '@nyx-discord/core';
 import type { ActionRowWrapper } from '@nyx-discord/framework';
 import type { APIButtonComponentWithCustomId } from 'discord-api-types/v10';
 import type {
@@ -99,7 +98,7 @@ export abstract class AbstractServiceSession<
     this.buttonRow = this.createButtonRow();
   }
 
-  public async start(): Promise<void> {
+  public async onStart(): Promise<void> {
     if (!this.startInteraction.replied && !this.startInteraction.deferred) {
       if (
         this.startInteraction.isCommand()
@@ -149,7 +148,7 @@ export abstract class AbstractServiceSession<
       await this.disableComponents(interaction);
       await this.handleConfirm(interaction);
 
-      await this.selfEnd(SessionSelfEndCode.toString());
+      await this.selfEnd();
       return true;
     }
 
@@ -157,7 +156,7 @@ export abstract class AbstractServiceSession<
       const cancelled = this.getEndEmbed();
       await interaction.update({ embeds: [cancelled], components: [] });
 
-      await this.selfEnd(SessionSelfEndCode.toString());
+      await this.selfEnd();
       return true;
     }
 

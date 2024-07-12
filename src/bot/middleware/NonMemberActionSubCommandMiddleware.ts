@@ -1,13 +1,12 @@
 import type {
-  CommandData,
-  CommandExecutionArgs,
-  ExecutableCommand,
+  AnyExecutableCommand,
+  CommandResolvableInteraction,
   MiddlewareResponse,
 } from '@nyx-discord/core';
 import { AbstractCommandMiddleware } from '@nyx-discord/framework';
+
 import type { GeneralMessagesParser } from '../../hermes/message/messages/general/GeneralMessagesParser';
 import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
-
 import { AbstractActionSubCommand } from '../action/AbstractActionSubCommand';
 
 export class NonMemberActionSubCommandMiddleware extends AbstractCommandMiddleware {
@@ -22,11 +21,9 @@ export class NonMemberActionSubCommandMiddleware extends AbstractCommandMiddlewa
   }
 
   public async check(
-    checked: ExecutableCommand<CommandData>,
-    args: CommandExecutionArgs,
+    checked: AnyExecutableCommand,
+    interaction: CommandResolvableInteraction,
   ): Promise<MiddlewareResponse> {
-    const [interaction] = args;
-
     if (interaction.isAutocomplete() || interaction.inGuild()) {
       return this.true();
     }

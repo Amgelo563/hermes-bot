@@ -109,7 +109,7 @@ export class BotRequestManager {
   public async start(): Promise<void> {
     await this.setupStandaloneCommand();
     await this.setupParentCommand();
-    await this.bot.events.subscribeClient(this.actionsSubscriber);
+    await this.bot.getEventManager().subscribeClient(this.actionsSubscriber);
   }
 
   protected async setupStandaloneCommand() {
@@ -119,7 +119,7 @@ export class BotRequestManager {
       this.tagRepository,
     );
 
-    await this.bot.commands.addCommand(command);
+    await this.bot.getCommandManager().addCommands(command);
   }
 
   protected async setupParentCommand(): Promise<void> {
@@ -184,13 +184,13 @@ export class BotRequestManager {
       agent,
     );
 
-    parent.addChildren([
+    parent.addChildren(
       updateSubCommand,
       infoSubCommand,
       repostSubCommand,
       deleteSubCommand,
-    ]);
+    );
 
-    await this.bot.commands.addCommand(parent);
+    await this.bot.getCommandManager().addCommands(parent);
   }
 }

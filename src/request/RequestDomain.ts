@@ -58,7 +58,7 @@ export class RequestDomain {
 
     const config = configWrapper.getConfig();
     const requestAgent = DiscordRequestAgent.create(
-      bot.client,
+      bot.getClient(),
       messagesService,
       config,
     );

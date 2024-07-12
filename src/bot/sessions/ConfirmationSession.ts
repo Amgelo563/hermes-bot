@@ -69,7 +69,7 @@ export class ConfirmationSession extends AbstractHermesSession<ConfirmResult> {
     this.context = context;
   }
 
-  public async start(): Promise<void> {
+  public async onStart(): Promise<void> {
     const messages = this.messages.getGeneralMessages();
 
     const row = messages.getContinueRow(

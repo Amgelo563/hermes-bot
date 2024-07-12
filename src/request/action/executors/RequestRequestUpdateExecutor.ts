@@ -90,7 +90,7 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
       tags,
     );
 
-    await this.bot.sessions.start(session);
+    await this.bot.getSessionManager().start(session);
   }
 
   public async defer(interaction: ServiceActionInteraction): Promise<void> {

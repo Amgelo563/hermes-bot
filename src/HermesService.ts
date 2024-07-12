@@ -1,4 +1,4 @@
-import type { Logger as NyxLogger } from '@nyx-discord/core';
+import type { NyxLogger } from '@nyx-discord/core';
 import { Bot } from '@nyx-discord/framework';
 import { Client, IntentsBitField } from 'discord.js';
 
@@ -42,6 +42,7 @@ export class HermesService {
     config: HermesConfigWrapper,
     messages: HermesMessageService,
     database: HermesDatabaseService,
+    deployCommands: boolean,
   ): HermesService {
     const client = new Client({
       intents: [IntentsBitField.Flags.Guilds],
@@ -54,6 +55,7 @@ export class HermesService {
       token: config.getConfig().discord.token,
       id: Symbol('HermesBot'),
       logger,
+      deployCommands,
     }));
 
     const serviceManager = ServiceManager.create(

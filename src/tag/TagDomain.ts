@@ -46,7 +46,7 @@ export class TagDomain {
   ): TagDomain {
     const messages = messagesService.getTagsMessages();
     const tagAgent = DiscordTagAgent.create(
-      bot.client,
+      bot.getClient(),
       messagesService,
       configWrapper.getConfig(),
     );

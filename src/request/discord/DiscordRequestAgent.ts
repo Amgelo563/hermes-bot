@@ -53,6 +53,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   }
 
   public start() {
+    super.start();
     const guild = this.guild as Guild;
 
     const requestChannel = guild.channels.cache.get(this.requestConfig.channel);

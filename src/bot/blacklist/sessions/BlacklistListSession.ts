@@ -1,9 +1,10 @@
 import type {
   NyxBot,
   SessionStartInteraction,
-  SessionUpdateInteraction,
+  SessionUpdateInteraction} from '@nyx-discord/core';
+import {
+  SessionEndCodes
 } from '@nyx-discord/core';
-import { SessionExpiredCode } from '@nyx-discord/core';
 import { AbstractListPaginationSession } from '@nyx-discord/framework';
 import { nanoid } from 'nanoid';
 
@@ -42,13 +43,13 @@ export class BlacklistListSession extends AbstractListPaginationSession<
     this.agent = agent;
   }
 
-  public async start(): Promise<void> {
+  public async onStart(): Promise<void> {
     const data = await this.getCurrentPageData();
     await this.startInteraction.editReply(data);
   }
 
   public async onEnd(code: string | number | symbol): Promise<void> {
-    if (code !== SessionExpiredCode) {
+    if (code !== SessionEndCodes.Expired) {
       return;
     }
 

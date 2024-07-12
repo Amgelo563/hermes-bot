@@ -1,9 +1,9 @@
-import type { CommandData } from '@nyx-discord/core';
 import type {
   ButtonBuilder,
   EmbedBuilder,
   StringSelectMenuBuilder,
 } from 'discord.js';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 
 import { DiscordEmbedLimits } from '../../../discord/embed/DiscordEmbedLimits';
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
@@ -20,7 +20,7 @@ import type { RequestMessagesSchema } from './RequestMessagesSchema';
 export class RequestMessagesParser extends BasicHermesMessageParser<
   typeof RequestMessagesSchema
 > {
-  public getParentCommandData(): CommandData {
+  public getParentCommandData(): CommandSchemaType {
     return this.messages.parentCommand;
   }
 
@@ -48,7 +48,7 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
     return this.parseLinkButton(this.messages.info.linkButton, context, link);
   }
 
-  public getCreateCommandData(): CommandData {
+  public getCreateCommandData(): CommandSchemaType {
     return this.messages.create.command;
   }
 

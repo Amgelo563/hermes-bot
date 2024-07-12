@@ -1,16 +1,21 @@
-import type { ParentCommandData } from '@nyx-discord/core';
+import type { SlashCommandSubcommandsOnlyBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { AbstractParentCommand } from '@nyx-discord/framework';
 
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
+
 export class RequestsParentCommand extends AbstractParentCommand {
-  protected readonly data: ParentCommandData;
+  protected readonly data: CommandSchemaType;
 
-  protected readonly children = [];
-
-  constructor(data: ParentCommandData) {
+  constructor(data: CommandSchemaType) {
     super();
-    this.data = {
-      ...data,
-      dmPermission: false,
-    };
+    this.data = data;
+  }
+
+  protected createData(): SlashCommandSubcommandsOnlyBuilder {
+    return new SlashCommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .setDMPermission(false);
   }
 }

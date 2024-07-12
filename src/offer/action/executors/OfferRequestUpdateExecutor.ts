@@ -80,6 +80,6 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
       member,
     );
 
-    await this.bot.sessions.start(session);
+    await this.bot.getSessionManager().start(session);
   }
 }

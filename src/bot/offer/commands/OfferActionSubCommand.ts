@@ -1,12 +1,12 @@
-import type { ParentCommand, SubCommandData } from '@nyx-discord/core';
+import type { ParentCommand } from '@nyx-discord/core';
 import type {
-  AutocompleteFocusedOption,
   AutocompleteInteraction,
   ChatInputCommandInteraction,
 } from 'discord.js';
 
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
 import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type {
   OfferActionOptions,
@@ -33,7 +33,7 @@ export class OfferActionSubCommand extends AbstractActionSubCommand<
 
   constructor(
     parent: ParentCommand,
-    data: SubCommandData,
+    data: CommandSchemaType,
     tagOption: ConfigCommandOption,
     messages: OfferMessagesParser,
     actions: OfferActionsManager,
@@ -50,13 +50,14 @@ export class OfferActionSubCommand extends AbstractActionSubCommand<
     this.autocompleteSource = autocompleteSource;
   }
 
-  public autocomplete(
-    _option: AutocompleteFocusedOption,
+  public async autocomplete(
     interaction: AutocompleteInteraction,
-  ) {
-    if (!this.allowNonMembers && !interaction.inGuild()) return [];
-
-    return this.autocompleteSource.autocomplete(interaction);
+  ): Promise<void> {
+    if (!this.allowNonMembers && !interaction.inGuild()) {
+      return interaction.respond([]);
+    }
+    const options = await this.autocompleteSource.autocomplete(interaction);
+    return interaction.respond(options);
   }
 
   protected async replyNotFound(

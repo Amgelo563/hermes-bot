@@ -78,7 +78,7 @@ export class ServiceActionCustomIdBuilder<
     return new ServiceActionCustomIdBuilder({
       namespace: builder.getNamespace(),
       objectId: builder.getObjectId(),
-      dataSeparator,
+      metadataSeparator: dataSeparator,
       separator,
       action: action,
       serviceObject: object,
@@ -112,7 +112,7 @@ export class ServiceActionCustomIdBuilder<
       namespace: this.namespace,
       action: this.action,
       objectId: this.objectId,
-      dataSeparator: this.dataSeparator,
+      metadataSeparator: this.metaSeparator,
       separator: this.separator,
       serviceObject: this.serviceObject,
     });

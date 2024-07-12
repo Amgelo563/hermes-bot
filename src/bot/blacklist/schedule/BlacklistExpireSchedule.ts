@@ -31,7 +31,7 @@ export class BlacklistExpireSchedule extends AbstractSchedule {
 
   public async tick(meta: ScheduleTickMeta): Promise<void> {
     const bot = meta.getBot();
-    const { client } = bot;
+    const client = bot.getClient();
     if (!client.user) return;
 
     const member = this.agent.getOwnMember();

@@ -67,7 +67,7 @@ export class TagCreateSession extends AbstractHermesSession {
     this.actions = actions;
   }
 
-  public async start() {
+  public async onStart() {
     const message = this.buildMessage();
 
     await this.startInteraction.reply(message);

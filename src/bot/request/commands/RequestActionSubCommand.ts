@@ -1,12 +1,12 @@
-import type { ParentCommand, SubCommandData } from '@nyx-discord/core';
+import type { ParentCommand } from '@nyx-discord/core';
 import type {
-  AutocompleteFocusedOption,
   AutocompleteInteraction,
   ChatInputCommandInteraction,
 } from 'discord.js';
 
 import type { AutocompleteChoiceSource } from '../../../autocomplete/AutocompleteChoiceSource';
 import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type {
   RequestActionOptions,
@@ -33,7 +33,7 @@ export class RequestActionSubCommand extends AbstractActionSubCommand<
 
   constructor(
     parent: ParentCommand,
-    data: SubCommandData,
+    data: CommandSchemaType,
     tagOption: ConfigCommandOption,
     messages: RequestMessagesParser,
     actions: RequestActionsManager,
@@ -50,11 +50,11 @@ export class RequestActionSubCommand extends AbstractActionSubCommand<
     this.autocompleteSource = autocompleteSource;
   }
 
-  public autocomplete(
-    _option: AutocompleteFocusedOption,
+  public async autocomplete(
     interaction: AutocompleteInteraction,
-  ) {
-    return this.autocompleteSource.autocomplete(interaction);
+  ): Promise<void> {
+    const options = await this.autocompleteSource.autocomplete(interaction);
+    return interaction.respond(options);
   }
 
   protected async replyNotFound(

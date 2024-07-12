@@ -1,5 +1,5 @@
 import type { Identifiable } from '@nyx-discord/core';
-import { BasicCustomIdCodec } from '@nyx-discord/framework';
+import { IdentifiableCustomIdCodec } from '@nyx-discord/framework';
 
 import type { ServiceObjectType } from '../../ServiceObject';
 import { ServiceActionCustomIdBuilder } from '../customId/ServiceActionCustomIdBuilder';
@@ -7,7 +7,7 @@ import { ServiceActionCustomIdBuilder } from '../customId/ServiceActionCustomIdB
 export class ServiceActionsCustomIdCodec<
   Data extends Identifiable<string>,
   Actions extends [string, ...string[]],
-> extends BasicCustomIdCodec<Data> {
+> extends IdentifiableCustomIdCodec<Data> {
   public static readonly DefaultNamespace = 'SACT';
 
   protected readonly serviceObject: ServiceObjectType;
@@ -30,8 +30,8 @@ export class ServiceActionsCustomIdCodec<
   ): ServiceActionsCustomIdCodec<Data, Actions> {
     return new ServiceActionsCustomIdCodec(
       ServiceActionsCustomIdCodec.DefaultNamespace,
-      BasicCustomIdCodec.DefaultSeparator,
-      BasicCustomIdCodec.DefaultDataSeparator,
+      IdentifiableCustomIdCodec.DefaultSeparator,
+      IdentifiableCustomIdCodec.DefaultMetadataSeparator,
       serviceObject,
     );
   }
@@ -46,7 +46,7 @@ export class ServiceActionsCustomIdCodec<
       objectId: objectId.toString(),
       namespace: this.namespace,
       separator: this.separator,
-      dataSeparator: this.dataSeparator,
+      metadataSeparator: this.metadataSeparator,
     });
   }
 
@@ -57,15 +57,11 @@ export class ServiceActionsCustomIdCodec<
     return this.createActionBuilder(objectId, action).build();
   }
 
-  public getNamespace(): string {
-    return this.namespace;
-  }
-
   public getSeparator(): string {
     return this.separator;
   }
 
-  public getDataSeparator(): string {
-    return this.dataSeparator;
+  public getMetadataSeparator(): string {
+    return this.metadataSeparator;
   }
 }

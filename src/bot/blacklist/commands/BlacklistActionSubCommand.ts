@@ -1,11 +1,10 @@
 import type { ParentCommand } from '@nyx-discord/core';
-import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type {
-  ApplicationCommandOptionChoiceData,
-  AutocompleteFocusedOption,
   AutocompleteInteraction,
-  Awaitable,
-  ChatInputCommandInteraction,
+  ChatInputCommandInteraction} from 'discord.js';
+import {
+  SlashCommandSubcommandBuilder,
+  SlashCommandUserOption,
 } from 'discord.js';
 
 import type {
@@ -57,13 +56,6 @@ export class BlacklistActionSubCommand extends AbstractActionSubCommand<
       agent,
       allowNonMembers,
     );
-    this.options = [
-      {
-        ...data.options.user,
-        type: ApplicationCommandOptionType.User,
-        required: false,
-      },
-    ];
     this.repository = repository;
     this.config = config;
     this.staffOnly = staffOnly;
@@ -90,11 +82,22 @@ export class BlacklistActionSubCommand extends AbstractActionSubCommand<
     await super.execute(interaction);
   }
 
-  public autocomplete(
-    _option: AutocompleteFocusedOption,
-    _interaction: AutocompleteInteraction,
-  ): Awaitable<ApplicationCommandOptionChoiceData[]> {
-    return [];
+  public async autocomplete(
+    interaction: AutocompleteInteraction,
+  ): Promise<void> {
+    await interaction.respond([]);
+  }
+
+  public createData(): SlashCommandSubcommandBuilder {
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .addUserOption(
+        new SlashCommandUserOption()
+          .setName(this.data.options.option.name)
+          .setDescription(this.data.options.option.description)
+          .setRequired(false),
+      );
   }
 
   protected async find(id: string): Promise<IdentifiableBlacklist | null> {

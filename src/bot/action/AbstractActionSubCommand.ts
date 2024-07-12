@@ -1,19 +1,13 @@
-import type {
-  Identifiable,
-  ParentCommand,
-  SubCommandData,
-} from '@nyx-discord/core';
+import type { Identifiable, ParentCommand } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
-import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type {
-  ApplicationCommandOptionChoiceData,
-  AutocompleteFocusedOption,
   AutocompleteInteraction,
-  Awaitable,
   ChatInputCommandInteraction,
 } from 'discord.js';
+import { SlashCommandSubcommandBuilder } from 'discord.js';
 
 import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
+import type { CommandSchemaType } from '../../discord/command/DiscordCommandSchema';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
@@ -30,7 +24,7 @@ export abstract class AbstractActionSubCommand<
     any
   >;
 
-  protected readonly data: SubCommandData;
+  protected readonly data: CommandSchemaType<'option'>;
 
   protected readonly optionId: string;
 
@@ -42,7 +36,7 @@ export abstract class AbstractActionSubCommand<
 
   constructor(
     parent: ParentCommand,
-    data: SubCommandData,
+    data: CommandSchemaType,
     option: ConfigCommandOption,
     actionsManager: AbstractActionsManager<Data, Actions, Agent, any>,
     action: Actions[number],
@@ -50,15 +44,12 @@ export abstract class AbstractActionSubCommand<
     allowNonMembers: boolean = true,
   ) {
     super(parent);
-    this.data = data;
-    this.options = [
-      {
-        ...option,
-        type: ApplicationCommandOptionType.String,
-        required: true,
-        autocomplete: true,
+    this.data = {
+      ...data,
+      options: {
+        option,
       },
-    ];
+    };
     this.optionId = option.name;
     this.actionsManager = actionsManager;
     this.action = action;
@@ -99,12 +90,26 @@ export abstract class AbstractActionSubCommand<
   }
 
   public abstract autocomplete(
-    _option: AutocompleteFocusedOption,
-    interaction: AutocompleteInteraction,
-  ): Awaitable<ApplicationCommandOptionChoiceData[]>;
+    _interaction: AutocompleteInteraction,
+  ): Promise<void>;
 
   public allowsNonMembers(): boolean {
     return this.allowNonMembers;
+  }
+
+  public createData(): SlashCommandSubcommandBuilder {
+    const { option } = this.data.options;
+
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description)
+      .addStringOption((builder) =>
+        builder
+          .setName(option.description)
+          .setDescription(option.description)
+          .setRequired(true)
+          .setAutocomplete(true),
+      );
   }
 
   protected abstract replyNotFound(

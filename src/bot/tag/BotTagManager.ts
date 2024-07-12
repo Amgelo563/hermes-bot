@@ -72,7 +72,7 @@ export class BotTagManager {
   public async start() {
     this.setupAutocomplete();
     await this.setupCommand();
-    await this.bot.events.subscribeClient(this.actionsSubscriber);
+    await this.bot.getEventManager().subscribeClient(this.actionsSubscriber);
   }
 
   public getAutocomplete(): PermanentAutocompleteChoiceSource {
@@ -131,9 +131,9 @@ export class BotTagManager {
       false,
     );
 
-    parent.addChildren([list, add, info, deleteSubCommand]);
+    parent.addChildren(list, add, info, deleteSubCommand);
 
-    await this.bot.commands.addCommand(parent);
+    await this.bot.getCommandManager().addCommands(parent);
   }
 
   protected setupAutocomplete() {

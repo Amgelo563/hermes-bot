@@ -53,7 +53,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
       context,
     );
 
-    await this.bot.sessions.start(confirm);
+    await this.bot.getSessionManager().start(confirm);
 
     const resultData = await confirm.getEndPromise();
     const confirmData = resultData.result;

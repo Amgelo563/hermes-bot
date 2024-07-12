@@ -114,7 +114,7 @@ export class OfferActionsManager extends AbstractActionsManager<
     return ServiceActionCustomIdBuilder.fromServiceCustomId<OfferActionOptions>(
       customId,
       this.codec.getSeparator(),
-      this.codec.getDataSeparator(),
+      this.codec.getMetadataSeparator(),
       OfferAction,
       ServiceObject.enum.Offer,
     );

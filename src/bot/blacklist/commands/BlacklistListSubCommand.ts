@@ -1,18 +1,16 @@
-import type {
-  CommandExecutionMeta,
-  ParentCommand,
-  SubCommandData,
-} from '@nyx-discord/core';
+import type { CommandExecutionMeta, ParentCommand } from '@nyx-discord/core';
 import { AbstractSubCommand } from '@nyx-discord/framework';
 import type { ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandSubcommandBuilder } from 'discord.js';
 
 import type { DiscordBlacklistAgent } from '../../../blacklist/discord/DiscordBlacklistAgent';
 import type { BlacklistRepository } from '../../../blacklist/repository/BlacklistRepository';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import { BlacklistListSession } from '../sessions/BlacklistListSession';
 
 export class BlacklistListSubCommand extends AbstractSubCommand {
-  protected readonly data: SubCommandData;
+  protected readonly data: CommandSchemaType;
 
   protected readonly repository: BlacklistRepository;
 
@@ -22,7 +20,7 @@ export class BlacklistListSubCommand extends AbstractSubCommand {
 
   constructor(
     parent: ParentCommand,
-    data: SubCommandData,
+    data: CommandSchemaType,
     repository: BlacklistRepository,
     agent: DiscordBlacklistAgent,
     messages: HermesMessageService,
@@ -56,6 +54,12 @@ export class BlacklistListSubCommand extends AbstractSubCommand {
       this.agent,
     );
 
-    await bot.sessions.start(session);
+    await bot.getSessionManager().start(session);
+  }
+
+  protected createData(): SlashCommandSubcommandBuilder {
+    return new SlashCommandSubcommandBuilder()
+      .setName(this.data.name)
+      .setDescription(this.data.description);
   }
 }

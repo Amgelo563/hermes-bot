@@ -3,9 +3,10 @@ import type {
   NyxBot,
   SessionExecutionMeta,
   SessionStartInteraction,
-  SessionUpdateInteraction,
+  SessionUpdateInteraction} from '@nyx-discord/core';
+import {
+  SessionEndCodes
 } from '@nyx-discord/core';
-import { SessionExpiredCode } from '@nyx-discord/core';
 import { AbstractSession, ActionRowList } from '@nyx-discord/framework';
 import type { EmbedBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
@@ -41,7 +42,7 @@ export abstract class AbstractHermesSession<
     code: Identifier | number,
     _meta: SessionExecutionMeta,
   ) {
-    if (code !== SessionExpiredCode) {
+    if (code !== SessionEndCodes.Expired) {
       return;
     }
 

@@ -1,4 +1,6 @@
-import type { NyxBot, ReadonlyCommandRepository } from '@nyx-discord/core';
+import type { NyxBot } from '@nyx-discord/core';
+import { IllegalStateError } from '@nyx-discord/core';
+import type { ApplicationCommand } from 'discord.js';
 
 import type { HermesPlaceholderReplacer } from '../../hermes/message/placeholder/HermesPlaceholderReplacer';
 import type { MessagePlaceholder } from '../../message/placeholder/MessagePlaceholder';
@@ -9,14 +11,20 @@ type SplitReturnType = [string, ...(string | undefined)[]];
 export class BotCommandPlaceholderReplacer
   implements HermesPlaceholderReplacer
 {
-  protected readonly commands: ReadonlyCommandRepository;
+  protected readonly commands: ApplicationCommand[];
 
-  constructor(commands: ReadonlyCommandRepository) {
+  constructor(commands: ApplicationCommand[]) {
     this.commands = commands;
   }
 
-  public static fromBot(bot: NyxBot): BotCommandPlaceholderReplacer {
-    return new BotCommandPlaceholderReplacer(bot.commands.getRepository());
+  public static async fromBot(
+    bot: NyxBot,
+  ): Promise<BotCommandPlaceholderReplacer> {
+    const commandMap = await bot.getClient().application?.commands.fetch();
+    if (!commandMap) throw new IllegalStateError();
+
+    const commands = Array.from(commandMap.values());
+    return new BotCommandPlaceholderReplacer(commands);
   }
 
   public replace(placeholder: MessagePlaceholder): string | null {
@@ -26,29 +34,15 @@ export class BotCommandPlaceholderReplacer
     const commandNameArgs = commandsArg.split(':') as SplitReturnType;
     const [topLevelName] = commandNameArgs;
 
-    const commands = this.commands.getCommands();
-
-    const topLevelCommand = commands.find(
-      (c) => c.getData().name === topLevelName,
+    const commandMapping = this.commands.find(
+      (command) => command.name === topLevelName,
     );
-    if (!topLevelCommand) return this.defaultFormat(commandNameArgs);
-
-    const mappings = this.commands.getMappings();
-    const ids = mappings.get(topLevelCommand.getId());
-
-    // TODO: I don't have the mental power or time to implement support for standalone commands with multiple contexts
-    if (!ids || ids.length > 1) return this.defaultFormat(commandNameArgs);
-
-    const commandMapping = ids[0];
+    if (!commandMapping) return null;
 
     return `</${commandNameArgs.join(' ')}:${commandMapping.id}>`;
   }
 
   public getNamespace(): string {
     return 'command';
-  }
-
-  protected defaultFormat(commandArgs: SplitReturnType): string {
-    return `\`/${commandArgs.join(' ')}\``;
   }
 }
