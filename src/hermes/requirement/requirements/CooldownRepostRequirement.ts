@@ -1,7 +1,6 @@
-import { TimestampStyles } from '@discordjs/formatters';
 import { IllegalStateError } from '@nyx-discord/core';
-import type { GuildMember , Collection} from 'discord.js';
-import { time } from 'discord.js';
+import type { Collection, GuildMember } from 'discord.js';
+import { time, TimestampStyles } from 'discord.js';
 import type { z } from 'zod';
 
 import type { RequirementResultData } from '../../../requirement/result/RequirementResultData';

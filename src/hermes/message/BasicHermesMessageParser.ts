@@ -1,15 +1,15 @@
+import { ButtonStyle } from 'discord-api-types/v10';
 import type {
   EmbedAuthorOptions,
+  EmbedField,
   EmbedFooterOptions,
-} from '@discordjs/builders';
-import { TextInputBuilder } from '@discordjs/builders';
-import { ButtonStyle } from 'discord-api-types/v10';
-import type { EmbedField } from 'discord.js';
+} from 'discord.js';
 import {
   ButtonBuilder,
   EmbedBuilder,
   escapeMarkdown,
   StringSelectMenuBuilder,
+  TextInputBuilder,
 } from 'discord.js';
 import { z } from 'zod';
 import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';

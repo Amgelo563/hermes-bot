@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
 import type { CommandExecutionMeta } from '@nyx-discord/core';
 import {
   AbstractStandaloneCommand,
@@ -10,6 +9,7 @@ import type {
   ModalSubmitInteraction,
   SlashCommandOptionsOnlyBuilder,
 } from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';

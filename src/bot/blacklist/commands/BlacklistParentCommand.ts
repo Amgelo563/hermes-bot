@@ -1,6 +1,6 @@
-import type { SlashCommandSubcommandsOnlyBuilder } from '@discordjs/builders';
-import { SlashCommandBuilder } from '@discordjs/builders';
 import { AbstractParentCommand } from '@nyx-discord/framework';
+import type { SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 

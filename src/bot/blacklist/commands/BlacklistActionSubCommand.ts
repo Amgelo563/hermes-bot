@@ -1,7 +1,8 @@
 import type { ParentCommand } from '@nyx-discord/core';
 import type {
   AutocompleteInteraction,
-  ChatInputCommandInteraction} from 'discord.js';
+  ChatInputCommandInteraction,
+} from 'discord.js';
 import {
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
@@ -65,6 +66,19 @@ export class BlacklistActionSubCommand extends AbstractActionSubCommand<
   public async execute(
     interaction: ChatInputCommandInteraction,
   ): Promise<void> {
+    const user =
+      interaction.options.getUser(this.data.options.option.name)
+      ?? interaction.user;
+    if (user.bot) {
+      const member = this.agent.mockMember(user);
+      const error = this.messages.getNotAllowedErrorEmbed({ member });
+      await interaction.reply({
+        ephemeral: true,
+        embeds: [error],
+      });
+      return;
+    }
+
     if (
       this.staffOnly
       && (!interaction.inCachedGuild() || !this.config.isStaff(interaction.member))

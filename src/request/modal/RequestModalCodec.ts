@@ -1,8 +1,7 @@
-import { TextInputBuilder } from '@discordjs/builders';
 import type { APIModalInteractionResponseCallbackData } from 'discord-api-types/v10';
 import { TextInputStyle } from 'discord-api-types/v10';
 import type { ModalSubmitInteraction } from 'discord.js';
-import { ModalBuilder } from 'discord.js';
+import { ModalBuilder, TextInputBuilder } from 'discord.js';
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';

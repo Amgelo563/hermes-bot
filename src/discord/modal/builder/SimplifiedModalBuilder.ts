@@ -1,4 +1,4 @@
-import type { TextInputBuilder } from '@discordjs/builders';
+import type { TextInputBuilder } from 'discord.js';
 import { ActionRowBuilder, ModalBuilder } from 'discord.js';
 
 // Modals can only have one text input per row, this class removes the need to manually add that

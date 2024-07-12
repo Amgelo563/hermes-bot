@@ -1,4 +1,4 @@
-import type { TextInputBuilder } from '@discordjs/builders';
+import type { TextInputBuilder } from 'discord.js';
 import type { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 
 export type OfferModalData = {
