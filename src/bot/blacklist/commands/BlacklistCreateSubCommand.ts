@@ -99,11 +99,7 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
       BlacklistCreateSubCommand.BlacklistedIndex,
       target.id,
     );
-    console.log(customIdBuilder);
-
     const customId = customIdBuilder.build();
-    console.log(customId);
-
     const modal = this.modalCodec.createModal(customId);
     await interaction.showModal(modal);
   }
