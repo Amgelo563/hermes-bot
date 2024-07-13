@@ -1,7 +1,7 @@
 import type { APIModalInteractionResponseCallbackData } from 'discord-api-types/v10';
 import { TextInputStyle } from 'discord-api-types/v10';
-import type { ModalSubmitInteraction } from 'discord.js';
-import { ModalBuilder, TextInputBuilder } from 'discord.js';
+import type { ModalSubmitInteraction , ModalBuilder} from 'discord.js';
+import { TextInputBuilder } from 'discord.js';
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
@@ -48,14 +48,20 @@ export class RequestModalCodec
     };
   }
 
-  public createModal(customId: string): ModalBuilder {
+  public createModal(
+    customId: string,
+    presentData?: RequestModalInputData,
+  ): ModalBuilder {
     const data = this.modalData;
 
     if (this.cachedModalData) {
       const newData = structuredClone(this.cachedModalData);
       newData.custom_id = customId;
 
-      return new ModalBuilder(newData);
+      const builder = new SimplifiedModalBuilder(newData);
+      if (!presentData) return builder;
+
+      return this.populateWithData(presentData, builder);
     }
 
     const { modal, fields } = data;
@@ -91,28 +97,6 @@ export class RequestModalCodec
     return this.createModal(customId);
   }
 
-  public createFromData(
-    data: RequestModalInputData,
-    customId: string,
-  ): ModalBuilder {
-    const modalData = this.modalData;
-
-    const modal = new SimplifiedModalBuilder(
-      this.createModal(customId).toJSON(),
-    );
-    const { fields } = modalData;
-
-    const titleField = new TextInputBuilder(fields.title.toJSON());
-    const descriptionField = new TextInputBuilder(fields.description.toJSON());
-    const budgetField = new TextInputBuilder(fields.budget.toJSON());
-
-    titleField.setValue(data.title);
-    descriptionField.setValue(data.description);
-    budgetField.setValue(data.budget);
-
-    return modal.setTextInputs(titleField, descriptionField, budgetField);
-  }
-
   public equals(
     data: RequestModalInputData,
     interaction: ModalSubmitInteraction,
@@ -125,5 +109,22 @@ export class RequestModalCodec
       && data.description === get(ids.Description)
       && data.budget === get(ids.Budget)
     );
+  }
+
+  protected populateWithData(
+    data: RequestModalInputData,
+    modal: SimplifiedModalBuilder,
+  ): ModalBuilder {
+    const { fields } = this.modalData;
+
+    const titleField = new TextInputBuilder(fields.title.toJSON());
+    const descriptionField = new TextInputBuilder(fields.description.toJSON());
+    const budgetField = new TextInputBuilder(fields.budget.toJSON());
+
+    titleField.setValue(data.title);
+    descriptionField.setValue(data.description);
+    budgetField.setValue(data.budget);
+
+    return modal.setTextInputs(titleField, descriptionField, budgetField);
   }
 }

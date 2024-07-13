@@ -2,8 +2,8 @@ import {
   type APIModalInteractionResponseCallbackData,
   TextInputStyle,
 } from 'discord-api-types/v10';
-import type { ModalSubmitInteraction } from 'discord.js';
-import { ModalBuilder, TextInputBuilder } from 'discord.js';
+import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
+import { TextInputBuilder } from 'discord.js';
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
@@ -56,14 +56,20 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     };
   }
 
-  public createModal(customId: string): ModalBuilder {
+  public createModal(
+    customId: string,
+    presentData?: OfferCreateData,
+  ): ModalBuilder {
     const data = this.modalData;
 
     if (this.cachedModalData) {
       const newData = structuredClone(this.cachedModalData);
       newData.custom_id = customId;
 
-      return new ModalBuilder(newData);
+      const builder = new SimplifiedModalBuilder(newData);
+      if (!presentData) return builder;
+
+      return this.populateWithData(presentData, builder);
     }
 
     const { modal, fields } = data;
@@ -109,13 +115,27 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     return this.createModal(customId);
   }
 
-  public createFromData(data: OfferCreateData, customId: string): ModalBuilder {
-    const modalData = this.modalData;
+  public equals(
+    data: OfferCreateData,
+    interaction: ModalSubmitInteraction,
+  ): boolean {
+    const ids = OfferModalCodec.CreateFieldsIds;
+    const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
-    const modal = new SimplifiedModalBuilder(
-      this.createModal(customId).toJSON(),
+    return (
+      get(ids.Title) === data.title
+      && get(ids.Description) === data.description
+      && get(ids.Price) === data.price
+      && get(ids.Thumbnail) === data.thumbnail
+      && get(ids.Image) === data.image
     );
-    const { fields } = modalData;
+  }
+
+  protected populateWithData(
+    data: OfferCreateData,
+    modal: SimplifiedModalBuilder,
+  ): ModalBuilder {
+    const { fields } = this.modalData;
 
     const titleField = new TextInputBuilder(fields.title.toJSON());
     const descriptionField = new TextInputBuilder(fields.description.toJSON());
@@ -135,22 +155,6 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
       priceField,
       thumbnailField,
       imageField,
-    );
-  }
-
-  public equals(
-    data: OfferCreateData,
-    interaction: ModalSubmitInteraction,
-  ): boolean {
-    const ids = OfferModalCodec.CreateFieldsIds;
-    const get = interaction.fields.getTextInputValue.bind(interaction.fields);
-
-    return (
-      get(ids.Title) === data.title
-      && get(ids.Description) === data.description
-      && get(ids.Price) === data.price
-      && get(ids.Thumbnail) === data.thumbnail
-      && get(ids.Image) === data.image
     );
   }
 }

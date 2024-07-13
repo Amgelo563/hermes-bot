@@ -1,4 +1,7 @@
-import { TextInputStyle } from 'discord-api-types/v10';
+import {
+  type APIModalInteractionResponseCallbackData,
+  TextInputStyle,
+} from 'discord-api-types/v10';
 import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
 import { TextInputBuilder } from 'discord.js';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
@@ -18,7 +21,8 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
 
   protected readonly modalData: TagModalData;
 
-  protected cachedModal: ModalBuilder | null = null;
+  protected cachedModalData: APIModalInteractionResponseCallbackData | null =
+    null;
 
   constructor(modalData: TagModalData) {
     this.modalData = modalData;
@@ -39,12 +43,23 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     };
   }
 
-  public createModal(): ModalBuilder {
-    if (this.cachedModal) {
-      return this.cachedModal;
+  public createModal(
+    customId: string,
+    presentData?: TagCreateData,
+  ): ModalBuilder {
+    const data = this.modalData;
+
+    if (this.cachedModalData) {
+      const newData = structuredClone(this.cachedModalData);
+      newData.custom_id = customId;
+
+      const builder = new SimplifiedModalBuilder(newData);
+      if (!presentData) return builder;
+
+      return this.populateWithData(presentData, builder);
     }
 
-    const { fields, modal } = this.modalData;
+    const { fields, modal } = data;
 
     fields.name
       .setStyle(TextInputStyle.Short)
@@ -73,23 +88,6 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     return modal;
   }
 
-  public createFromData(data: TagCreateData, customId: string): ModalBuilder {
-    const modal = new SimplifiedModalBuilder(
-      this.createModal().setCustomId(customId).toJSON(),
-    );
-    const { fields } = this.modalData;
-
-    const nameField = new TextInputBuilder(fields.name.toJSON());
-    const descriptionField = new TextInputBuilder(fields.description.toJSON());
-    const colorField = new TextInputBuilder(fields.color.toJSON());
-
-    nameField.setValue(data.name);
-    descriptionField.setValue(data.description);
-    colorField.setValue(data.color);
-
-    return modal.setTextInputs(...Object.values(fields));
-  }
-
   public equals(
     data: TagCreateData,
     interaction: ModalSubmitInteraction,
@@ -102,5 +100,22 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
       && data.description === get(ids.Description)
       && data.color === get(ids.Color)
     );
+  }
+
+  protected populateWithData(
+    data: TagCreateData,
+    modal: SimplifiedModalBuilder,
+  ): ModalBuilder {
+    const { fields } = this.modalData;
+
+    const nameField = new TextInputBuilder(fields.name.toJSON());
+    const descriptionField = new TextInputBuilder(fields.description.toJSON());
+    const colorField = new TextInputBuilder(fields.color.toJSON());
+
+    nameField.setValue(data.name);
+    descriptionField.setValue(data.description);
+    colorField.setValue(data.color);
+
+    return modal.setTextInputs(...Object.values(fields));
   }
 }

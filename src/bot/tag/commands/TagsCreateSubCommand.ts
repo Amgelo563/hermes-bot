@@ -74,7 +74,7 @@ export class TagsCreateSubCommand extends AbstractSubCommand {
 
     if (!this.cachedModal) {
       const modalId = this.getCustomId(meta.getBot());
-      this.cachedModal = this.modalCodec.createModal().setCustomId(modalId);
+      this.cachedModal = this.modalCodec.createModal(modalId);
     }
 
     await interaction.showModal(this.cachedModal);
