@@ -1,9 +1,9 @@
+import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
 import {
   type APIModalInteractionResponseCallbackData,
+  TextInputBuilder,
   TextInputStyle,
-} from 'discord-api-types/v10';
-import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
-import { TextInputBuilder } from 'discord.js';
+} from 'discord.js';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import type { TagCreateData } from '../data/TagCreateData';
@@ -96,9 +96,9 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      data.name === get(ids.Name)
-      && data.description === get(ids.Description)
-      && data.color === get(ids.Color)
+      data.name === get(ids.Name) &&
+      data.description === get(ids.Description) &&
+      data.color === get(ids.Color)
     );
   }
 

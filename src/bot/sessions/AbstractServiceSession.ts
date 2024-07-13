@@ -4,9 +4,9 @@ import type {
   SessionUpdateInteraction,
 } from '@nyx-discord/core';
 import type { ActionRowWrapper } from '@nyx-discord/framework';
-import type { APIButtonComponentWithCustomId } from 'discord-api-types/v10';
 import type {
   ActionRowData,
+  APIButtonComponentWithCustomId,
   ButtonBuilder,
   ButtonInteraction,
   EmbedBuilder,
@@ -101,9 +101,9 @@ export abstract class AbstractServiceSession<
   public async onStart(): Promise<void> {
     if (!this.startInteraction.replied && !this.startInteraction.deferred) {
       if (
-        this.startInteraction.isCommand()
-        || (this.startInteraction.isModalSubmit()
-          && !this.startInteraction.isFromMessage())
+        this.startInteraction.isCommand() ||
+        (this.startInteraction.isModalSubmit() &&
+          !this.startInteraction.isFromMessage())
       ) {
         await this.startInteraction.deferReply({ ephemeral: true });
       } else {
@@ -195,9 +195,9 @@ export abstract class AbstractServiceSession<
     }
 
     this.updateConfirmButton(
-      requirements.result === RequirementResultEnum.Allow
-        || (requirements.result === RequirementResultEnum.Warn
-          && this.allowConfirm()),
+      requirements.result === RequirementResultEnum.Allow ||
+        (requirements.result === RequirementResultEnum.Warn &&
+          this.allowConfirm()),
     );
 
     const components: ActionRowData<any>[] = [this.buttonRow.toRowData()];
@@ -213,8 +213,8 @@ export abstract class AbstractServiceSession<
   protected updateConfirmButton(allowConfirm: boolean): void {
     this.buttonRow.forEach((button) => {
       if (
-        (button.data as APIButtonComponentWithCustomId).custom_id
-        === this.buttonIds.Confirm
+        (button.data as APIButtonComponentWithCustomId).custom_id ===
+        this.buttonIds.Confirm
       ) {
         button.setDisabled(!allowConfirm);
       }

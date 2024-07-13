@@ -1,7 +1,9 @@
-import type { APIModalInteractionResponseCallbackData } from 'discord-api-types/v10';
-import { TextInputStyle } from 'discord-api-types/v10';
-import type { ModalSubmitInteraction , ModalBuilder} from 'discord.js';
-import { TextInputBuilder } from 'discord.js';
+import type {
+  APIModalInteractionResponseCallbackData,
+  ModalBuilder,
+  ModalSubmitInteraction,
+} from 'discord.js';
+import { TextInputBuilder, TextInputStyle } from 'discord.js';
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
@@ -105,9 +107,9 @@ export class RequestModalCodec
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      data.title === get(ids.Title)
-      && data.description === get(ids.Description)
-      && data.budget === get(ids.Budget)
+      data.title === get(ids.Title) &&
+      data.description === get(ids.Description) &&
+      data.budget === get(ids.Budget)
     );
   }
 

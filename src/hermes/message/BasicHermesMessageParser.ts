@@ -1,4 +1,3 @@
-import { ButtonStyle } from 'discord-api-types/v10';
 import type {
   EmbedAuthorOptions,
   EmbedField,
@@ -6,6 +5,7 @@ import type {
 } from 'discord.js';
 import {
   ButtonBuilder,
+  ButtonStyle,
   EmbedBuilder,
   escapeMarkdown,
   StringSelectMenuBuilder,

@@ -1,6 +1,5 @@
-import { ComponentType, TextInputStyle } from 'discord-api-types/v10';
 import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
-import { TextInputBuilder } from 'discord.js';
+import { ComponentType, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';

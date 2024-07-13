@@ -1,9 +1,9 @@
+import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
 import {
   type APIModalInteractionResponseCallbackData,
+  TextInputBuilder,
   TextInputStyle,
-} from 'discord-api-types/v10';
-import type { ModalBuilder, ModalSubmitInteraction } from 'discord.js';
-import { TextInputBuilder } from 'discord.js';
+} from 'discord.js';
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
@@ -123,11 +123,11 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      get(ids.Title) === data.title
-      && get(ids.Description) === data.description
-      && get(ids.Price) === data.price
-      && get(ids.Thumbnail) === data.thumbnail
-      && get(ids.Image) === data.image
+      get(ids.Title) === data.title &&
+      get(ids.Description) === data.description &&
+      get(ids.Price) === data.price &&
+      get(ids.Thumbnail) === data.thumbnail &&
+      get(ids.Image) === data.image
     );
   }
 

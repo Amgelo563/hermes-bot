@@ -1,4 +1,4 @@
-import { ButtonStyle } from 'discord-api-types/v10';
+import { ButtonStyle } from 'discord.js';
 import { z } from 'zod';
 import { BaseDiscordButtonSchema } from './BaseDiscordButtonSchema';
 
