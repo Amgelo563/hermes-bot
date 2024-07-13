@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Prepare
-ARG NODE_VERSION=18.17.1
+ARG NODE_VERSION=20.15.1
 ARG PNPM_VERSION=8.7.1
 
 # Setup node
