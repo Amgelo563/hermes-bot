@@ -145,7 +145,7 @@ export abstract class AbstractServiceSession<
     }
 
     if (interaction.customId === this.buttonIds.Confirm) {
-      await this.disableComponents(interaction);
+      await interaction.update({ components: [] });
       await this.handleConfirm(interaction);
 
       await this.selfEnd();
