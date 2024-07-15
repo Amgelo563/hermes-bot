@@ -12,11 +12,11 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       '@nyx-discord/core':
-        specifier: 2.0.0
-        version: 2.0.0(discord.js@14.15.3)
-      '@nyx-discord/framework':
         specifier: 2.1.0
         version: 2.1.0(discord.js@14.15.3)
+      '@nyx-discord/framework':
+        specifier: 2.2.0
+        version: 2.2.0(discord.js@14.15.3)
       '@prisma/client':
         specifier: 5.16.2
         version: 5.16.2(prisma@5.16.2)
@@ -177,13 +177,13 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@nyx-discord/core@2.0.0':
-    resolution: {integrity: sha512-qE8vE6SOcup6SBcYCjtPDIB0CQQ/LQ548Rl2ZbNUpmbG+O3cLEMgjaXPXdAmHv+jhBH9U7lUwoUnCOZPcMrXsg==}
+  '@nyx-discord/core@2.1.0':
+    resolution: {integrity: sha512-6Oe3ZrYLjyJrJ3VPBVzD4yOVUC+aFQ+Vwo0HtdeJQh+W+ndvYpFPxYQVrgPUc8jk1jSGu2xdRMfypYKvCmnjDw==}
     peerDependencies:
       discord.js: ^14.14.1
 
-  '@nyx-discord/framework@2.1.0':
-    resolution: {integrity: sha512-tOgwoSk7IYjOaiHv5i/+YcE/cJx/iz90Kmf9hm90Qge+xykuvuuWWTTXHAMqeDp6iOufkvoh+1YmYboBD8U7cw==}
+  '@nyx-discord/framework@2.2.0':
+    resolution: {integrity: sha512-BoC+yHICWZ5NkErQFfYyDHDYccwKTwQqiq3dhCkjKaFkSWGrRnC9KsPrpNcVCwhBclUANycw4lwAg69tu2HK2Q==}
     peerDependencies:
       discord.js: ^14.14.1
 
@@ -1731,15 +1731,15 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@nyx-discord/core@2.0.0(discord.js@14.15.3)':
+  '@nyx-discord/core@2.1.0(discord.js@14.15.3)':
     dependencies:
       discord.js: 14.15.3
 
-  '@nyx-discord/framework@2.1.0(discord.js@14.15.3)':
+  '@nyx-discord/framework@2.2.0(discord.js@14.15.3)':
     dependencies:
       '@discordjs/collection': 1.5.3
       '@isaacs/ttlcache': 1.4.1
-      '@nyx-discord/core': 2.0.0(discord.js@14.15.3)
+      '@nyx-discord/core': 2.1.0(discord.js@14.15.3)
       cron: 3.0.0
       discord.js: 14.15.3
 
