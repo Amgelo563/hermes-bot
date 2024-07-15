@@ -3,6 +3,7 @@ import type {
   SessionStartInteraction,
   SessionUpdateInteraction,
 } from '@nyx-discord/core';
+import { SessionEndCodes } from '@nyx-discord/core';
 import type { ActionRowWrapper } from '@nyx-discord/framework';
 import type {
   ActionRowData,
@@ -101,9 +102,9 @@ export abstract class AbstractServiceSession<
   public async onStart(): Promise<void> {
     if (!this.startInteraction.replied && !this.startInteraction.deferred) {
       if (
-        this.startInteraction.isCommand() ||
-        (this.startInteraction.isModalSubmit() &&
-          !this.startInteraction.isFromMessage())
+        this.startInteraction.isCommand()
+        || (this.startInteraction.isModalSubmit()
+          && !this.startInteraction.isFromMessage())
       ) {
         await this.startInteraction.deferReply({ ephemeral: true });
       } else {
@@ -111,6 +112,23 @@ export abstract class AbstractServiceSession<
       }
     }
 
+    const sessionManager = this.bot.getSessionManager();
+    const sessions = sessionManager.getRepository().getSessions();
+    for (const [_id, session] of sessions) {
+      const userId = session.getStartInteraction().user.id;
+
+      if (
+        session !== this
+        && userId === this.startInteraction.user.id
+        && session instanceof this.constructor
+      ) {
+        await sessionManager.end(
+          session,
+          SessionEndCodes.Expired.toString(),
+          SessionEndCodes.Expired,
+        );
+      }
+    }
     await this.buildAndReply(this.startInteraction);
   }
 
@@ -195,9 +213,9 @@ export abstract class AbstractServiceSession<
     }
 
     this.updateConfirmButton(
-      requirements.result === RequirementResultEnum.Allow ||
-        (requirements.result === RequirementResultEnum.Warn &&
-          this.allowConfirm()),
+      requirements.result === RequirementResultEnum.Allow
+        || (requirements.result === RequirementResultEnum.Warn
+          && this.allowConfirm()),
     );
 
     const components: ActionRowData<any>[] = [this.buttonRow.toRowData()];
@@ -213,8 +231,8 @@ export abstract class AbstractServiceSession<
   protected updateConfirmButton(allowConfirm: boolean): void {
     this.buttonRow.forEach((button) => {
       if (
-        (button.data as APIButtonComponentWithCustomId).custom_id ===
-        this.buttonIds.Confirm
+        (button.data as APIButtonComponentWithCustomId).custom_id
+        === this.buttonIds.Confirm
       ) {
         button.setDisabled(!allowConfirm);
       }
