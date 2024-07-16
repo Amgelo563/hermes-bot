@@ -4,11 +4,13 @@ import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 import type { ServiceManager } from '../service/ServiceManager';
+import type { StickyMessagesDomain } from '../sticky/StickyMessagesDomain';
 import { BotBlacklistManager } from './blacklist/BotBlacklistManager';
 import { BotCommandPlaceholderReplacer } from './message/BotCommandPlaceholderReplacer';
 import { NonMemberActionSubCommandMiddleware } from './middleware/NonMemberActionSubCommandMiddleware';
 import { BotOfferManager } from './offer/BotOfferManager';
 import { BotRequestManager } from './request/BotRequestManager';
+import { BotStickyMessagesManager } from './sticky/BotStickyMessagesManager';
 import { BotTagManager } from './tag/BotTagManager';
 
 /** Manages objects that connect the bot with the {@link ServiceManager}. */
@@ -27,6 +29,8 @@ export class BotManager {
 
   protected readonly blacklist: BotBlacklistManager;
 
+  protected readonly stickyMessages: BotStickyMessagesManager | null;
+
   constructor(
     messages: HermesMessageService,
     bot: NyxBot,
@@ -35,6 +39,7 @@ export class BotManager {
     request: BotRequestManager,
     offer: BotOfferManager,
     blacklist: BotBlacklistManager,
+    stickyMessages: BotStickyMessagesManager | null,
   ) {
     this.messages = messages;
     this.bot = bot;
@@ -43,6 +48,7 @@ export class BotManager {
     this.offer = offer;
     this.blacklist = blacklist;
     this.discordAgent = discordAgent;
+    this.stickyMessages = stickyMessages;
   }
 
   public static create(
@@ -50,6 +56,7 @@ export class BotManager {
     messages: HermesMessageService,
     bot: NyxBot,
     config: HermesConfigWrapper,
+    stickyMessagesDomain: StickyMessagesDomain | null,
   ) {
     const tag = BotTagManager.create(
       bot,
@@ -78,6 +85,14 @@ export class BotManager {
       services.getBlacklistDomain(),
     );
 
+    const stickyMessages = stickyMessagesDomain
+      ? BotStickyMessagesManager.create(
+          bot,
+          config.getConfig(),
+          stickyMessagesDomain,
+        )
+      : null;
+
     return new BotManager(
       messages,
       bot,
@@ -86,6 +101,7 @@ export class BotManager {
       request,
       offer,
       blacklist,
+      stickyMessages,
     );
   }
 
@@ -100,6 +116,10 @@ export class BotManager {
     await this.request.start();
     await this.offer.start();
     await this.blacklist.start();
+
+    if (this.stickyMessages !== null) {
+      await this.stickyMessages.start();
+    }
 
     await this.bot.start();
     const replacer = await BotCommandPlaceholderReplacer.fromBot(this.bot);

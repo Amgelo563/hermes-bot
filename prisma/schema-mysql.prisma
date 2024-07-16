@@ -49,3 +49,11 @@ model Tag {
   requests    Request[]
   offers      Offer[]
 }
+
+model StickyMessage {
+  id String @id
+
+  messageId String
+  channelId String
+  guildId   String
+}

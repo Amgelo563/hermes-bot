@@ -7,6 +7,7 @@ import type { HermesConfigWrapper } from './config/file/HermesConfigWrapper';
 import type { HermesDatabaseService } from './hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from './hermes/message/HermesMessageService';
 import { ServiceManager } from './service/ServiceManager';
+import { StickyMessagesDomain } from './sticky/StickyMessagesDomain';
 
 export class HermesService {
   protected readonly logger: NyxLogger;
@@ -21,6 +22,8 @@ export class HermesService {
 
   protected readonly botManager: BotManager;
 
+  protected readonly stickyDomain: StickyMessagesDomain | null;
+
   constructor(
     logger: NyxLogger,
     config: HermesConfigWrapper,
@@ -28,6 +31,7 @@ export class HermesService {
     messages: HermesMessageService,
     services: ServiceManager,
     botManager: BotManager,
+    sticky: StickyMessagesDomain | null,
   ) {
     this.logger = logger;
     this.botManager = botManager;
@@ -35,6 +39,7 @@ export class HermesService {
     this.databaseService = database;
     this.serviceManager = services;
     this.messageService = messages;
+    this.stickyDomain = sticky;
   }
 
   public static create(
@@ -50,9 +55,11 @@ export class HermesService {
         parse: ['users'],
       },
     });
+    const rawConfig = config.getConfig();
+
     const bot = Bot.create(() => ({
       client,
-      token: config.getConfig().discord.token,
+      token: rawConfig.discord.token,
       id: Symbol('HermesBot'),
       logger,
       deployCommands,
@@ -66,7 +73,23 @@ export class HermesService {
       config,
     );
 
-    const botManager = BotManager.create(serviceManager, messages, bot, config);
+    const stickyMessagesDomain =
+      rawConfig.offer.sendStickyMessage || rawConfig.request.sendStickyMessage
+        ? StickyMessagesDomain.create(
+            messages,
+            bot,
+            config.getConfig(),
+            database,
+          )
+        : null;
+
+    const botManager = BotManager.create(
+      serviceManager,
+      messages,
+      bot,
+      config,
+      stickyMessagesDomain,
+    );
 
     return new HermesService(
       logger,
@@ -75,12 +98,17 @@ export class HermesService {
       messages,
       serviceManager,
       botManager,
+      stickyMessagesDomain,
     );
   }
 
   public async start(): Promise<this> {
     await this.botManager.start();
     await this.serviceManager.start();
+
+    if (this.stickyDomain !== null) {
+      await this.stickyDomain.start();
+    }
 
     return this;
   }

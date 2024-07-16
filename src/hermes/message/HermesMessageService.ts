@@ -25,6 +25,9 @@ import { RequestMessagesParser } from '../../request/message/read/RequestMessage
 import { RequestMessagesReader } from '../../request/message/read/RequestMessagesReader';
 import type { RequestMessagesSchema } from '../../request/message/read/RequestMessagesSchema';
 import { HermesMemberPlaceholderReplacer } from '../../service/member/message/HermesMemberPlaceholderReplacer';
+import { StickyMessagesParser } from '../../sticky/message/StickyMessagesParser';
+import { StickyMessagesReader } from '../../sticky/message/StickyMessagesReader';
+import type { StickyMessagesSchema } from '../../sticky/message/StickyMessagesSchema';
 import { TagPlaceholderReplacer } from '../../tag/message/placeholder/TagPlaceholderReplacer';
 import { TagMessagesParser } from '../../tag/message/TagMessagesParser';
 import { TagsMessagesReader } from '../../tag/message/TagsMessagesReader';
@@ -56,6 +59,8 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
 
   protected blacklistParser: BlacklistMessagesParser | null = null;
 
+  protected stickyParser: StickyMessagesParser | null = null;
+
   constructor(
     placeholder: MessagePlaceholderManager<HermesPlaceholderContext>,
     repository: MessageRepository,
@@ -80,6 +85,7 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
       [RequestMessagesReader.ID, new RequestMessagesReader(lang)],
       [TagsMessagesReader.ID, new TagsMessagesReader(lang)],
       [BlacklistMessagesReader.ID, new BlacklistMessagesReader(lang)],
+      [StickyMessagesReader.ID, new StickyMessagesReader(lang)],
     ];
 
     const repository = new MessageRepository(new Map(sources));
@@ -203,5 +209,21 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
     );
 
     return this.blacklistParser;
+  }
+
+  public getStickyMessages(): StickyMessagesParser {
+    if (this.stickyParser) {
+      return this.stickyParser;
+    }
+
+    const config = this.repository.getFromSource(StickyMessagesReader.ID);
+
+    this.stickyParser = new StickyMessagesParser(
+      this.placeholderManager,
+      config as z.infer<typeof StickyMessagesSchema>,
+      this.escapeConfig,
+    );
+
+    return this.stickyParser;
   }
 }

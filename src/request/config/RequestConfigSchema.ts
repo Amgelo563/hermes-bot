@@ -4,6 +4,7 @@ import { RequirementConfigSchema } from '../../hermes/requirement/config/Require
 import { ZodFalseSchema } from '../../zod/ZodFalseSchema';
 
 export const RequestConfigSchema = z.object({
+  sendStickyMessage: z.boolean(),
   requirements: z.object({
     repost: RequirementConfigSchema.array(),
     publish: RequirementConfigSchema.array(),

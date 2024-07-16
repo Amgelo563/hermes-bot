@@ -57,3 +57,11 @@ model Blacklist {
   createdBy String
   expiresAt DateTime?
 }
+
+model StickyMessage {
+  id String @id
+
+  messageId String
+  channelId String
+  guildId   String
+}
