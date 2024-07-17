@@ -24,8 +24,12 @@ export class StickyMessagesRepository extends AbstractCachedPrismaRepository<Sti
   }
 
   public async create(model: StickyMessageData): Promise<StickyMessageData> {
-    const message = await this.prisma.stickyMessage.create({
-      data: model,
+    const message = await this.prisma.stickyMessage.upsert({
+      create: model,
+      update: model,
+      where: {
+        id: model.id,
+      },
     });
 
     this.cache.set(message.id, message);
