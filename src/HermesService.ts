@@ -50,7 +50,10 @@ export class HermesService {
     deployCommands: boolean,
   ): HermesService {
     const client = new Client({
-      intents: [IntentsBitField.Flags.Guilds],
+      intents: [
+        IntentsBitField.Flags.Guilds,
+        IntentsBitField.Flags.GuildMessages,
+      ],
       allowedMentions: {
         parse: ['users'],
       },
