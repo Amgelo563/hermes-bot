@@ -20,7 +20,6 @@ export class MessageInStickyChannelEventSubscriber extends AbstractDJSClientSubs
   }
 
   public handleEvent(meta: EventDispatchMeta, message: Message): void {
-    if (message.author.id === message.client.user.id) return;
     if (message.channelId !== this.channelId) return;
 
     this.debouncer.debounce();

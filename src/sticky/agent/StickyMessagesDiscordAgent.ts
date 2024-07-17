@@ -31,6 +31,13 @@ export class StickyMessagesDiscordAgent extends DiscordServiceAgent {
       const oldGuild = this.client.guilds.cache.get(old.guildId);
       const oldChannel = oldGuild?.channels.cache.get(old.channelId);
       if (oldChannel && oldChannel.isTextBased()) {
+        if (
+          oldChannel.lastMessage
+          && oldChannel.lastMessageId === old.messageId
+        ) {
+          return oldChannel.lastMessage;
+        }
+
         // Delete old one
         await oldChannel.messages.delete(old.messageId).catch((_e) => {});
       }
