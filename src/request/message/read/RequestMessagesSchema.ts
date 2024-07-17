@@ -16,6 +16,8 @@ export const RequestMessagesSchema = z.object({
   empty: z.string(),
   parentCommand: DiscordCommandSchema,
 
+  stickyMessage: DiscordEmbedSchema,
+
   info: z.object({
     command: CommandSchemaWithOptions(['request']),
     linkButton: DiscordLinkButtonSchema,

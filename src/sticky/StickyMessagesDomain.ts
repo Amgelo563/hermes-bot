@@ -9,7 +9,6 @@ import { StickyMessagesDiscordAgent } from './agent/StickyMessagesDiscordAgent';
 import type { StickyMessageCreateData } from './data/StickyMessageCreateData';
 import type { StickyMessageIdType } from './identity/StickyMessagesIds';
 import { StickyMessageIdEnum } from './identity/StickyMessagesIds';
-import type { StickyMessagesParser } from './message/StickyMessagesParser';
 import type { StickyMessagesRepository } from './repository/StickyMessagesRepository';
 
 export class StickyMessagesDomain {
@@ -17,20 +16,20 @@ export class StickyMessagesDomain {
 
   protected readonly repository: StickyMessagesRepository;
 
-  protected readonly messages: StickyMessagesParser;
-
   protected readonly config: HermesConfig;
+
+  protected readonly messageService: HermesMessageService;
 
   constructor(
     agent: StickyMessagesDiscordAgent,
     repository: StickyMessagesRepository,
-    messages: StickyMessagesParser,
     config: HermesConfig,
+    messageService: HermesMessageService,
   ) {
     this.agent = agent;
     this.repository = repository;
-    this.messages = messages;
     this.config = config;
+    this.messageService = messageService;
   }
 
   public static create(
@@ -48,8 +47,8 @@ export class StickyMessagesDomain {
     return new StickyMessagesDomain(
       agent,
       database.getStickyRepository(),
-      messages.getStickyMessages(),
       config,
+      messages,
     );
   }
 
@@ -84,14 +83,14 @@ export class StickyMessagesDomain {
 
     switch (type) {
       case StickyMessageIdEnum.Offer:
-        return {
-          embeds: [this.messages.getOfferEmbed({ member })],
-        };
+        return this.messageService
+          .getOfferMessages()
+          .getStickyMessage({ member });
 
       case StickyMessageIdEnum.Request:
-        return {
-          embeds: [this.messages.getRequestEmbed({ member })],
-        };
+        return this.messageService
+          .getRequestMessages()
+          .getStickyMessage({ member });
 
       default:
         throw new ObjectNotFoundError(

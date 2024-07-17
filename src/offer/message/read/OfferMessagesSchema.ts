@@ -16,6 +16,8 @@ export const OfferMessagesSchema = z.object({
   empty: z.string(),
   parentCommand: DiscordCommandSchema,
 
+  stickyMessage: DiscordEmbedSchema,
+
   info: z.object({
     command: CommandSchemaWithOptions(['offer']),
     linkButton: DiscordLinkButtonSchema,

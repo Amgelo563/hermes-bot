@@ -1,6 +1,7 @@
 import type {
   ButtonBuilder,
   EmbedBuilder,
+  MessageCreateOptions,
   StringSelectMenuBuilder,
 } from 'discord.js';
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
@@ -258,5 +259,13 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
     context: WithRequired<OfferPlaceholderContext, 'update'>,
   ): EmbedBuilder {
     return this.parseEmbed(this.messages.delete.log, context);
+  }
+
+  public getStickyMessage(
+    context: HermesPlaceholderContext,
+  ): MessageCreateOptions {
+    return {
+      embeds: [this.parseEmbed(this.messages.stickyMessage, context)],
+    };
   }
 }
