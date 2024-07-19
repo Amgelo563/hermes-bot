@@ -18,7 +18,7 @@ import type { DiscordRequestAgent } from '../../../request/discord/DiscordReques
 import type { IdentifiableRequest } from '../../../request/identity/IdentifiableRequest';
 import { createIdentifiableRequest } from '../../../request/identity/IdentifiableRequest';
 import type { RequestMessagesParser } from '../../../request/message/read/RequestMessagesParser';
-import { AbstractActionSubCommand } from '../../action/AbstractActionSubCommand';
+import { AbstractActionSubCommand } from '../../action/commands/AbstractActionSubCommand';
 
 export class RequestActionSubCommand extends AbstractActionSubCommand<
   IdentifiableRequest,

@@ -5,9 +5,9 @@ import type { HermesMessageService } from '../hermes/message/HermesMessageServic
 import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 import type { ServiceManager } from '../service/ServiceManager';
 import type { StickyMessagesDomain } from '../sticky/StickyMessagesDomain';
+import { NonMemberActionSubCommandMiddleware } from './action/middleware/NonMemberActionSubCommandMiddleware';
 import { BotBlacklistManager } from './blacklist/BotBlacklistManager';
 import { BotCommandPlaceholderReplacer } from './message/BotCommandPlaceholderReplacer';
-import { NonMemberActionSubCommandMiddleware } from './middleware/NonMemberActionSubCommandMiddleware';
 import { BotOfferManager } from './offer/BotOfferManager';
 import { BotRequestManager } from './request/BotRequestManager';
 import { BotStickyMessagesManager } from './sticky/BotStickyMessagesManager';

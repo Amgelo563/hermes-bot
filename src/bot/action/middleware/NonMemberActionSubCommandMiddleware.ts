@@ -5,9 +5,9 @@ import type {
 } from '@nyx-discord/core';
 import { AbstractCommandMiddleware } from '@nyx-discord/framework';
 
-import type { GeneralMessagesParser } from '../../hermes/message/messages/general/GeneralMessagesParser';
-import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
-import { AbstractActionSubCommand } from '../action/AbstractActionSubCommand';
+import type { GeneralMessagesParser } from '../../../hermes/message/messages/general/GeneralMessagesParser';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
+import { AbstractActionSubCommand } from '../commands/AbstractActionSubCommand';
 
 export class NonMemberActionSubCommandMiddleware extends AbstractCommandMiddleware {
   protected readonly messages: GeneralMessagesParser;

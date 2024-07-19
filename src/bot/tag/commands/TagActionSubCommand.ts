@@ -19,7 +19,7 @@ import type { DiscordTagAgent } from '../../../tag/discord/DiscordTagAgent';
 import type { IdentifiableTag } from '../../../tag/identity/IdentifiableTag';
 import { createIdentifiableTag } from '../../../tag/identity/IdentifiableTag';
 import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
-import { AbstractActionSubCommand } from '../../action/AbstractActionSubCommand';
+import { AbstractActionSubCommand } from '../../action/commands/AbstractActionSubCommand';
 
 export class TagActionSubCommand extends AbstractActionSubCommand<
   IdentifiableTag,

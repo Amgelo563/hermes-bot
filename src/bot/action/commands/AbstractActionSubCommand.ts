@@ -6,11 +6,11 @@ import type {
 } from 'discord.js';
 import { SlashCommandSubcommandBuilder } from 'discord.js';
 
-import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
-import type { CommandSchemaType } from '../../discord/command/DiscordCommandSchema';
-import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
-import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
-import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { ConfigCommandOption } from '../../../discord/command/DiscordCommandOptionSchema';
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
+import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
+import type { AbstractActionsManager } from '../../../service/action/AbstractActionsManager';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 
 export abstract class AbstractActionSubCommand<
   Data extends Identifiable<string> & { id: unknown },

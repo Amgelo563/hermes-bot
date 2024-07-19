@@ -9,7 +9,7 @@ import type { HermesMessageService } from '../../hermes/message/HermesMessageSer
 import { RequestAction } from '../../request/action/RequestAction';
 import type { RequestDomain } from '../../request/RequestDomain';
 import type { TagRepository } from '../../tag/database/TagRepository';
-import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
+import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { RequestActionSubCommand } from './commands/RequestActionSubCommand';
 import { RequestsParentCommand } from './commands/RequestsParentCommand';
 import { RequestStandaloneCommand } from './commands/RequestStandaloneCommand';

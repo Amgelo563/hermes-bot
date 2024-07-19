@@ -18,7 +18,7 @@ import type { DiscordOfferAgent } from '../../../offer/discord/DiscordOfferAgent
 import type { IdentifiableOffer } from '../../../offer/identity/IdentifiableOffer';
 import { createIdentifiableOffer } from '../../../offer/identity/IdentifiableOffer';
 import type { OfferMessagesParser } from '../../../offer/message/read/OfferMessagesParser';
-import { AbstractActionSubCommand } from '../../action/AbstractActionSubCommand';
+import { AbstractActionSubCommand } from '../../action/commands/AbstractActionSubCommand';
 
 export class OfferActionSubCommand extends AbstractActionSubCommand<
   IdentifiableOffer,

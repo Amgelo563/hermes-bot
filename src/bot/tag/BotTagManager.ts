@@ -12,7 +12,7 @@ import type { HermesMessageService } from '../../hermes/message/HermesMessageSer
 import { TagAction } from '../../tag/action/TagAction';
 import type { TagData } from '../../tag/data/TagData';
 import type { TagDomain } from '../../tag/TagDomain';
-import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
+import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { TagActionSubCommand } from './commands/TagActionSubCommand';
 import { TagsCreateSubCommand } from './commands/TagsCreateSubCommand';
 import { TagsListSubCommand } from './commands/TagsListSubCommand';

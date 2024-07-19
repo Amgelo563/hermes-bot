@@ -2,8 +2,8 @@ import type { EventDispatchMeta, Identifiable } from '@nyx-discord/core';
 import { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
 import type { Interaction } from 'discord.js';
 import { Events } from 'discord.js';
-import type { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
-import type { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
+import type { AbstractActionsManager } from '../../../service/action/AbstractActionsManager';
+import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 
 // eslint-disable-next-line max-len
 export class ServiceActionInteractionSubscriber extends AbstractDJSClientSubscriber<Events.InteractionCreate> {

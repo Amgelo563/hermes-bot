@@ -5,7 +5,7 @@ import { BlacklistAction } from '../../blacklist/action/BlacklistAction';
 import type { BlacklistDomain } from '../../blacklist/BlacklistDomain';
 import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
-import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
+import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { BlacklistActionSubCommand } from './commands/BlacklistActionSubCommand';
 import { BlacklistCreateSubCommand } from './commands/BlacklistCreateSubCommand';
 import { BlacklistListSubCommand } from './commands/BlacklistListSubCommand';

@@ -9,8 +9,9 @@ import type { HermesMessageService } from '../../hermes/message/HermesMessageSer
 import { OfferAction } from '../../offer/action/OfferAction';
 import type { OfferDomain } from '../../offer/OfferDomain';
 import type { TagRepository } from '../../tag/database/TagRepository';
-import { ServiceActionInteractionSubscriber } from '../action/ServiceActionInteractionSubscriber';
+import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { OfferActionSubCommand } from './commands/OfferActionSubCommand';
+import { OfferSearchSubCommand } from './commands/OfferSearchSubCommand';
 import { OffersParentCommand } from './commands/OffersParentCommand';
 import { OfferStandaloneCommand } from './commands/OfferStandaloneCommand';
 
@@ -124,6 +125,7 @@ export class BotOfferManager {
     const offerMessages = this.messages.getOfferMessages();
     const actions = this.offerDomain.getActions();
     const agent = this.offerDomain.getDiscordAgent();
+    const offerRepository = this.offerDomain.getRepository();
 
     const parentData = offerMessages.getParentCommandData();
     const parent = new OffersParentCommand(parentData);
@@ -135,7 +137,7 @@ export class BotOfferManager {
       updateData.options.offer,
       offerMessages,
       actions,
-      this.offerDomain.getRepository(),
+      offerRepository,
       this.requestAutocomplete,
       OfferAction.enum.ReqUpd,
       agent,
@@ -149,7 +151,7 @@ export class BotOfferManager {
       infoData.options.offer,
       offerMessages,
       actions,
-      this.offerDomain.getRepository(),
+      offerRepository,
       this.requestAutocomplete,
       OfferAction.enum.Info,
       agent,
@@ -162,7 +164,7 @@ export class BotOfferManager {
       repostData.options.offer,
       offerMessages,
       actions,
-      this.offerDomain.getRepository(),
+      offerRepository,
       this.requestAutocomplete,
       OfferAction.enum.Repost,
       agent,
@@ -176,9 +178,19 @@ export class BotOfferManager {
       deleteData.options.offer,
       offerMessages,
       actions,
-      this.offerDomain.getRepository(),
+      offerRepository,
       this.requestAutocomplete,
       OfferAction.enum.Delete,
+      agent,
+    );
+
+    const searchData = offerMessages.getSearchCommandData();
+    const searchSubCommand = new OfferSearchSubCommand(
+      parent,
+      searchData,
+      this.tagRepository,
+      offerMessages,
+      offerRepository,
       agent,
     );
 
@@ -187,6 +199,7 @@ export class BotOfferManager {
       infoSubCommand,
       repostSubCommand,
       deleteSubCommand,
+      searchSubCommand,
     );
 
     await this.bot.getCommandManager().addCommands(parent);
