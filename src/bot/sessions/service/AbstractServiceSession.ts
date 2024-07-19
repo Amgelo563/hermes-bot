@@ -17,15 +17,15 @@ import type {
 } from 'discord.js';
 import { type ModalSubmitInteraction } from 'discord.js';
 
-import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
-import type { OptionalInlineField } from '../../discord/embed/OptionalInlineField';
-import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
-import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
-import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
-import type { RequirementResultAggregate } from '../../requirement/result/aggregate/RequirementResultAggregate';
-import { RequirementResultEnum } from '../../requirement/result/RequirementResultEnum';
-import type { HermesMember } from '../../service/member/HermesMember';
-import { AbstractHermesSession } from './AbstractHermesSession';
+import { DiscordEmbedLimits } from '../../../discord/embed/DiscordEmbedLimits';
+import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
+import type { DiscordModalCodec } from '../../../discord/modal/codec/DiscordModalCodec';
+import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
+import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
+import { RequirementResultEnum } from '../../../requirement/result/RequirementResultEnum';
+import type { HermesMember } from '../../../service/member/HermesMember';
+import { AbstractHermesSession } from '../AbstractHermesSession';
 
 export abstract class AbstractServiceSession<
   Data,

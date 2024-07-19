@@ -20,7 +20,7 @@ import type { RequirementResultAggregate } from '../../../requirement/result/agg
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../tag/data/TagData';
-import { AbstractServiceSession } from '../../sessions/AbstractServiceSession';
+import { AbstractServiceSession } from '../../sessions/service/AbstractServiceSession';
 
 export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> {
   protected readonly requirements: OfferRequirementsChecker;

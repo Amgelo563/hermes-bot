@@ -21,7 +21,7 @@ import type { RequirementResultAggregate } from '../../../requirement/result/agg
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../tag/data/TagData';
-import { AbstractServiceSession } from '../../sessions/AbstractServiceSession';
+import { AbstractServiceSession } from '../../sessions/service/AbstractServiceSession';
 
 export class RequestCreateSession extends AbstractServiceSession<RequestModalInputData> {
   protected readonly requirements: RequestRequirementsChecker;
