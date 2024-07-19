@@ -1,7 +1,7 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
-import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
+import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';

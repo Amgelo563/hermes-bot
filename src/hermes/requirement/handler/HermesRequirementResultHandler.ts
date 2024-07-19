@@ -1,6 +1,7 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import type { EmbedBuilder } from 'discord.js';
-import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
+
+import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { RequirementResultAggregate } from '../../../requirement/result/aggregate/RequirementResultAggregate';
 import { RequirementResultEnum } from '../../../requirement/result/RequirementResultEnum';

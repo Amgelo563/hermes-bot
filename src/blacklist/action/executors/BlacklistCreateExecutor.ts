@@ -1,10 +1,10 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { ButtonInteraction } from 'discord.js';
 import { nanoid } from 'nanoid';
-import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
+
+import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
-
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../../service/member/HermesMember';

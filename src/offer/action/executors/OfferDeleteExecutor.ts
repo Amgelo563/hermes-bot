@@ -1,7 +1,7 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
-import { ConfirmationSession } from '../../../bot/sessions/ConfirmationSession';
+import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';

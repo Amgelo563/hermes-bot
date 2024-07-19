@@ -1,8 +1,8 @@
 import type { NyxBot, SessionStartInteraction } from '@nyx-discord/core';
 import type { ButtonInteraction, EmbedBuilder } from 'discord.js';
-import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
-import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
-import { AbstractHermesSession } from './AbstractHermesSession';
+import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
+import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
+import { AbstractHermesSession } from '../AbstractHermesSession';
 
 type ConfirmResult =
   | {

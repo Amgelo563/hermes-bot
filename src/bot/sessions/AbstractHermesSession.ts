@@ -3,10 +3,9 @@ import type {
   NyxBot,
   SessionExecutionMeta,
   SessionStartInteraction,
-  SessionUpdateInteraction} from '@nyx-discord/core';
-import {
-  SessionEndCodes
+  SessionUpdateInteraction,
 } from '@nyx-discord/core';
+import { SessionEndCodes } from '@nyx-discord/core';
 import { AbstractSession, ActionRowList } from '@nyx-discord/framework';
 import type { EmbedBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
