@@ -191,11 +191,4 @@ export class ServiceSearchSession<
 
     return rows;
   }
-
-  /**
-   * Pagination / Cancel
-   * Date
-   * Tags
-   * Ranking
-   */
 }
