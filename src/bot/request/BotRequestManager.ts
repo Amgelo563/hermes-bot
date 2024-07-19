@@ -11,6 +11,7 @@ import type { RequestDomain } from '../../request/RequestDomain';
 import type { TagRepository } from '../../tag/database/TagRepository';
 import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { RequestActionSubCommand } from './commands/RequestActionSubCommand';
+import { RequestSearchSubCommand } from './commands/RequestSearchSubCommand';
 import { RequestsParentCommand } from './commands/RequestsParentCommand';
 import { RequestStandaloneCommand } from './commands/RequestStandaloneCommand';
 
@@ -126,6 +127,7 @@ export class BotRequestManager {
     const requestMessages = this.messages.getRequestMessages();
     const actions = this.requestDomain.getActions();
     const agent = this.requestDomain.getDiscordAgent();
+    const requestRepository = this.requestDomain.getRepository();
 
     const parentData = requestMessages.getParentCommandData();
     const parent = new RequestsParentCommand(parentData);
@@ -137,7 +139,7 @@ export class BotRequestManager {
       updateData.options.request,
       requestMessages,
       actions,
-      this.requestDomain.getRepository(),
+      requestRepository,
       this.requestAutocomplete,
       RequestAction.enum.ReqUpd,
       agent,
@@ -151,7 +153,7 @@ export class BotRequestManager {
       infoData.options.request,
       requestMessages,
       actions,
-      this.requestDomain.getRepository(),
+      requestRepository,
       this.requestAutocomplete,
       RequestAction.enum.Info,
       agent,
@@ -164,7 +166,7 @@ export class BotRequestManager {
       repostData.options.request,
       requestMessages,
       actions,
-      this.requestDomain.getRepository(),
+      requestRepository,
       this.requestAutocomplete,
       RequestAction.enum.Repost,
       agent,
@@ -178,9 +180,19 @@ export class BotRequestManager {
       deleteData.options.request,
       requestMessages,
       actions,
-      this.requestDomain.getRepository(),
+      requestRepository,
       this.requestAutocomplete,
       RequestAction.enum.Delete,
+      agent,
+    );
+
+    const searchData = requestMessages.getSearchCommandData();
+    const searchSubCommand = new RequestSearchSubCommand(
+      parent,
+      searchData,
+      this.tagRepository,
+      requestMessages,
+      requestRepository,
       agent,
     );
 
@@ -189,6 +201,7 @@ export class BotRequestManager {
       infoSubCommand,
       repostSubCommand,
       deleteSubCommand,
+      searchSubCommand,
     );
 
     await this.bot.getCommandManager().addCommands(parent);

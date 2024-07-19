@@ -268,4 +268,28 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
       embeds: [this.parseEmbed(this.messages.stickyMessage, context)],
     };
   }
+
+  public getSearchCommandData() {
+    return this.messages.search.command;
+  }
+
+  public getSearchErrorEmbeds(
+    context: WithRequired<OfferPlaceholderContext, 'error'>,
+  ): ErrorEmbedsData {
+    return this.parseErrorEmbeds(this.messages.search.error, context);
+  }
+
+  public getSearchEmbed(
+    context: HermesPlaceholderContext,
+    datas: OfferData[],
+  ): EmbedBuilder {
+    return this.parseTemplatedEmbed(
+      this.messages.search.embed,
+      context,
+      datas.map((offer) => ({
+        ...context,
+        services: { offer },
+      })),
+    );
+  }
 }

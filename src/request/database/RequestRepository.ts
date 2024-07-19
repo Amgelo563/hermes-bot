@@ -188,4 +188,23 @@ export class RequestRepository extends AbstractCachedPrismaRepository<RequestDat
 
     return newRequest;
   }
+
+  public async findUpTo(
+    amount: number,
+    addToCache = true,
+  ): Promise<RequestData[]> {
+    const found = await this.prisma.request.findMany({
+      take: amount,
+      orderBy: { lastPostedAt: Prisma.SortOrder.asc },
+      include: { tag: true },
+    });
+
+    if (addToCache) {
+      for (const request of found) {
+        this.cache.set(request.id, request);
+      }
+    }
+
+    return found;
+  }
 }

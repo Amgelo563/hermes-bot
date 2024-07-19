@@ -88,4 +88,13 @@ export const RequestMessagesSchema = z.object({
     confirm: DiscordEmbedSchema,
     log: DiscordEmbedSchema,
   }),
+
+  search: z.object({
+    command: DiscordCommandSchema,
+    error: z.object({
+      user: DiscordEmbedSchema,
+      log: DiscordEmbedSchema,
+    }),
+    embed: DiscordTemplatedEmbedSchema,
+  }),
 });

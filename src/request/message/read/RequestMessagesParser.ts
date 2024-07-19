@@ -12,6 +12,7 @@ import { BasicHermesMessageParser } from '../../../hermes/message/BasicHermesMes
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { ErrorEmbedsData } from '../../../hermes/message/error/ErrorEmbedsData';
+import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { WithRequired } from '../../../types/WithRequired';
 import type { RequestData } from '../../data/RequestData';
 import type { RequestModalData } from '../../modal/RequestModalData';
@@ -272,5 +273,29 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
     return {
       embeds: [this.parseEmbed(this.messages.stickyMessage, context)],
     };
+  }
+
+  public getSearchCommandData() {
+    return this.messages.search.command;
+  }
+
+  public getSearchErrorEmbeds(
+    context: WithRequired<OfferPlaceholderContext, 'error'>,
+  ): ErrorEmbedsData {
+    return this.parseErrorEmbeds(this.messages.search.error, context);
+  }
+
+  public getSearchEmbed(
+    context: HermesPlaceholderContext,
+    datas: RequestData[],
+  ): EmbedBuilder {
+    return this.parseTemplatedEmbed(
+      this.messages.search.embed,
+      context,
+      datas.map((request) => ({
+        ...context,
+        services: { request },
+      })),
+    );
   }
 }
