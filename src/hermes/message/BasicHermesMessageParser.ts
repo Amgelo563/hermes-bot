@@ -13,8 +13,8 @@ import {
   TextInputBuilder,
 } from 'discord.js';
 import { z } from 'zod';
-import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';
 
+import type { EscapeMarkdownConfig } from '../../config/configs/escape/EscapeMarkdownConfigSchema';
 import type { DiscordButtonSchema } from '../../discord/button/DiscordButtonSchema';
 import type { DiscordLinkButtonSchema } from '../../discord/button/DiscordLinkButtonSchema';
 import type { DiscordEmbedFieldSchema } from '../../discord/embed/DiscordEmbedFieldSchema';

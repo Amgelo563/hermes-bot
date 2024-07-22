@@ -4,6 +4,7 @@ import type { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import { SlashCommandSubcommandBuilder } from 'discord.js';
 
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
+import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagRepository } from '../../../tag/database/TagRepository';
@@ -19,16 +20,20 @@ export abstract class AbstractServiceSearchSubCommand<
 
   protected readonly agent: DiscordServiceAgent;
 
+  protected readonly messageService: HermesMessageService;
+
   constructor(
     parent: ParentCommand,
     data: CommandSchemaType,
     repository: TagRepository,
     agent: DiscordServiceAgent,
+    messageService: HermesMessageService,
   ) {
     super(parent);
     this.data = data;
     this.repository = repository;
     this.agent = agent;
+    this.messageService = messageService;
   }
 
   public createData(): SlashCommandSubcommandBuilder {
@@ -49,9 +54,12 @@ export abstract class AbstractServiceSearchSubCommand<
     const session = ServiceSearchSession.create(
       bot,
       interaction,
+      member,
       items,
       tags,
       this.createEmbed.bind(this, member),
+      this.messageService.getGeneralMessages(),
+      this.messageService.getTagsMessages(),
     );
 
     await session.start();

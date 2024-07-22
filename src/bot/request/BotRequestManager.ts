@@ -191,9 +191,9 @@ export class BotRequestManager {
       parent,
       searchData,
       this.tagRepository,
-      requestMessages,
       requestRepository,
       agent,
+      this.messages,
     );
 
     parent.addChildren(

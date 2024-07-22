@@ -1,8 +1,14 @@
 import { ActionRowWrapper } from '@nyx-discord/framework';
-import type { ButtonBuilder, EmbedBuilder } from 'discord.js';
+import type {
+  ButtonBuilder,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+} from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import type { z } from 'zod';
 
+import type { DateFilterStateKey } from '../../../../bot/search/sessions/filter/filters/ServiceSearchDateFilter';
+import { DiscordSelectMenuLimits } from '../../../../discord/select/DiscordSelectMenuLimits';
 import type { HermesMember } from '../../../../service/member/HermesMember';
 import { HermesMemberTypeEnum } from '../../../../service/member/HermesMemberType';
 import { BasicHermesMessageParser } from '../../BasicHermesMessageParser';
@@ -125,5 +131,26 @@ export class GeneralMessagesParser extends BasicHermesMessageParser<
       tag: `${unknownMember.username}#${unknownMember.discriminator}`,
       type: HermesMemberTypeEnum.UnknownUser,
     };
+  }
+
+  public getDateFilterSelectMenu(
+    context: HermesPlaceholderContext,
+    values: Record<DateFilterStateKey, string>,
+  ): StringSelectMenuBuilder {
+    return this.parseSelectWithOptions(
+      this.messages.filters.date,
+      context,
+      values,
+    );
+  }
+
+  public getTagFilterSelectMenuPlaceholder(
+    context: HermesPlaceholderContext,
+  ): string {
+    return this.parsePlaceholders(
+      this.messages.filters.tag.placeholder,
+      context,
+      DiscordSelectMenuLimits.Placeholder,
+    );
   }
 }

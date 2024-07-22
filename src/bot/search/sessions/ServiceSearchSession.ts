@@ -20,7 +20,10 @@ import type {
 import { ActionRowBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
 
+import type { GeneralMessagesParser } from '../../../hermes/message/messages/general/GeneralMessagesParser';
+import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagData } from '../../../tag/data/TagData';
+import type { TagMessagesParser } from '../../../tag/message/TagMessagesParser';
 import type { FilterableService } from './filter/FilterableService';
 import { ServiceSearchDateFilter } from './filter/filters/ServiceSearchDateFilter';
 import { ServiceSearchTagFilter } from './filter/filters/ServiceSearchTagFilter';
@@ -38,6 +41,8 @@ export class ServiceSearchSession<
     ServiceSearchFilter<Item>
   >;
 
+  protected readonly member: HermesMember;
+
   protected embedFactory: (items: Item[]) => EmbedBuilder;
 
   protected filteredItems: Item[];
@@ -45,11 +50,13 @@ export class ServiceSearchSession<
   constructor(
     bot: NyxBot,
     startInteraction: SessionStartInteraction,
+    member: HermesMember,
     items: Item[],
     filters: Record<ServiceSearchFilterKeyType, ServiceSearchFilter<Item>>,
     embedFactory: (items: Item[]) => EmbedBuilder,
   ) {
     super(bot, nanoid(5), startInteraction, items);
+    this.member = member;
     this.filters = filters;
     this.filteredItems = items;
     this.embedFactory = embedFactory;
@@ -58,18 +65,28 @@ export class ServiceSearchSession<
   public static create<Item extends FilterableService>(
     bot: NyxBot,
     interaction: SessionStartInteraction,
+    member: HermesMember,
     items: Item[],
     tags: TagData[],
     embedFactory: (items: Item[]) => EmbedBuilder,
+    generalMessages: GeneralMessagesParser,
+    tagMessages: TagMessagesParser,
   ): ServiceSearchSession<Item> {
     const filters = {
-      [ServiceSearchFilterKeyEnum.Tags]: new ServiceSearchTagFilter(tags),
-      [ServiceSearchFilterKeyEnum.Date]: new ServiceSearchDateFilter(),
+      [ServiceSearchFilterKeyEnum.Tags]: new ServiceSearchTagFilter(
+        generalMessages,
+        tagMessages,
+        tags,
+      ),
+      [ServiceSearchFilterKeyEnum.Date]: new ServiceSearchDateFilter(
+        generalMessages,
+      ),
     };
 
     return new ServiceSearchSession(
       bot,
       interaction,
+      member,
       items,
       filters,
       embedFactory,
@@ -181,7 +198,9 @@ export class ServiceSearchSession<
         .setAt(ServiceSearchSession.FilterIDIndex, id)
         .build();
 
-      const selectMenu = filter.buildSelectMenu().setCustomId(customId);
+      const selectMenu = filter
+        .buildSelectMenu(this.member)
+        .setCustomId(customId);
       rows.push(
         new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
           selectMenu,

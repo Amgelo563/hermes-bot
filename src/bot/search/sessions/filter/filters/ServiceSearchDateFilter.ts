@@ -1,16 +1,20 @@
-import type { StringSelectMenuInteraction } from 'discord.js';
-import {
+import type {
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
+  StringSelectMenuInteraction,
 } from 'discord.js';
+import type { GeneralMessagesParser } from '../../../../../hermes/message/messages/general/GeneralMessagesParser';
+import type { HermesMember } from '../../../../../service/member/HermesMember';
 
 import type { FilterableService } from '../FilterableService';
 import type { ServiceSearchFilter } from '../ServiceSearchFilter';
 
+export type DateFilterStateKey =
+  keyof typeof ServiceSearchDateFilter.AvailableStates;
+
 export class ServiceSearchDateFilter
   implements ServiceSearchFilter<FilterableService>
 {
-  protected static readonly AvailableStates = {
+  public static readonly AvailableStates = {
     LastDay: 1000 * 60 * 60 * 24,
     LastWeek: 1000 * 60 * 60 * 24 * 7,
     LastMonth: 1000 * 60 * 60 * 24 * 30,
@@ -20,12 +24,24 @@ export class ServiceSearchDateFilter
   protected state: keyof typeof ServiceSearchDateFilter.AvailableStates | null =
     null;
 
-  public buildSelectMenu(): StringSelectMenuBuilder {
-    const options = Object.keys(ServiceSearchDateFilter.AvailableStates).map(
-      (key) => new StringSelectMenuOptionBuilder().setLabel(key).setValue(key),
-    );
+  protected readonly messages: GeneralMessagesParser;
 
-    return new StringSelectMenuBuilder().setOptions(options).setMaxValues(1);
+  constructor(messages: GeneralMessagesParser) {
+    this.messages = messages;
+  }
+
+  public buildSelectMenu(member: HermesMember): StringSelectMenuBuilder {
+    const entries = Object.entries(ServiceSearchDateFilter.AvailableStates).map(
+      ([key]) => [key, key],
+    );
+    const values = Object.fromEntries(entries) as Record<
+      DateFilterStateKey,
+      string
+    >;
+
+    return this.messages
+      .getDateFilterSelectMenu({ member }, values)
+      .setMaxValues(1);
   }
 
   public update(select: StringSelectMenuInteraction): void {

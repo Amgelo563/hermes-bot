@@ -1,10 +1,10 @@
-import {
-  StringSelectMenuBuilder,
-  type StringSelectMenuInteraction,
-  StringSelectMenuOptionBuilder,
-} from 'discord.js';
+import type { StringSelectMenuBuilder } from 'discord.js';
+import { type StringSelectMenuInteraction } from 'discord.js';
 
+import type { GeneralMessagesParser } from '../../../../../hermes/message/messages/general/GeneralMessagesParser';
+import type { HermesMember } from '../../../../../service/member/HermesMember';
 import type { TagData } from '../../../../../tag/data/TagData';
+import type { TagMessagesParser } from '../../../../../tag/message/TagMessagesParser';
 import type { FilterableService } from '../FilterableService';
 import type { ServiceSearchFilter } from '../ServiceSearchFilter';
 
@@ -15,9 +15,19 @@ export class ServiceSearchTagFilter
 {
   protected state: Set<string> | null = null;
 
+  protected readonly generalMessages: GeneralMessagesParser;
+
+  protected readonly tagMessages: TagMessagesParser;
+
   protected readonly availableTags: TagWithStringId[];
 
-  constructor(availableTags: TagData[]) {
+  constructor(
+    generalMessages: GeneralMessagesParser,
+    tagMessages: TagMessagesParser,
+    availableTags: TagData[],
+  ) {
+    this.generalMessages = generalMessages;
+    this.tagMessages = tagMessages;
     this.availableTags = availableTags.map(
       (tag) =>
         ({
@@ -27,12 +37,14 @@ export class ServiceSearchTagFilter
     );
   }
 
-  public buildSelectMenu(): StringSelectMenuBuilder {
-    const options = this.availableTags.map((tag) =>
-      new StringSelectMenuOptionBuilder().setLabel(tag.name).setValue(tag.id),
-    );
+  public buildSelectMenu(member: HermesMember): StringSelectMenuBuilder {
+    const placeholder = this.generalMessages.getTagFilterSelectMenuPlaceholder({
+      member,
+    });
 
-    return new StringSelectMenuBuilder().setOptions(options);
+    return this.tagMessages
+      .getListSelect({ member }, this.availableTags)
+      .setPlaceholder(placeholder);
   }
 
   public update(select: StringSelectMenuInteraction): void {

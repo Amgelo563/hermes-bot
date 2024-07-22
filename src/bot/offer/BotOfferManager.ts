@@ -189,9 +189,9 @@ export class BotOfferManager {
       parent,
       searchData,
       this.tagRepository,
-      offerMessages,
       offerRepository,
       agent,
+      this.messages,
     );
 
     parent.addChildren(
