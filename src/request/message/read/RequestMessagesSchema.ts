@@ -96,5 +96,6 @@ export const RequestMessagesSchema = z.object({
       log: DiscordEmbedSchema,
     }),
     embed: DiscordTemplatedEmbedSchema,
+    noResults: z.string(),
   }),
 });

@@ -289,6 +289,16 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
     context: HermesPlaceholderContext,
     datas: RequestData[],
   ): EmbedBuilder {
+    if (datas.length === 0) {
+      return this.parseEmbed(
+        {
+          ...this.messages.search.embed,
+          description: this.messages.search.noResults,
+        },
+        context,
+      );
+    }
+
     return this.parseTemplatedEmbed(
       this.messages.search.embed,
       context,

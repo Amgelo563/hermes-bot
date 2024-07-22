@@ -283,6 +283,16 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
     context: HermesPlaceholderContext,
     datas: OfferData[],
   ): EmbedBuilder {
+    if (datas.length === 0) {
+      return this.parseEmbed(
+        {
+          ...this.messages.search.embed,
+          description: this.messages.search.noResults,
+        },
+        context,
+      );
+    }
+
     return this.parseTemplatedEmbed(
       this.messages.search.embed,
       context,

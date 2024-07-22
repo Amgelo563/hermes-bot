@@ -104,6 +104,7 @@ export const OfferMessagesSchema = z.object({
       log: DiscordEmbedSchema,
     }),
     embed: DiscordTemplatedEmbedSchema,
+    noResults: z.string(),
   }),
 });
 
