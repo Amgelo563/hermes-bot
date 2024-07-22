@@ -44,7 +44,8 @@ export class ServiceSearchTagFilter
 
     const select = this.tagMessages
       .getListSelect({ member }, this.availableTags)
-      .setPlaceholder(placeholder);
+      .setPlaceholder(placeholder)
+      .setMaxValues(this.availableTags.length);
 
     select.addOptions(
       this.availableTags.map((tag) => ({
