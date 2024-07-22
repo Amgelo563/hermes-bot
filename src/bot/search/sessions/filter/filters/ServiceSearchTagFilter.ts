@@ -42,9 +42,19 @@ export class ServiceSearchTagFilter
       member,
     });
 
-    return this.tagMessages
+    const select = this.tagMessages
       .getListSelect({ member }, this.availableTags)
       .setPlaceholder(placeholder);
+
+    select.addOptions(
+      this.availableTags.map((tag) => ({
+        label: tag.name,
+        description: tag.description,
+        value: tag.id,
+      })),
+    );
+
+    return select;
   }
 
   public update(select: StringSelectMenuInteraction): void {
