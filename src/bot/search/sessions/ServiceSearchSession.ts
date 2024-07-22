@@ -161,7 +161,9 @@ export class ServiceSearchSession<
     for (const filter of Object.values(this.filters)) {
       if (!filteredItems.length) break;
 
-      for (const [index, item] of filteredItems.entries()) {
+      let index = filteredItems.length;
+      while (index--) {
+        const item = filteredItems[index];
         if (await filter.check(item)) continue;
 
         filteredItems.splice(index, 1);
