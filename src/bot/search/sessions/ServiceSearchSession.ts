@@ -161,10 +161,10 @@ export class ServiceSearchSession<
     for (const filter of Object.values(this.filters)) {
       if (!filteredItems.length) break;
 
-      for (const item of filteredItems) {
+      for (const [index, item] of filteredItems.entries()) {
         if (await filter.check(item)) continue;
 
-        filteredItems.splice(filteredItems.indexOf(item), 1);
+        filteredItems.splice(index, 1);
         if (!filteredItems.length) break;
       }
     }
