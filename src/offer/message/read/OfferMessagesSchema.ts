@@ -1,11 +1,12 @@
 import { z } from 'zod';
+
 import { DiscordButtonSchema } from '../../../discord/button/DiscordButtonSchema';
 import { DiscordLinkButtonSchema } from '../../../discord/button/DiscordLinkButtonSchema';
 import {
   CommandSchemaWithOptions,
   DiscordCommandSchema,
 } from '../../../discord/command/DiscordCommandSchema';
-
+import { DiscordEmbedLimits } from '../../../discord/embed/DiscordEmbedLimits';
 import { DiscordEmbedSchema } from '../../../discord/embed/DiscordEmbedSchema';
 import { DiscordTemplatedEmbedSchema } from '../../../discord/embed/DiscordTemplatedEmbedSchema';
 import { ModalSchemaWithFields } from '../../../discord/modal/schema/DiscordModalSchema';
@@ -16,7 +17,9 @@ export const OfferMessagesSchema = z.object({
   empty: z.string(),
   parentCommand: DiscordCommandSchema,
 
-  stickyMessage: DiscordEmbedSchema,
+  stickyMessage: DiscordEmbedSchema.or(
+    DiscordEmbedSchema.array().min(1).max(DiscordEmbedLimits.Message),
+  ),
 
   info: z.object({
     command: CommandSchemaWithOptions(['offer']),

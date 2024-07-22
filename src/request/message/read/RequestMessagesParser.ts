@@ -4,8 +4,8 @@ import type {
   MessageCreateOptions,
   StringSelectMenuBuilder,
 } from 'discord.js';
-import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 
+import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import { DiscordEmbedLimits } from '../../../discord/embed/DiscordEmbedLimits';
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import { BasicHermesMessageParser } from '../../../hermes/message/BasicHermesMessageParser';
@@ -270,9 +270,16 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
   public getStickyMessage(
     context: HermesPlaceholderContext,
   ): MessageCreateOptions {
-    return {
-      embeds: [this.parseEmbed(this.messages.stickyMessage, context)],
-    };
+    let embeds: EmbedBuilder[];
+    if (Array.isArray(this.messages.stickyMessage)) {
+      embeds = this.messages.stickyMessage.map((embed) =>
+        this.parseEmbed(embed, context),
+      );
+    } else {
+      embeds = [this.parseEmbed(this.messages.stickyMessage, context)];
+    }
+
+    return { embeds };
   }
 
   public getSearchCommandData() {
