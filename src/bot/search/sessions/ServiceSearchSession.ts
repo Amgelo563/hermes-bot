@@ -9,13 +9,10 @@ import {
   ActionRowList,
 } from '@nyx-discord/framework';
 import type {
-  ActionRow,
   AnySelectMenuInteraction,
   ButtonBuilder,
-  ButtonComponent,
   EmbedBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuComponent,
 } from 'discord.js';
 import { ActionRowBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
@@ -40,6 +37,11 @@ export class ServiceSearchSession<
     ServiceSearchFilterKeyType,
     ServiceSearchFilter<Item>
   >;
+
+  protected filterMenusCache: Record<
+    ServiceSearchFilterKeyType,
+    StringSelectMenuBuilder
+  > | null = null;
 
   protected readonly member: HermesMember;
 
@@ -117,17 +119,10 @@ export class ServiceSearchSession<
   protected async updatePage(
     interaction: SessionUpdateInteraction,
   ): Promise<boolean> {
-    const message =
-      interaction.deferred || interaction.replied
-        ? interaction.message
-        : await interaction.deferUpdate({ fetchReply: true });
+    await interaction.deferUpdate();
 
     const embed = this.embedFactory(this.filteredItems);
-    const components = this.buildRows(
-      message.components as ActionRow<
-        ButtonComponent | StringSelectMenuComponent
-      >[],
-    );
+    const components = this.buildRows();
 
     await interaction.editReply({ embeds: [embed], components });
 
@@ -150,8 +145,19 @@ export class ServiceSearchSession<
 
     const filterKey = iteratorValue as ServiceSearchFilterKeyType;
     this.filters[filterKey].update(interaction);
+    if (this.filterMenusCache) {
+      const selectedOptions = interaction.values;
+      const cachedOptions = this.filterMenusCache[filterKey].options;
+      this.filterMenusCache[filterKey].setOptions(
+        cachedOptions.map((option) => {
+          return option.setDefault(
+            selectedOptions.includes(option.data.value as string),
+          );
+        }),
+      );
+    }
 
-    const filteredItems: Item[] = this.items;
+    const filteredItems: Item[] = [...this.items];
     for (const filter of Object.values(this.filters)) {
       if (!filteredItems.length) break;
 
@@ -171,19 +177,9 @@ export class ServiceSearchSession<
     return true;
   }
 
-  protected buildRows(
-    current?: ActionRow<ButtonComponent | StringSelectMenuComponent>[],
-  ): ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] {
-    if (current) {
-      const newRows: (
-        | ActionRow<ButtonComponent | StringSelectMenuComponent>
-        | ActionRowBuilder<ButtonBuilder>
-      )[] = [...current];
-      newRows[0] = new ActionRowBuilder(this.buildDefaultPageRow());
-
-      return newRows.map((row) => ActionRowBuilder.from(row));
-    }
-
+  protected buildRows(): ActionRowBuilder<
+    StringSelectMenuBuilder | ButtonBuilder
+  >[] {
     return [
       new ActionRowBuilder(this.buildDefaultPageRow()),
       ...this.createFilterRows(),
@@ -191,24 +187,30 @@ export class ServiceSearchSession<
   }
 
   protected createFilterRows(): ActionRowBuilder<StringSelectMenuBuilder>[] {
-    const rows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+    let selects = this.filterMenusCache;
+    if (!selects) {
+      selects = {} as Record<
+        ServiceSearchFilterKeyType,
+        StringSelectMenuBuilder
+      >;
 
-    for (const [id, filter] of Object.entries(this.filters)) {
-      const customId = this.codec
-        .createCustomIdBuilder(this)
-        .setAt(ServiceSearchSession.FilterIDIndex, id)
-        .build();
+      for (const [id, filter] of Object.entries(this.filters) as [
+        ServiceSearchFilterKeyType,
+        ServiceSearchFilter<Item>,
+      ][]) {
+        const customId = this.codec
+          .createCustomIdBuilder(this)
+          .setAt(ServiceSearchSession.FilterIDIndex, id)
+          .build();
 
-      const selectMenu = filter
-        .buildSelectMenu(this.member)
-        .setCustomId(customId);
-      rows.push(
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          selectMenu,
-        ),
-      );
+        selects[id] = filter.buildSelectMenu(this.member).setCustomId(customId);
+      }
+
+      this.filterMenusCache = selects;
     }
 
-    return rows;
+    return Object.values(selects).map((menu) =>
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu),
+    );
   }
 }
