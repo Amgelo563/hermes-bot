@@ -1,6 +1,6 @@
 export const ServiceSearchFilterKeyEnum = {
-  Date: 'date',
-  Tags: 'tags',
+  Date: 'Date',
+  Tags: 'Tags',
 } as const;
 
 export type ServiceSearchFilterKeyType =

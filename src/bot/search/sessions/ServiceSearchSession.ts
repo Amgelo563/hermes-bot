@@ -144,8 +144,9 @@ export class ServiceSearchSession<
     if (!iterator) return true;
 
     const iteratorValue = iterator.get();
-    if (!(iteratorValue in ServiceSearchFilterKeyEnum))
+    if (!(iteratorValue in ServiceSearchFilterKeyEnum)) {
       throw new IllegalStateError();
+    }
 
     const filterKey = iteratorValue as ServiceSearchFilterKeyType;
     this.filters[filterKey].update(interaction);
