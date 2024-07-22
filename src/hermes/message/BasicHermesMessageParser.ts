@@ -9,6 +9,7 @@ import {
   EmbedBuilder,
   escapeMarkdown,
   StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextInputBuilder,
 } from 'discord.js';
 import { z } from 'zod';
@@ -26,7 +27,11 @@ import type { DiscordModalFieldSchema } from '../../discord/modal/schema/Discord
 import { DiscordModalLimits } from '../../discord/modal/schema/DiscordModalLimits';
 import type { DiscordModalSchema } from '../../discord/modal/schema/DiscordModalSchema';
 import { DiscordSelectMenuLimits } from '../../discord/select/DiscordSelectMenuLimits';
-import type { DiscordSelectMenuSchema } from '../../discord/select/DiscordSelectMenuSchema';
+import type { SelectMenuOptionSchemaType } from '../../discord/select/DiscordSelectMenuOptionSchema';
+import type {
+  DiscordSelectMenuSchema,
+  SelectMenuSchemaType,
+} from '../../discord/select/DiscordSelectMenuSchema';
 import type { EphemeralPlaceholderContext } from '../../message/placeholder/context/EphemeralPlaceholderContext';
 import type { MessagePlaceholderManager } from '../../message/placeholder/MessagePlaceholderManager';
 import type { Optional } from '../../types/Optional';
@@ -262,6 +267,54 @@ export class BasicHermesMessageParser<Schema extends z.ZodTypeAny> {
         DiscordSelectMenuLimits.Placeholder,
       ),
     );
+  }
+
+  public parseSelectWithOptions<Option extends string>(
+    config: SelectMenuSchemaType<Option>,
+    context: HermesPlaceholderContext,
+    values: Record<Option, string>,
+  ): StringSelectMenuBuilder {
+    const builder = this.parseSelect(config, context);
+
+    for (const [key, option] of Object.entries(config.options)) {
+      const value = values[key as Option];
+      const optionBuilder = this.parseSelectOption(option, context, value);
+      builder.addOptions(optionBuilder);
+    }
+
+    return builder;
+  }
+
+  public parseSelectOption(
+    config: SelectMenuOptionSchemaType,
+    context: HermesPlaceholderContext,
+    value: string,
+  ): StringSelectMenuOptionBuilder {
+    const option = new StringSelectMenuOptionBuilder()
+      .setLabel(
+        this.parsePlaceholders(
+          config.label,
+          context,
+          DiscordSelectMenuLimits.Option.Label,
+        ),
+      )
+      .setValue(value);
+
+    if (config.emoji) {
+      option.setEmoji(this.parsePlaceholders(config.emoji, context));
+    }
+
+    if (config.description) {
+      option.setDescription(
+        this.parsePlaceholders(
+          config.description,
+          context,
+          DiscordSelectMenuLimits.Option.Description,
+        ),
+      );
+    }
+
+    return option;
   }
 
   public parseModal(
