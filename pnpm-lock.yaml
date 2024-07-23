@@ -15,8 +15,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0(discord.js@14.15.3)
       '@nyx-discord/framework':
-        specifier: 2.2.0
-        version: 2.2.0(discord.js@14.15.3)
+        specifier: 2.3.0
+        version: 2.3.0(discord.js@14.15.3)
       '@prisma/client':
         specifier: 5.16.2
         version: 5.16.2(prisma@5.16.2)
@@ -58,13 +58,13 @@ importers:
         version: 3.23.8
     devDependencies:
       '@eslint/compat':
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1
       '@eslint/eslintrc':
-        specifier: ^3.1.0
+        specifier: 3.1.0
         version: 3.1.0
       '@eslint/js':
-        specifier: ^9.7.0
+        specifier: 9.7.0
         version: 9.7.0
       '@types/node':
         specifier: 20.14.10
@@ -88,7 +88,7 @@ importers:
         specifier: 2.29.1
         version: 2.29.1(@typescript-eslint/parser@7.16.0(eslint@9.7.0)(typescript@5.5.3))(eslint@9.7.0)
       globals:
-        specifier: ^15.8.0
+        specifier: 15.8.0
         version: 15.8.0
       prettier:
         specifier: 3.3.2
@@ -198,8 +198,8 @@ packages:
     peerDependencies:
       discord.js: ^14.14.1
 
-  '@nyx-discord/framework@2.2.0':
-    resolution: {integrity: sha512-BoC+yHICWZ5NkErQFfYyDHDYccwKTwQqiq3dhCkjKaFkSWGrRnC9KsPrpNcVCwhBclUANycw4lwAg69tu2HK2Q==}
+  '@nyx-discord/framework@2.3.0':
+    resolution: {integrity: sha512-xNQ8BCFCJmgnYWEkR+2ny574yAKnVIMGQ8PDZYsYsZScg37THm9XHniaTBKaVgVVkBWn6hnMyJ8OpxeUqJoosg==}
     peerDependencies:
       discord.js: ^14.14.1
 
@@ -1757,7 +1757,7 @@ snapshots:
     dependencies:
       discord.js: 14.15.3
 
-  '@nyx-discord/framework@2.2.0(discord.js@14.15.3)':
+  '@nyx-discord/framework@2.3.0(discord.js@14.15.3)':
     dependencies:
       '@discordjs/collection': 1.5.3
       '@isaacs/ttlcache': 1.4.1
