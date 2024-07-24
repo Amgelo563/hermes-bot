@@ -3,6 +3,7 @@ import type {
   Client,
   Message,
   MessageCreateOptions,
+  MessageEditOptions,
   TextBasedChannel,
 } from 'discord.js';
 
@@ -32,6 +33,11 @@ export class StickyMessagesDiscordAgent extends DiscordServiceAgent {
       const oldChannel = oldGuild?.channels.cache.get(old.channelId);
       if (oldChannel && oldChannel.isTextBased()) {
         if (oldChannel.lastMessageId === old.messageId) {
+          await oldChannel.messages.edit(
+            old.messageId,
+            messageOptions as MessageEditOptions,
+          );
+
           return null;
         }
 
