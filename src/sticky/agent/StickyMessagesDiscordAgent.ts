@@ -26,6 +26,7 @@ export class StickyMessagesDiscordAgent extends DiscordServiceAgent {
     old: StickyMessageData | null,
     newData: StickyMessageCreateData,
     messageOptions: MessageCreateOptions,
+    editIfPresent: boolean,
   ): Promise<Message | null> {
     if (old) {
       // Just in case guild changed
@@ -33,10 +34,12 @@ export class StickyMessagesDiscordAgent extends DiscordServiceAgent {
       const oldChannel = oldGuild?.channels.cache.get(old.channelId);
       if (oldChannel && oldChannel.isTextBased()) {
         if (oldChannel.lastMessageId === old.messageId) {
-          await oldChannel.messages.edit(
-            old.messageId,
-            messageOptions as MessageEditOptions,
-          );
+          if (editIfPresent) {
+            await oldChannel.messages.edit(
+              old.messageId,
+              messageOptions as MessageEditOptions,
+            );
+          }
 
           return null;
         }

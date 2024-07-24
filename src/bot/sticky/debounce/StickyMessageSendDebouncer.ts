@@ -13,7 +13,7 @@ export class StickyMessageSendDebouncer extends Debouncer {
     logger: NyxLogger,
   ) {
     super(
-      async () => await domain.refreshSticky(type),
+      async () => await domain.refreshSticky(type, false),
       StickyMessageSendDebouncer.Delay,
       logger,
     );

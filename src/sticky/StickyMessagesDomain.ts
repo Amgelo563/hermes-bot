@@ -59,18 +59,24 @@ export class StickyMessagesDomain {
     for (const type of Object.values(StickyMessageIdEnum)) {
       if (!this.config[type].sendStickyMessage) continue;
 
-      await this.refreshSticky(type);
+      await this.refreshSticky(type, true);
     }
   }
 
   public async refreshSticky(
     type: StickyMessageIdType,
+    editIfPresent: boolean,
   ): Promise<Message | null> {
     const options = this.getMessageOptions(type);
     const newData = this.getDataForType(type);
     const old = await this.repository.find(type);
 
-    const newMessage = await this.agent.updateSticky(old, newData, options);
+    const newMessage = await this.agent.updateSticky(
+      old,
+      newData,
+      options,
+      editIfPresent,
+    );
     if (!newMessage) return null;
 
     await this.repository.create({
