@@ -5,9 +5,9 @@ import type {
   MessageCreateOptions,
   TextBasedChannel,
 } from 'discord.js';
+
 import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
-
 import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { StickyMessageCreateData } from '../data/StickyMessageCreateData';
 import type { StickyMessageData } from '../data/StickyMessageData';
@@ -25,17 +25,14 @@ export class StickyMessagesDiscordAgent extends DiscordServiceAgent {
     old: StickyMessageData | null,
     newData: StickyMessageCreateData,
     messageOptions: MessageCreateOptions,
-  ): Promise<Message> {
+  ): Promise<Message | null> {
     if (old) {
       // Just in case guild changed
       const oldGuild = this.client.guilds.cache.get(old.guildId);
       const oldChannel = oldGuild?.channels.cache.get(old.channelId);
       if (oldChannel && oldChannel.isTextBased()) {
-        if (
-          oldChannel.lastMessage
-          && oldChannel.lastMessageId === old.messageId
-        ) {
-          return oldChannel.lastMessage;
+        if (oldChannel.lastMessageId === old.messageId) {
+          return null;
         }
 
         // Delete old one

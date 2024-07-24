@@ -63,12 +63,15 @@ export class StickyMessagesDomain {
     }
   }
 
-  public async refreshSticky(type: StickyMessageIdType): Promise<Message> {
+  public async refreshSticky(
+    type: StickyMessageIdType,
+  ): Promise<Message | null> {
     const options = this.getMessageOptions(type);
     const newData = this.getDataForType(type);
     const old = await this.repository.find(type);
 
     const newMessage = await this.agent.updateSticky(old, newData, options);
+    if (!newMessage) return null;
 
     await this.repository.create({
       ...newData,
