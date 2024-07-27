@@ -82,6 +82,7 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
         ephemeral: true,
         embeds: [error],
       });
+      return;
     }
 
     const target = interaction.options.getMember(this.optionName);
