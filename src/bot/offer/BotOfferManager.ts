@@ -61,11 +61,10 @@ export class BotOfferManager {
         const userId = interaction.user.id;
         const offers =
           member && config.isStaff(member)
-            ? await repository.findAll(DiscordCommandLimits.Autocomplete.Max)
-            : await repository.fetchFrom(
-                userId,
-                DiscordCommandLimits.Autocomplete.Max,
-              );
+            ? await repository.findPostedAfter(
+                new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+              )
+            : await repository.fetchFrom(userId);
         if (!offers.length) {
           return [
             {

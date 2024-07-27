@@ -133,7 +133,7 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
 
   public async fetchFrom(
     memberId: string,
-    max: number,
+    max?: number,
     saveToCache = true,
   ): Promise<OfferData[]> {
     const offers = await this.prisma.offer.findMany({
@@ -212,5 +212,29 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
     }
 
     return newOffer;
+  }
+
+  public async findPostedAfter(
+    after: Date,
+    saveToCache = true,
+  ): Promise<OfferData[]> {
+    const result = await this.prisma.offer.findMany({
+      where: {
+        lastPostedAt: {
+          gt: after,
+        },
+      },
+      include: { tags: true },
+    });
+
+    if (!saveToCache) {
+      return result;
+    }
+
+    for (const offer of result) {
+      this.cache.set(offer.id, offer);
+    }
+
+    return result;
   }
 }

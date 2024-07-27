@@ -63,11 +63,10 @@ export class BotRequestManager {
         const userId = interaction.user.id;
         const requests =
           member && config.isStaff(member)
-            ? await repository.findAll(DiscordCommandLimits.Autocomplete.Max)
-            : await repository.fetchFrom(
-                userId,
-                DiscordCommandLimits.Autocomplete.Max,
-              );
+            ? await repository.findPostedAfter(
+                new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+              )
+            : await repository.fetchFrom(userId);
         if (!requests.length) {
           return [
             {
