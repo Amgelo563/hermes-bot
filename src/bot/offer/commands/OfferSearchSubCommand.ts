@@ -37,6 +37,6 @@ export class OfferSearchSubCommand extends AbstractServiceSearchSubCommand<Offer
   }
 
   protected fetch(): Promise<OfferData[]> {
-    return this.offerRepository.findUpTo(OfferSearchSubCommand.OfferLimit);
+    return this.offerRepository.findAll(OfferSearchSubCommand.OfferLimit);
   }
 }

@@ -213,23 +213,4 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
 
     return newOffer;
   }
-
-  public async findUpTo(
-    amount: number,
-    addToCache = true,
-  ): Promise<OfferData[]> {
-    const found = await this.prisma.offer.findMany({
-      take: amount,
-      orderBy: { lastPostedAt: Prisma.SortOrder.asc },
-      include: { tags: true },
-    });
-
-    if (addToCache) {
-      for (const offer of found) {
-        this.cache.set(offer.id, offer);
-      }
-    }
-
-    return found;
-  }
 }

@@ -37,8 +37,6 @@ export class RequestSearchSubCommand extends AbstractServiceSearchSubCommand<Req
   }
 
   protected fetch(): Promise<RequestData[]> {
-    return this.requestRepository.findUpTo(
-      RequestSearchSubCommand.RequestLimit,
-    );
+    return this.requestRepository.findAll(RequestSearchSubCommand.RequestLimit);
   }
 }
