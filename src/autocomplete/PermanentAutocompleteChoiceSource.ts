@@ -1,4 +1,9 @@
-import type { ApplicationCommandOptionChoiceData } from 'discord.js';
+import type {
+  ApplicationCommandOptionChoiceData,
+  AutocompleteInteraction,
+} from 'discord.js';
+import fuzzysort from 'fuzzysort';
+
 import type { AutocompleteChoiceSource } from './AutocompleteChoiceSource';
 
 export class PermanentAutocompleteChoiceSource
@@ -10,11 +15,28 @@ export class PermanentAutocompleteChoiceSource
     this.choices = choices;
   }
 
-  public autocomplete(): ApplicationCommandOptionChoiceData[] {
-    return this.choices;
+  public autocomplete(
+    interaction: AutocompleteInteraction,
+  ): ApplicationCommandOptionChoiceData[] {
+    return this.fuzzySearch(interaction, this.choices);
   }
 
   public setChoices(choices: ApplicationCommandOptionChoiceData[]): void {
     this.choices = choices;
+  }
+
+  protected fuzzySearch(
+    interaction: AutocompleteInteraction,
+    choices: ApplicationCommandOptionChoiceData[],
+  ): ApplicationCommandOptionChoiceData[] {
+    const search = interaction.options.getFocused();
+
+    return search.length
+      ? fuzzysort
+          .go<ApplicationCommandOptionChoiceData>(search, choices, {
+            key: 'name',
+          })
+          .map((res) => res.obj)
+      : choices;
   }
 }

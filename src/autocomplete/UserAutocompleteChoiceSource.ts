@@ -3,6 +3,7 @@ import type {
   ApplicationCommandOptionChoiceData,
   AutocompleteInteraction,
 } from 'discord.js';
+import fuzzysort from 'fuzzysort';
 
 import type { AutocompleteChoiceSource } from './AutocompleteChoiceSource';
 import type { UserAutocompleteGetter } from './user/UserAutocompleteGetter';
@@ -39,11 +40,27 @@ export class UserAutocompleteChoiceSource implements AutocompleteChoiceSource {
   ): Promise<ApplicationCommandOptionChoiceData[]> {
     const cached = this.cache.get(interaction.user.id);
     if (cached) {
-      return cached;
+      return this.fuzzySearch(interaction, cached);
     }
 
     const result = await this.get(interaction);
     this.cache.set(interaction.user.id, result);
-    return result;
+
+    return this.fuzzySearch(interaction, result);
+  }
+
+  protected fuzzySearch(
+    interaction: AutocompleteInteraction,
+    choices: ApplicationCommandOptionChoiceData[],
+  ): ApplicationCommandOptionChoiceData[] {
+    const search = interaction.options.getFocused();
+
+    return search.length
+      ? fuzzysort
+          .go<ApplicationCommandOptionChoiceData>(search, choices, {
+            key: 'name',
+          })
+          .map((res) => res.obj)
+      : choices;
   }
 }
