@@ -13,7 +13,7 @@
   "dependencies": {
     "@isaacs/ttlcache": "1.4.1",
     "@nyx-discord/core": "2.1.0",
-    "@nyx-discord/framework": "2.3.0",
+    "@nyx-discord/framework": "2.3.1",
     "@prisma/client": "5.16.2",
     "@pushcorn/hocon-parser": "1.3.1",
     "discord.js": "14.15.3",

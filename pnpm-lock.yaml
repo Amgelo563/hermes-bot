@@ -15,8 +15,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0(discord.js@14.15.3)
       '@nyx-discord/framework':
-        specifier: 2.3.0
-        version: 2.3.0(discord.js@14.15.3)
+        specifier: 2.3.1
+        version: 2.3.1(discord.js@14.15.3)
       '@prisma/client':
         specifier: 5.16.2
         version: 5.16.2(prisma@5.16.2)
@@ -198,8 +198,8 @@ packages:
     peerDependencies:
       discord.js: ^14.14.1
 
-  '@nyx-discord/framework@2.3.0':
-    resolution: {integrity: sha512-xNQ8BCFCJmgnYWEkR+2ny574yAKnVIMGQ8PDZYsYsZScg37THm9XHniaTBKaVgVVkBWn6hnMyJ8OpxeUqJoosg==}
+  '@nyx-discord/framework@2.3.1':
+    resolution: {integrity: sha512-uIodS38uNolsjE4krsJ+1J+KnFxb8dp3LQVARwAaRh1iZtYkJ/wRG1H4OQp5MZogqd9IjhlObVUkO/bsIrd+5w==}
     peerDependencies:
       discord.js: ^14.14.1
 
@@ -1757,7 +1757,7 @@ snapshots:
     dependencies:
       discord.js: 14.15.3
 
-  '@nyx-discord/framework@2.3.0(discord.js@14.15.3)':
+  '@nyx-discord/framework@2.3.1(discord.js@14.15.3)':
     dependencies:
       '@discordjs/collection': 1.5.3
       '@isaacs/ttlcache': 1.4.1
