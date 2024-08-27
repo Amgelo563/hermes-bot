@@ -60,6 +60,6 @@ export class MaxServicesEditRequirementFactory extends AbstractHermesRequirement
   }
 
   public getId(): string {
-    return 'maxServices';
+    return 'max-services';
   }
 }
