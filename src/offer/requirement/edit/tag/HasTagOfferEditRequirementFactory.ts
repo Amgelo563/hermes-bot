@@ -8,7 +8,7 @@ import { HasTagOfferEditRequirement } from './HasTagOfferEditRequirement';
 // eslint-disable-next-line max-len
 export class HasTagOfferEditRequirementFactory extends AbstractHermesRequirementFactory<OfferSessionData> {
   public getId(): string {
-    return 'hasTag';
+    return 'has-tag';
   }
 
   public create(

@@ -16,6 +16,6 @@ export class HasTagRequestEditRequirementFactory extends AbstractHermesRequireme
   }
 
   public getId(): string {
-    return 'hasTag';
+    return 'has-tag';
   }
 }
