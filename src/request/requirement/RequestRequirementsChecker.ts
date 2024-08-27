@@ -6,6 +6,7 @@ import type { HermesPlaceholderContext } from '../../hermes/message/context/Herm
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { BasicHermesRequirementChecker } from '../../hermes/requirement/check/BasicHermesRequirementChecker';
 import { CooldownRepostRequirementFactory } from '../../hermes/requirement/factories/CooldownRepostRequirementFactory';
+import { HasLevelRequirementFactory } from '../../hermes/requirement/factories/HasLevelRequirementFactory';
 import { HasRolesRequirementFactory } from '../../hermes/requirement/factories/HasRolesRequirementFactory';
 import { SearchRequirementFactory } from '../../hermes/requirement/factories/SearchRequirementFactory';
 import { HermesRequirementResultHandler } from '../../hermes/requirement/handler/HermesRequirementResultHandler';
@@ -62,6 +63,7 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
         offerRepository,
         requestRepository,
       ),
+      new HasLevelRequirementFactory(requestMessages, (data) => data.member),
     ];
 
     const repostRequirements: RequestRepostRequirementFactory[] = [
@@ -71,10 +73,12 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
         (data) => data.member,
         config.isStaff.bind(config),
       ),
+      new HasLevelRequirementFactory(requestMessages, (data) => data.member),
     ];
 
     const updateRequirements: RequestSessionRequirementFactory[] = [
       new SearchRequirementFactory(requestMessages, (data) => data.request),
+      new HasLevelRequirementFactory(requestMessages, (data) => data.member),
     ];
 
     const systemRequirements: RequestSessionRequirement[] = [
