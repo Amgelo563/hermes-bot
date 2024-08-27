@@ -43,6 +43,6 @@ export class SearchOffersRequirementFactory extends AbstractHermesRequirementFac
   }
 
   public getId(): string {
-    return 'searchOffers';
+    return 'search-offers';
   }
 }
