@@ -398,13 +398,17 @@ export class BasicHermesMessageParser<Schema extends z.ZodTypeAny> {
       undefined,
       ephemeralContext,
     );
-    const result = z.string().url().safeParse(parsed);
 
-    if (result.success) {
+    try {
+      const url = new URL(parsed);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return null;
+      }
+
       return parsed;
+    } catch (e) {
+      return null;
     }
-
-    return null;
   }
 
   protected parseErrorEmbeds(
