@@ -30,7 +30,7 @@ export class HasLevelRequirement<Data> extends AbstractHermesRequirement<
     const levelMatches: number[] = [];
     const member = this.memberGetter(data);
 
-    for (const role of member.roles) {
+    for (const role of member.roleNames) {
       const { level: levelString } = this.config.regex.exec(role)?.groups ?? {};
       if (!levelString) continue;
 

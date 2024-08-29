@@ -1,3 +1,4 @@
+import { AssertionError } from '@nyx-discord/core';
 import { z } from 'zod';
 
 import type { HermesMember } from '../../../service/member/HermesMember';
@@ -12,6 +13,11 @@ import { HasLevelRequirement } from '../requirements/HasLevelRequirement';
 
 const HasLevelConfigSchema = FieldRequirementConfigSchema.extend({
   regex: z.string().transform((string) => {
+    if (!string.includes('(?<level>')) {
+      throw new AssertionError(
+        'Level regex must contain a level capturing group.',
+      );
+    }
     return new RegExp(string);
   }),
   level: z.number(),
