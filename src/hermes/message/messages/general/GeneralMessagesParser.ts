@@ -127,6 +127,7 @@ export class GeneralMessagesParser extends BasicHermesMessageParser<
       username: `${unknownMember.username} \`${id}\``,
       id,
       roles: [],
+      roleNames: [],
       globalName: unknownMember.username,
       tag: `${unknownMember.username}#${unknownMember.discriminator}`,
       type: HermesMemberTypeEnum.UnknownUser,
