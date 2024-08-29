@@ -168,6 +168,7 @@ export class DiscordServiceAgent {
         avatar: guildMember.displayAvatarURL(),
         tag: guildMember.user.tag,
         roles: guildMember.roles.cache.map((role) => role.id),
+        roleNames: guildMember.roles.cache.map((role) => role.name),
         type: HermesMemberTypeEnum.Real,
       };
     } catch (e) {
@@ -199,6 +200,7 @@ export class DiscordServiceAgent {
       avatar: user.displayAvatarURL(),
       tag: user.tag,
       roles: [],
+      roleNames: [],
       type: HermesMemberTypeEnum.Mock,
     };
   }

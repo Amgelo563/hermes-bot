@@ -10,6 +10,7 @@ export interface HermesMember {
   tag: string;
 
   roles: string[];
+  roleNames: string[];
 
   type: HermesMemberType;
 }
