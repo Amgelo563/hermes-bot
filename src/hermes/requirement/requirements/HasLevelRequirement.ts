@@ -30,11 +30,10 @@ export class HasLevelRequirement<Data> extends AbstractHermesRequirement<
     const levelMatches: number[] = [];
     const member = this.memberGetter(data);
 
-    const hasBypassRole =
-      (this.config.rolesBypass ?? []).filter((role) =>
-        member.roles.includes(role),
-      ).length > 0;
-    if (hasBypassRole) return { allowed: RequirementResultEnum.Allow };
+    const bypassRole = (this.config.rolesBypass ?? []).find((role) =>
+      member.roles.includes(role),
+    );
+    if (bypassRole) return { allowed: RequirementResultEnum.Allow };
 
     for (const role of member.roleNames) {
       const { level: levelString } = this.config.regex.exec(role)?.groups ?? {};
