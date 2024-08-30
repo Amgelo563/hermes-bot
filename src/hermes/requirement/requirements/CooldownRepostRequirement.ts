@@ -54,7 +54,7 @@ export class CooldownRepostRequirement extends AbstractHermesRequirement<
     const cooldown = this.roleCooldowns
       ? this.roleCooldowns
           .filter((_cooldown, role) => member.roles.cache.has(role))
-          .reduce((max, override) => Math.max(max, override), 0)
+          .reduce((max, override) => Math.min(max, override), 0)
       : defaultCooldown;
 
     const cooldownExpiration = checked.repost.lastPostedAt.getTime() + cooldown;
