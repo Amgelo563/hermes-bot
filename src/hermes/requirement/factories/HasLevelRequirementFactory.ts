@@ -21,6 +21,7 @@ const HasLevelConfigSchema = FieldRequirementConfigSchema.extend({
     return new RegExp(string);
   }),
   level: z.number(),
+  rolesBypass: z.string().array().optional(),
   staffBypass: z.boolean().optional().default(true),
 });
 
