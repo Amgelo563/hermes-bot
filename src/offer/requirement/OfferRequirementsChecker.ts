@@ -14,7 +14,7 @@ import { HermesRequirementResultHandler } from '../../hermes/requirement/handler
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../service/member/HermesMember';
-import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import { MaxServicesRequirementFactory } from '../../service/requirements/MaxServicesRequirementFactory';
 import type { OfferData } from '../data/OfferData';
 import type { DiscordOfferAgent } from '../discord/DiscordOfferAgent';
 import type { OfferSessionRequirement } from './edit/OfferSessionRequirement';
@@ -57,7 +57,7 @@ export class OfferRequirementsChecker extends BasicHermesRequirementChecker<Offe
       ),
       new HasTagOfferEditRequirementFactory(offerMessages),
       new SearchRequirementFactory(offerMessages, (data) => data.offer),
-      new MaxServicesEditRequirementFactory(
+      new MaxServicesRequirementFactory(
         offerMessages,
         offerRepository,
         requestRepository,

@@ -1,15 +1,15 @@
 import type { SessionStartInteraction } from '@nyx-discord/core';
 import { z } from 'zod';
+
 import type { BasicHermesMessageParser } from '../../hermes/message/BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../hermes/message/context/HermesPlaceholderContext';
 import { AbstractHermesRequirementFactory } from '../../hermes/requirement/AbstractHermesRequirementFactory';
 import type { RequirementConfig } from '../../hermes/requirement/config/RequirementConfigSchema';
 import { EmbedRequirementConfigSchema } from '../../hermes/requirement/config/RequirementConfigSchema';
-
 import type { OfferRepository } from '../../offer/database/OfferRepository';
 import type { RequestRepository } from '../../request/database/RequestRepository';
 import type { Requirement } from '../../requirement/Requirement';
-import { MaxServicesEditRequirement } from './MaxServicesEditRequirement';
+import { MaxServicesRequirement } from './MaxServicesRequirement';
 
 const MaxOffersRequirementSchema = EmbedRequirementConfigSchema.extend({
   max: z.number().min(1),
@@ -27,7 +27,7 @@ export type MaxOffersRequirementConfig = z.infer<
   typeof MaxOffersRequirementSchema
 >;
 
-export class MaxServicesEditRequirementFactory extends AbstractHermesRequirementFactory<{
+export class MaxServicesRequirementFactory extends AbstractHermesRequirementFactory<{
   interaction: SessionStartInteraction;
 }> {
   protected readonly offerRepository: OfferRepository;
@@ -51,7 +51,7 @@ export class MaxServicesEditRequirementFactory extends AbstractHermesRequirement
     { interaction: SessionStartInteraction }
   > {
     const parsed = MaxOffersRequirementSchema.parse(config);
-    return new MaxServicesEditRequirement(
+    return new MaxServicesRequirement(
       this.parser,
       parsed,
       this.offerRepository,

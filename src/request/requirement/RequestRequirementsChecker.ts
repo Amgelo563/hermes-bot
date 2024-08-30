@@ -13,7 +13,7 @@ import { HermesRequirementResultHandler } from '../../hermes/requirement/handler
 import { RequirementCheckModeEnum } from '../../requirement/mode/RequirementCheckMode';
 import type { ServiceActionInteraction } from '../../service/action/interaction/ServiceActionInteraction';
 import type { HermesMember } from '../../service/member/HermesMember';
-import { MaxServicesEditRequirementFactory } from '../../service/requirements/MaxServicesEditRequirementFactory';
+import { MaxServicesRequirementFactory } from '../../service/requirements/MaxServicesRequirementFactory';
 import type { RequestData } from '../data/RequestData';
 import type { DiscordRequestAgent } from '../discord/DiscordRequestAgent';
 import type { RequestSessionRequirement } from './edit/RequestSessionRequirement';
@@ -58,7 +58,7 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
       new SearchOffersRequirementFactory(requestMessages, offerRepository),
       new HasTagRequestEditRequirementFactory(requestMessages),
       new SearchRequirementFactory(requestMessages, (data) => data.request),
-      new MaxServicesEditRequirementFactory(
+      new MaxServicesRequirementFactory(
         requestMessages,
         offerRepository,
         requestRepository,
