@@ -57,12 +57,15 @@ export class BotStickyMessagesManager {
 
   public async start(): Promise<void> {
     const subscribers = Object.values(StickyMessageIdEnum)
-      .filter((type) => this.config[type].sendStickyMessage)
+      .filter((type) => this.config[type].stickyMessage.send)
       .map((type) => {
         const channelId = this.config[type].channel;
+        const deleteOther = this.config[type].stickyMessage.deleteOther;
+
         return new MessageInStickyChannelEventSubscriber(
           this.debouncers[type],
           channelId,
+          deleteOther,
         );
       });
 

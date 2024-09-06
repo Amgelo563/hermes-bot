@@ -13,14 +13,28 @@ export class MessageInStickyChannelEventSubscriber extends AbstractDJSClientSubs
 
   protected readonly channelId: string;
 
-  constructor(debouncer: StickyMessageSendDebouncer, channelId: string) {
+  protected readonly deleteOther: boolean;
+
+  constructor(
+    debouncer: StickyMessageSendDebouncer,
+    channelId: string,
+    deleteOther: boolean,
+  ) {
     super();
     this.debouncer = debouncer;
     this.channelId = channelId;
+    this.deleteOther = deleteOther;
   }
 
-  public handleEvent(meta: EventDispatchMeta, message: Message): void {
+  public async handleEvent(
+    meta: EventDispatchMeta,
+    message: Message,
+  ): Promise<void> {
     if (message.channelId !== this.channelId) return;
+    if (this.deleteOther && message.author.id !== message.client.user?.id) {
+      await message.delete();
+      return;
+    }
 
     this.debouncer.debounce();
     meta.setHandled();

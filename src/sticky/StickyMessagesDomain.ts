@@ -57,7 +57,7 @@ export class StickyMessagesDomain {
     this.agent.start();
 
     for (const type of Object.values(StickyMessageIdEnum)) {
-      if (!this.config[type].sendStickyMessage) continue;
+      if (!this.config[type].stickyMessage.send) continue;
 
       await this.refreshSticky(type, true);
     }

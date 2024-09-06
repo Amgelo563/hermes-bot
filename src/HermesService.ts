@@ -77,7 +77,7 @@ export class HermesService {
     );
 
     const stickyMessagesDomain =
-      rawConfig.offer.sendStickyMessage || rawConfig.request.sendStickyMessage
+      rawConfig.offer.stickyMessage.send || rawConfig.request.stickyMessage.send
         ? StickyMessagesDomain.create(
             messages,
             bot,
