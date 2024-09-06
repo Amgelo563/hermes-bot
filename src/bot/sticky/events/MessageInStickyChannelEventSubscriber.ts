@@ -33,6 +33,8 @@ export class MessageInStickyChannelEventSubscriber extends AbstractDJSClientSubs
     if (message.channelId !== this.channelId) return;
     if (this.deleteOther && message.author.id !== message.client.user?.id) {
       await message.delete();
+      meta.setHandled();
+
       return;
     }
 
