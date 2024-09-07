@@ -16,6 +16,6 @@ export class BlacklistParentCommand extends AbstractParentCommand {
     return new SlashCommandBuilder()
       .setName(this.data.name)
       .setDescription(this.data.description)
-      .setDMPermission(false);
+      .setDMPermission(true);
   }
 }
