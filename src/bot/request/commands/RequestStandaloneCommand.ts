@@ -91,6 +91,6 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
     return new SlashCommandBuilder()
       .setName(this.data.name)
       .setDescription(this.data.description)
-      .setDMPermission(true);
+      .setDMPermission(false);
   }
 }

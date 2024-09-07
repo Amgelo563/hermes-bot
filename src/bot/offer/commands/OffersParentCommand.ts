@@ -1,6 +1,7 @@
 import { AbstractParentCommand } from '@nyx-discord/framework';
 import type { SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
 import { SlashCommandBuilder } from 'discord.js';
+
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 
 export class OffersParentCommand extends AbstractParentCommand {
@@ -15,6 +16,6 @@ export class OffersParentCommand extends AbstractParentCommand {
     return new SlashCommandBuilder()
       .setName(this.data.name)
       .setDescription(this.data.description)
-      .setDMPermission(false);
+      .setDMPermission(true);
   }
 }
