@@ -95,6 +95,7 @@ export class BotBlacklistManager {
       BlacklistAction.enum.Delete,
       repository,
       true,
+      false,
     );
 
     const createData = blacklistMessages.getCreateCommandData();

@@ -7,6 +7,7 @@ import { AbstractCommandMiddleware } from '@nyx-discord/framework';
 
 import type { GeneralMessagesParser } from '../../../hermes/message/messages/general/GeneralMessagesParser';
 import type { DiscordServiceAgent } from '../../../service/discord/DiscordServiceAgent';
+import { BlacklistActionSubCommand } from '../../blacklist/commands/BlacklistActionSubCommand';
 import { AbstractActionSubCommand } from '../commands/AbstractActionSubCommand';
 
 export class NonMemberActionSubCommandMiddleware extends AbstractCommandMiddleware {
@@ -28,7 +29,8 @@ export class NonMemberActionSubCommandMiddleware extends AbstractCommandMiddlewa
       return this.true();
     }
     if (
-      !(checked instanceof AbstractActionSubCommand)
+      (!(checked instanceof AbstractActionSubCommand)
+        && !(checked instanceof BlacklistActionSubCommand))
       || checked.allowsNonMembers()
     ) {
       return this.true();

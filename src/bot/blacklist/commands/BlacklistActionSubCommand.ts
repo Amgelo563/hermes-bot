@@ -134,6 +134,10 @@ export class BlacklistActionSubCommand extends AbstractSubCommand {
       );
   }
 
+  public allowsNonMembers(): boolean {
+    return this.allowNonMembers;
+  }
+
   protected async find(id: string): Promise<IdentifiableBlacklist | null> {
     const data = await this.repository.find(id);
     if (!data) return null;
