@@ -4,6 +4,7 @@ import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedMo
 
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import type { ModalDataWithFields } from '../../discord/modal/schema/DiscordModalSchema';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { BlacklistModalData } from './BlacklistModalData';
 
 export class BlacklistModalCodec
@@ -89,6 +90,7 @@ export class BlacklistModalCodec
 
   public extractFromModal(
     interaction: ModalSubmitInteraction,
+    _invoker: HermesMember,
     presentData?: BlacklistModalData,
   ): BlacklistModalData {
     const reason = interaction.fields.getTextInputValue(

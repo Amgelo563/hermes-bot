@@ -28,7 +28,7 @@ import type { HermesMember } from '../../../service/member/HermesMember';
 import { AbstractHermesSession } from '../AbstractHermesSession';
 
 export abstract class AbstractServiceSession<
-  Data,
+  Data extends { member: HermesMember },
 > extends AbstractHermesSession {
   protected static readonly ButtonIndex = 0;
 
@@ -142,7 +142,11 @@ export abstract class AbstractServiceSession<
 
     this.data = {
       ...this.data,
-      ...this.modalCodec.extractFromModal(interaction, this.data),
+      ...this.modalCodec.extractFromModal(
+        interaction,
+        this.data.member,
+        this.data,
+      ),
     };
     this.onDataUpdate();
 

@@ -4,7 +4,7 @@ import { OfferUpdateSession } from '../../../bot/offer/sessions/OfferUpdateSessi
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { OfferData } from '../../data/OfferData';
+import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferModalCodec } from '../../modal/OfferModalCodec';
@@ -48,7 +48,7 @@ export class OfferRequestUpdateExecutor implements OfferActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordOfferAgent,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<void> {
     if (!interaction.replied && !interaction.deferred) {
       await interaction.deferReply({ ephemeral: true });

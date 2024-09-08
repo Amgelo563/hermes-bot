@@ -5,7 +5,7 @@ import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationS
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { RequestData } from '../../data/RequestData';
+import type { RequestDataWithMember } from '../../data/RequestDataWithMember';
 import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestActionExecutor } from './RequestActionExecutor';
@@ -30,7 +30,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordRequestAgent,
-    request: RequestData,
+    request: RequestDataWithMember,
   ): Promise<void> {
     await deferReplyOrUpdate(interaction);
 

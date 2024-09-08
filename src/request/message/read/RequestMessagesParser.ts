@@ -14,7 +14,7 @@ import type { HermesPlaceholderErrorContext } from '../../../hermes/message/cont
 import type { ErrorEmbedsData } from '../../../hermes/message/error/ErrorEmbedsData';
 import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { WithRequired } from '../../../types/WithRequired';
-import type { RequestData } from '../../data/RequestData';
+import type { RequestDataWithMember } from '../../data/RequestDataWithMember';
 import type { RequestModalData } from '../../modal/RequestModalData';
 import type { RequestPlaceholderContext } from '../placeholder/RequestPlaceholderContext';
 import type { RequestMessagesSchema } from './RequestMessagesSchema';
@@ -219,11 +219,10 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
     const newRequest: Record<string, unknown> = { ...context.services.request };
 
     for (const [key, value] of Object.entries(newRequest)) {
-      if (typeof value !== 'string') continue;
-      newRequest[key] = this.escape(value);
+      newRequest[key] = typeof value === 'string' ? this.escape(value) : value;
     }
 
-    const escapedData = newRequest as RequestData;
+    const escapedData = newRequest as RequestDataWithMember;
     const fullContext = {
       ...context,
       services: {
@@ -294,7 +293,7 @@ export class RequestMessagesParser extends BasicHermesMessageParser<
 
   public getSearchEmbed(
     context: HermesPlaceholderContext,
-    datas: RequestData[],
+    datas: RequestDataWithMember[],
   ): EmbedBuilder {
     if (datas.length === 0) {
       return this.parseEmbed(

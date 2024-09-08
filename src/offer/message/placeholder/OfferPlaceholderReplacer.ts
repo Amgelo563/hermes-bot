@@ -1,5 +1,6 @@
 import { ArrayFormatter } from '../../../format/ArrayFormatter';
 import { DiscordDateFormatter } from '../../../format/DiscordDateFormatter';
+import { HermesMemberFormatter } from '../../../format/HermesMemberFormatter';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderReplacer } from '../../../hermes/message/placeholder/HermesPlaceholderReplacer';
 import type { MessagePlaceholder } from '../../../message/placeholder/MessagePlaceholder';
@@ -65,12 +66,10 @@ export class OfferPlaceholderReplacer implements HermesPlaceholderReplacer {
         return ArrayFormatter.format(tags, arrayArg);
       }
       case 'user': {
-        const newPlaceholder: MessagePlaceholder = {
-          namespace: 'user',
-          values: placeholder.values.slice(1),
-        };
-
-        return this.manager.replacePlaceholder(newPlaceholder, context);
+        return HermesMemberFormatter.format(
+          offer.member,
+          placeholder.values[1],
+        );
       }
       case 'url':
         return `https://discord.com/channels/${offer.guildId}/${offer.channelId}/${offer.messageId}`;

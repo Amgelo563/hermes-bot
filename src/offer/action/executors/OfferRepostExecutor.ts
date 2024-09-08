@@ -1,7 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { OfferData } from '../../data/OfferData';
+import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 
 import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
@@ -33,7 +33,7 @@ export class OfferRepostExecutor implements OfferActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordOfferAgent,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<void> {
     if (!interaction.replied && !interaction.deferred) {
       await interaction.deferReply({ ephemeral: true });

@@ -125,10 +125,14 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
     if (!targetId) {
       throw new ObjectNotFoundError();
     }
-    const modalData = this.modalCodec.extractFromModal(interaction);
-
     const blacklister =
       await this.agent.fetchMemberFromInteraction(interaction);
+
+    const modalData = this.modalCodec.extractFromModal(
+      interaction,
+      blacklister,
+    );
+
     const blacklisted = await this.agent.fetchMember(targetId, true);
 
     const duration = modalData.time

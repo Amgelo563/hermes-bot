@@ -136,9 +136,12 @@ export class RequestActionsManager extends AbstractActionsManager<
   }
 
   protected async fetch(id: number): Promise<IdentifiableRequest | null> {
-    const data = await this.repository.find(id);
-    if (!data) return null;
+    const request = await this.repository.find(id);
+    if (!request) {
+      return null;
+    }
+    const member = await this.agent.fetchMemberOrUnknown(request.memberId);
 
-    return createIdentifiableRequest(data);
+    return createIdentifiableRequest({ ...request, member });
   }
 }

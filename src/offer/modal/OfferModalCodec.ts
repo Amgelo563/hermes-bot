@@ -4,10 +4,12 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
+
 import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import { DiscordModalLimits } from '../../discord/modal/schema/DiscordModalLimits';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { OfferCreateData } from '../data/OfferCreateData';
 import type { OfferModalData } from './OfferModalData';
 
@@ -34,6 +36,7 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
 
   public extractFromModal(
     interaction: ModalSubmitInteraction,
+    member: HermesMember,
     presentData?: OfferCreateData,
   ): OfferCreateData {
     const ids = OfferModalCodec.CreateFieldsIds;
@@ -51,6 +54,7 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
       title,
       thumbnail,
       image,
+      member,
       memberId: interaction.user.id,
       tags: presentData?.tags ?? [],
     };
@@ -123,11 +127,11 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      get(ids.Title) === data.title &&
-      get(ids.Description) === data.description &&
-      get(ids.Price) === data.price &&
-      get(ids.Thumbnail) === data.thumbnail &&
-      get(ids.Image) === data.image
+      get(ids.Title) === data.title
+      && get(ids.Description) === data.description
+      && get(ids.Price) === data.price
+      && get(ids.Thumbnail) === data.thumbnail
+      && get(ids.Image) === data.image
     );
   }
 

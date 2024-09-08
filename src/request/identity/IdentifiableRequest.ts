@@ -1,12 +1,12 @@
 import type { Identifiable } from '@nyx-discord/core';
-import type { RequestData } from '../data/RequestData';
+import type { RequestDataWithMember } from '../data/RequestDataWithMember';
 
 export interface IdentifiableRequest
   extends Identifiable<string>,
-    RequestData {}
+    RequestDataWithMember {}
 
 export function createIdentifiableRequest(
-  requestData: RequestData,
+  requestData: RequestDataWithMember,
 ): IdentifiableRequest {
   return {
     ...requestData,

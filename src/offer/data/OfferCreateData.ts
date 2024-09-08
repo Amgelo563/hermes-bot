@@ -1,6 +1,6 @@
-import type { OfferData } from './OfferData';
+import type { OfferDataWithMember } from './OfferDataWithMember';
 
 export type OfferCreateData = Omit<
-  OfferData,
+  OfferDataWithMember,
   'id' | 'createdAt' | 'lastPostedAt' | 'channelId' | 'messageId' | 'guildId'
 >;

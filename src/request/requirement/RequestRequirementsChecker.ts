@@ -55,7 +55,11 @@ export class RequestRequirementsChecker extends BasicHermesRequirementChecker<Re
         (data) => data.member,
         config.isStaff.bind(config),
       ),
-      new SearchOffersRequirementFactory(requestMessages, offerRepository),
+      new SearchOffersRequirementFactory(
+        requestMessages,
+        offerRepository,
+        agent,
+      ),
       new HasTagRequestEditRequirementFactory(requestMessages),
       new SearchRequirementFactory(requestMessages, (data) => data.request),
       new MaxServicesRequirementFactory(

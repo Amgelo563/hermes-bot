@@ -1,9 +1,14 @@
 import type { Identifiable } from '@nyx-discord/core';
-import type { OfferData } from '../data/OfferData';
 
-export interface IdentifiableOffer extends Identifiable<string>, OfferData {}
+import type { OfferDataWithMember } from '../data/OfferDataWithMember';
 
-export function createIdentifiableOffer(offer: OfferData): IdentifiableOffer {
+export interface IdentifiableOffer
+  extends Identifiable<string>,
+    OfferDataWithMember {}
+
+export function createIdentifiableOffer(
+  offer: OfferDataWithMember,
+): IdentifiableOffer {
   return {
     ...offer,
     getId(): string {

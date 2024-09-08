@@ -8,6 +8,7 @@ import { DiscordEmbedLimits } from '../../discord/embed/DiscordEmbedLimits';
 import { SimplifiedModalBuilder } from '../../discord/modal/builder/SimplifiedModalBuilder';
 import type { DiscordModalCodec } from '../../discord/modal/codec/DiscordModalCodec';
 import { DiscordModalLimits } from '../../discord/modal/schema/DiscordModalLimits';
+import type { HermesMember } from '../../service/member/HermesMember';
 import type { RequestModalData } from './RequestModalData';
 import type { RequestModalInputData } from './RequestModalInputData';
 
@@ -34,6 +35,7 @@ export class RequestModalCodec
 
   public extractFromModal(
     interaction: ModalSubmitInteraction,
+    member: HermesMember,
   ): RequestModalInputData {
     const ids = RequestModalCodec.CreateFieldsIds;
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
@@ -46,6 +48,7 @@ export class RequestModalCodec
       description,
       budget,
       title,
+      member,
       memberId: interaction.user.id,
     };
   }
@@ -107,9 +110,9 @@ export class RequestModalCodec
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      data.title === get(ids.Title) &&
-      data.description === get(ids.Description) &&
-      data.budget === get(ids.Budget)
+      data.title === get(ids.Title)
+      && data.description === get(ids.Description)
+      && data.budget === get(ids.Budget)
     );
   }
 

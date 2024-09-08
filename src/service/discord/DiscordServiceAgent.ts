@@ -184,6 +184,13 @@ export class DiscordServiceAgent {
     }
   }
 
+  public async fetchMemberOrUnknown(
+    idOrMember: string | GuildMember,
+  ): Promise<HermesMember> {
+    const member = await this.fetchMember(idOrMember);
+    return member ?? this.getUnknownMember(idOrMember as string);
+  }
+
   public getOwnMember(): HermesMember {
     const me = this.client.user;
     if (!me) {

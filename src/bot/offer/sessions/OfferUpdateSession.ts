@@ -10,7 +10,7 @@ import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineF
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import { OfferAction } from '../../../offer/action/OfferAction';
 import type { OfferActionsManager } from '../../../offer/action/OfferActionsManager';
-import type { OfferData } from '../../../offer/data/OfferData';
+import type { OfferDataWithMember } from '../../../offer/data/OfferDataWithMember';
 import { createIdentifiableOffer } from '../../../offer/identity/IdentifiableOffer';
 import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { OfferMessagesParser } from '../../../offer/message/read/OfferMessagesParser';
@@ -28,9 +28,9 @@ export class OfferUpdateSession extends OfferCreateSession {
 
   protected readonly offerMessages: OfferMessagesParser;
 
-  protected override data: OfferData;
+  protected override data: OfferDataWithMember;
 
-  protected readonly initialData: OfferData;
+  protected readonly initialData: OfferDataWithMember;
 
   protected readonly selectMenuRow: ActionRowWrapper<StringSelectMenuBuilder> | null;
 
@@ -39,7 +39,7 @@ export class OfferUpdateSession extends OfferCreateSession {
   constructor(
     bot: NyxBot,
     startInteraction: ServiceActionInteraction,
-    offer: OfferData,
+    offer: OfferDataWithMember,
     messageService: HermesMessageService,
     modalCodec: OfferModalCodec,
     requirements: OfferRequirementsChecker,

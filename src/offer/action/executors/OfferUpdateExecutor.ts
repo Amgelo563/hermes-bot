@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { OfferData } from '../../data/OfferData';
+import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
@@ -22,7 +22,7 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordOfferAgent,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<void> {
     await deferReplyOrUpdate(interaction);
 
@@ -47,7 +47,10 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
     try {
       await this.repository.update(offer.id, newOffer);
       await agent.refreshOffer(newOffer);
-      await agent.postUpdateLog(interaction.user.id, newOffer, currentOffer);
+      await agent.postUpdateLog(interaction.user.id, newOffer, {
+        ...currentOffer,
+        member: newOffer.member,
+      });
     } catch (error) {
       const errorContext = {
         ...context,

@@ -3,14 +3,14 @@ import type { EmbedBuilder } from 'discord.js';
 
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
-import type { OfferData } from '../../../offer/data/OfferData';
+import type { OfferDataWithMember } from '../../../offer/data/OfferDataWithMember';
 import type { OfferRepository } from '../../../offer/database/OfferRepository';
 import type { DiscordOfferAgent } from '../../../offer/discord/DiscordOfferAgent';
 import type { HermesMember } from '../../../service/member/HermesMember';
 import type { TagRepository } from '../../../tag/database/TagRepository';
 import { AbstractServiceSearchSubCommand } from '../../search/commands/AbstractServiceSearchSubCommand';
 
-export class OfferSearchSubCommand extends AbstractServiceSearchSubCommand<OfferData> {
+export class OfferSearchSubCommand extends AbstractServiceSearchSubCommand<OfferDataWithMember> {
   protected static readonly OfferLimit = 500;
 
   protected readonly offerRepository: OfferRepository;
@@ -29,14 +29,25 @@ export class OfferSearchSubCommand extends AbstractServiceSearchSubCommand<Offer
 
   protected createEmbed(
     member: HermesMember,
-    items: OfferData[],
+    items: OfferDataWithMember[],
   ): EmbedBuilder {
     return this.messageService
       .getOfferMessages()
       .getSearchEmbed({ member }, items);
   }
 
-  protected fetch(): Promise<OfferData[]> {
-    return this.offerRepository.findAll(OfferSearchSubCommand.OfferLimit);
+  protected async fetch(): Promise<OfferDataWithMember[]> {
+    const offers = await this.offerRepository.findAll(
+      OfferSearchSubCommand.OfferLimit,
+    );
+    const withMembers: OfferDataWithMember[] = [];
+
+    for (const offer of offers) {
+      const member = await this.agent.fetchMemberOrUnknown(offer.memberId);
+
+      withMembers.push({ ...offer, member });
+    }
+
+    return withMembers;
   }
 }

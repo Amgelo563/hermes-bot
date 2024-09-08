@@ -59,6 +59,7 @@ export class OfferCreateExecutor
 
         const postOffer = {
           ...newOffer,
+          member: offer.member,
           tags: offer.tags,
         };
 
@@ -105,7 +106,7 @@ export class OfferCreateExecutor
     const newContext: OfferPlaceholderContext = {
       ...context,
       services: {
-        offer: newOffer as OfferData,
+        offer: { ...newOffer!, member: offer.member },
       },
     };
 

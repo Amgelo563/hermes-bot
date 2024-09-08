@@ -2,7 +2,7 @@ import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { RequestData } from '../../data/RequestData';
+import type { RequestDataWithMember } from '../../data/RequestDataWithMember';
 
 import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
@@ -38,7 +38,7 @@ export class RequestRepostExecutor implements RequestActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordRequestAgent,
-    request: RequestData,
+    request: RequestDataWithMember,
   ): Promise<void> {
     await deferReplyOrUpdate(interaction);
 

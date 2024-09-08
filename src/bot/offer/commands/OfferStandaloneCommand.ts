@@ -61,11 +61,13 @@ export class OfferStandaloneCommand extends AbstractStandaloneCommand {
     interaction: ModalSubmitInteraction,
     meta: CommandExecutionMeta,
   ) {
-    const data = this.offerDomain.getModalCodec().extractFromModal(interaction);
-    const bot = meta.getBot();
     const member = await this.offerDomain
       .getDiscordAgent()
       .fetchMemberFromInteraction(interaction);
+    const data = this.offerDomain
+      .getModalCodec()
+      .extractFromModal(interaction, member);
+    const bot = meta.getBot();
 
     const session = new OfferCreateSession(
       bot,

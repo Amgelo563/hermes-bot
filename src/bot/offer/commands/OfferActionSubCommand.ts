@@ -75,7 +75,8 @@ export class OfferActionSubCommand extends AbstractActionSubCommand<
     if (!offer) {
       return null;
     }
+    const member = await this.agent.fetchMemberOrUnknown(offer.memberId);
 
-    return createIdentifiableOffer(offer);
+    return createIdentifiableOffer({ ...offer, member });
   }
 }

@@ -72,7 +72,8 @@ export class RequestActionSubCommand extends AbstractActionSubCommand<
     if (!request) {
       return null;
     }
+    const member = await this.agent.fetchMemberOrUnknown(request.memberId);
 
-    return createIdentifiableRequest(request);
+    return createIdentifiableRequest({ ...request, member });
   }
 }

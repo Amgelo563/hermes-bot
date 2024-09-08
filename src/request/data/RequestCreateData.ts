@@ -1,7 +1,7 @@
-import type { RequestData } from './RequestData';
+import type { RequestDataWithMember } from './RequestDataWithMember';
 
 export type RequestCreateData = Omit<
-  RequestData,
+  RequestDataWithMember,
   | 'id'
   | 'createdAt'
   | 'lastPostedAt'

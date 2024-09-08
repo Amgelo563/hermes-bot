@@ -5,7 +5,7 @@ import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
 
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
-import type { OfferData } from '../../data/OfferData';
+import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferActionsCustomIdCodec } from '../codec/OfferActionsCustomIdCodec';
 import { OfferAction } from '../OfferAction';
@@ -31,7 +31,7 @@ export class OfferInfoExecutor implements OfferActionExecutor {
   public async execute(
     interaction: ServiceActionInteraction,
     agent: DiscordOfferAgent,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<void> {
     await deferReplyOrUpdate(interaction);
 

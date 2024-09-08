@@ -14,6 +14,7 @@ import type { HermesMember } from '../../service/member/HermesMember';
 import { HermesMemberTypeEnum } from '../../service/member/HermesMemberType';
 import type { RequestConfig } from '../config/RequestConfigSchema';
 import type { RequestData } from '../data/RequestData';
+import type { RequestDataWithMember } from '../data/RequestDataWithMember';
 import type { RequestMessagesParser } from '../message/read/RequestMessagesParser';
 
 export class DiscordRequestAgent extends DiscordServiceAgent {
@@ -87,7 +88,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
 
   public async postRequest(
     user: HermesMember | string,
-    request: RequestData,
+    request: RequestDataWithMember,
   ): Promise<Message> {
     if (!this.requestChannel) {
       throw new IllegalStateError(
@@ -127,7 +128,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     return requestMessage;
   }
 
-  public async repostRequest(request: RequestData): Promise<Message> {
+  public async repostRequest(request: RequestDataWithMember): Promise<Message> {
     if (!this.requestChannel) {
       throw new IllegalStateError(
         "Request channel not found, haven't started yet?",
@@ -145,7 +146,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     return newPost;
   }
 
-  public async refreshRequest(request: RequestData): Promise<void> {
+  public async refreshRequest(request: RequestDataWithMember): Promise<void> {
     if (!this.requestChannel) {
       throw new IllegalStateError(
         "Request channel not found, haven't started yet?",
@@ -175,8 +176,8 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
 
   public async postUpdateLog(
     updater: HermesMember | string,
-    newRequest: RequestData,
-    oldRequest: RequestData,
+    newRequest: RequestDataWithMember,
+    oldRequest: RequestDataWithMember,
   ): Promise<void> {
     if (!this.requestConfig.log || !this.requestConfig.log.update) return;
 
@@ -227,7 +228,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
 
   public async postDeleteLog(
     deleter: HermesMember | string,
-    request: RequestData,
+    request: RequestDataWithMember,
   ): Promise<void> {
     if (!this.requestConfig.log || !this.requestConfig.log.delete) return;
 

@@ -13,7 +13,7 @@ import type { HermesPlaceholderContext } from '../../../hermes/message/context/H
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { ErrorEmbedsData } from '../../../hermes/message/error/ErrorEmbedsData';
 import type { WithRequired } from '../../../types/WithRequired';
-import type { OfferData } from '../../data/OfferData';
+import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { OfferModalData } from '../../modal/OfferModalData';
 import type { OfferPlaceholderContext } from '../placeholder/OfferPlaceholderContext';
 import type { OfferMessagesSchema } from './OfferMessagesSchema';
@@ -216,16 +216,13 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
     const newOffer: Record<string, unknown> = { ...context.services.offer };
 
     for (const [key, value] of Object.entries(newOffer)) {
-      if (typeof value !== 'string') continue;
-      newOffer[key] = this.escape(value);
+      newOffer[key] = typeof value === 'string' ? this.escape(value) : value;
     }
-
-    const newOfferData = newOffer as OfferData;
 
     const fullContext = {
       ...context,
       services: {
-        offer: newOfferData,
+        offer: newOffer as OfferDataWithMember,
       },
     };
 
@@ -288,7 +285,7 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
 
   public getSearchEmbed(
     context: HermesPlaceholderContext,
-    datas: OfferData[],
+    datas: OfferDataWithMember[],
   ): EmbedBuilder {
     if (datas.length === 0) {
       return this.parseEmbed(

@@ -10,7 +10,7 @@ import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineF
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import { RequestAction } from '../../../request/action/RequestAction';
 import type { RequestActionsManager } from '../../../request/action/RequestActionsManager';
-import type { RequestData } from '../../../request/data/RequestData';
+import type { RequestDataWithMember } from '../../../request/data/RequestDataWithMember';
 import { createIdentifiableRequest } from '../../../request/identity/IdentifiableRequest';
 import type { RequestPlaceholderContext } from '../../../request/message/placeholder/RequestPlaceholderContext';
 import type { RequestMessagesParser } from '../../../request/message/read/RequestMessagesParser';
@@ -31,16 +31,16 @@ export class RequestUpdateSession extends RequestCreateSession {
 
   protected readonly requestMessages: RequestMessagesParser;
 
-  protected override data: RequestData;
+  protected override data: RequestDataWithMember;
 
-  protected readonly initialData: RequestData;
+  protected readonly initialData: RequestDataWithMember;
 
   protected readonly selectMenuRow: ActionRowWrapper<StringSelectMenuBuilder> | null;
 
   constructor(
     bot: NyxBot,
     startInteraction: ServiceActionInteraction,
-    request: RequestData,
+    request: RequestDataWithMember,
     messageService: HermesMessageService,
     modalCodec: RequestModalCodec,
     requirements: RequestRequirementsChecker,

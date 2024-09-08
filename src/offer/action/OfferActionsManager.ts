@@ -123,7 +123,8 @@ export class OfferActionsManager extends AbstractActionsManager<
   protected async fetch(id: number): Promise<IdentifiableOffer | null> {
     const data = await this.repository.find(id);
     if (!data) return null;
+    const member = await this.agent.fetchMemberOrUnknown(data.memberId);
 
-    return createIdentifiableOffer(data);
+    return createIdentifiableOffer({ ...data, member });
   }
 }

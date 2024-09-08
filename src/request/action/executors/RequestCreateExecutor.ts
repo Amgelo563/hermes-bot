@@ -59,7 +59,7 @@ export class RequestCreateExecutor
           },
         });
 
-        message = await agent.postRequest(member, newRequest);
+        message = await agent.postRequest(member, { ...newRequest, member });
         const channelId: string = message.channel.id;
         const messageId: string = message.id;
         const guildId: string = message.guildId!;
@@ -100,7 +100,7 @@ export class RequestCreateExecutor
     const newContext: RequestPlaceholderContext = {
       ...context,
       services: {
-        request: newRequest as RequestData,
+        request: { ...(newRequest as RequestData), member },
       },
     };
 

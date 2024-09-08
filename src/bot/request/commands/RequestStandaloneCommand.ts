@@ -69,7 +69,7 @@ export class RequestStandaloneCommand extends AbstractStandaloneCommand {
 
     const data = this.requestDomain
       .getModalCodec()
-      .extractFromModal(interaction);
+      .extractFromModal(interaction, member);
     const bot = meta.getBot();
 
     const session = new RequestCreateSession(

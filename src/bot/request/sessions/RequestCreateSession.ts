@@ -11,7 +11,7 @@ import type {
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { RequestActionsManager } from '../../../request/action/RequestActionsManager';
-import type { RequestData } from '../../../request/data/RequestData';
+import type { RequestDataWithMember } from '../../../request/data/RequestDataWithMember';
 import type { RequestPlaceholderContext } from '../../../request/message/placeholder/RequestPlaceholderContext';
 import type { RequestMessagesParser } from '../../../request/message/read/RequestMessagesParser';
 import type { RequestModalCodec } from '../../../request/modal/RequestModalCodec';
@@ -102,7 +102,7 @@ export class RequestCreateSession extends AbstractServiceSession<RequestModalInp
     return this.actions.create(interaction, data);
   }
 
-  protected mockFullData(create: RequestModalInputData): RequestData {
+  protected mockFullData(create: RequestModalInputData): RequestDataWithMember {
     return {
       ...create,
       id: 0,

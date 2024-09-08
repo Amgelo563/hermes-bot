@@ -1,4 +1,5 @@
 import { DiscordDateFormatter } from '../../../format/DiscordDateFormatter';
+import { HermesMemberFormatter } from '../../../format/HermesMemberFormatter';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderReplacer } from '../../../hermes/message/placeholder/HermesPlaceholderReplacer';
 import type { MessagePlaceholder } from '../../../message/placeholder/MessagePlaceholder';
@@ -72,12 +73,10 @@ export class RequestPlaceholderReplacer implements HermesPlaceholderReplacer {
         return this.manager.replacePlaceholder(newPlaceholder, newContext);
       }
       case 'user': {
-        const newPlaceholder: MessagePlaceholder = {
-          namespace: 'user',
-          values: placeholder.values.slice(1),
-        };
-
-        return this.manager.replacePlaceholder(newPlaceholder, context);
+        return HermesMemberFormatter.format(
+          request.member,
+          placeholder.values[1],
+        );
       }
       case 'url':
         return `https://discord.com/channels/${request.guildId}/${request.channelId}/${request.messageId}`;

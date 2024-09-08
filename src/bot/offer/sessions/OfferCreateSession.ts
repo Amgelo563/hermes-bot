@@ -11,7 +11,7 @@ import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineF
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { OfferActionsManager } from '../../../offer/action/OfferActionsManager';
 import type { OfferCreateData } from '../../../offer/data/OfferCreateData';
-import type { OfferData } from '../../../offer/data/OfferData';
+import type { OfferDataWithMember } from '../../../offer/data/OfferDataWithMember';
 import type { OfferPlaceholderContext } from '../../../offer/message/placeholder/OfferPlaceholderContext';
 import type { OfferMessagesParser } from '../../../offer/message/read/OfferMessagesParser';
 import type { OfferModalCodec } from '../../../offer/modal/OfferModalCodec';
@@ -61,7 +61,7 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
     this.selectMenuRow = this.createSelectRow(this.offerMessages);
   }
 
-  protected mockFullData(create: OfferCreateData): OfferData {
+  protected mockFullData(create: OfferCreateData): OfferDataWithMember {
     return {
       ...create,
       id: 0,

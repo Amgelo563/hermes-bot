@@ -13,6 +13,7 @@ import { DiscordServiceAgent } from '../../service/discord/DiscordServiceAgent';
 import type { HermesMember } from '../../service/member/HermesMember';
 import type { OfferConfig } from '../config/OfferConfigSchema';
 import type { OfferData } from '../data/OfferData';
+import type { OfferDataWithMember } from '../data/OfferDataWithMember';
 import type { OfferMessagesParser } from '../message/read/OfferMessagesParser';
 
 export class DiscordOfferAgent extends DiscordServiceAgent {
@@ -86,7 +87,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
 
   public async postOffer(
     poster: HermesMember | string,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<Message> {
     if (!this.offerChannel) {
       throw new IllegalStateError(
@@ -122,7 +123,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     return offerMessage;
   }
 
-  public async repostOffer(offer: OfferData): Promise<Message> {
+  public async repostOffer(offer: OfferDataWithMember): Promise<Message> {
     if (!this.offerChannel) {
       throw new IllegalStateError(
         "Offer channel not found, haven't started yet?",
@@ -141,7 +142,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     return newPost;
   }
 
-  public async refreshOffer(offer: OfferData): Promise<void> {
+  public async refreshOffer(offer: OfferDataWithMember): Promise<void> {
     if (!this.offerChannel) {
       throw new IllegalStateError(
         "Offer channel not found, haven't started yet?",
@@ -166,8 +167,8 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
 
   public async postUpdateLog(
     updater: HermesMember | string,
-    newOffer: OfferData,
-    oldOffer: OfferData,
+    newOffer: OfferDataWithMember,
+    oldOffer: OfferDataWithMember,
   ): Promise<void> {
     if (!this.offerConfig.log || !this.offerConfig.log.update) return;
 
@@ -218,7 +219,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
 
   public async postDeleteLog(
     deleter: HermesMember | string,
-    offer: OfferData,
+    offer: OfferDataWithMember,
   ): Promise<void> {
     if (!this.offerConfig.log || !this.offerConfig.log.delete) return;
 
