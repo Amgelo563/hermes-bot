@@ -39,11 +39,12 @@ export class OfferCreateExecutor
     let message: Message | undefined;
     let newOffer: OfferData | undefined;
 
+    const dbOffer = { ...offer, member: undefined };
     try {
       await prisma.$transaction(async (tx: TransactionClient) => {
         const newOffer = await tx.offer.create({
           data: {
-            ...offer,
+            ...dbOffer,
 
             tags: {
               connect: offer.tags.map((tag) => ({

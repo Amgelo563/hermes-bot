@@ -39,11 +39,12 @@ export class RequestCreateExecutor
     let newRequest: RequestData | undefined;
     let message: Message | undefined;
 
+    const dbRequest = { ...request, member: undefined };
     try {
       await prisma.$transaction(async (tx: TransactionClient) => {
         newRequest = await tx.request.create({
           data: {
-            ...request,
+            ...dbRequest,
             tagId: undefined,
             tag:
               request.tagId === null
