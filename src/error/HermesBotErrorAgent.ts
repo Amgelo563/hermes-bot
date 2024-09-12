@@ -68,8 +68,12 @@ export class HermesBotErrorAgent {
       },
     );
     sessionEndErrorHandler.setFallbackConsumer(
-      (error, _session, [_endData, executionMeta]) => {
-        this.consume(error, executionMeta);
+      (error, session, [_endData, executionMeta]) => {
+        this.consumeInteraction(
+          session.getStartInteraction(),
+          error,
+          executionMeta,
+        );
       },
     );
   }

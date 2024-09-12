@@ -129,7 +129,9 @@ export class DiscordServiceAgent {
       .getUnknownErrorEmbeds(context);
 
     await this.postErrorEmbed(errorEmbeds.log);
-    await interaction.editReply({ embeds: [errorEmbeds.user], components: [] });
+    await interaction
+      .editReply({ embeds: [errorEmbeds.user], components: [] })
+      .catch((_e) => {});
   }
 
   public async fetchMemberFromInteraction(
