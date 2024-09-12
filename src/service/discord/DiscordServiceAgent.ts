@@ -11,8 +11,8 @@ import type {
   User,
 } from 'discord.js';
 import { DiscordAPIError } from 'discord.js';
-import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
 
+import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/file/HermesConfigSchema';
 import type { HermesPlaceholderErrorContext } from '../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
@@ -115,8 +115,9 @@ export class DiscordServiceAgent {
       await interaction.deferReply({ ephemeral: true });
     }
 
+    const member = await this.fetchMemberFromInteraction(interaction);
     const context: HermesPlaceholderErrorContext = {
-      member: this.getOwnMember(),
+      member,
       error: {
         instance: error,
         id,
