@@ -47,10 +47,15 @@ export abstract class AbstractHermesSession<
 
     const endEmbed = this.getEndEmbed();
 
-    await this.startInteraction.editReply({
-      components: [],
-      embeds: [endEmbed],
-    });
+    if (this.startInteraction.replied || this.startInteraction.deferred) {
+      await this.startInteraction.editReply({
+        components: [],
+        embeds: [endEmbed],
+      });
+      return;
+    }
+
+    await this.startInteraction.reply({ embeds: [endEmbed], ephemeral: true });
   }
 
   protected getEndEmbed(): EmbedBuilder {
