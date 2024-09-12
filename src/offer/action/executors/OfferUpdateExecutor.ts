@@ -44,8 +44,9 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
       },
     };
 
+    const dbOffer = { ...newOffer, member: undefined };
     try {
-      await this.repository.update(offer.id, newOffer);
+      await this.repository.update(offer.id, dbOffer);
       await agent.refreshOffer(newOffer);
       await agent.postUpdateLog(interaction.user.id, newOffer, {
         ...currentOffer,

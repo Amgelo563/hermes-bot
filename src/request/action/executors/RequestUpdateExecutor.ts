@@ -44,8 +44,9 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
       },
     };
 
+    const dbRequest = { ...newRequest, member: undefined };
     try {
-      await this.repository.update(request.id, newRequest);
+      await this.repository.update(request.id, dbRequest);
       await agent.refreshRequest(newRequest);
       await agent.postUpdateLog(member, newRequest, {
         ...currentRequest,
