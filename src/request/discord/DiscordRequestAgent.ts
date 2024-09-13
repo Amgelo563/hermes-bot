@@ -1,8 +1,4 @@
-import {
-  AssertionError,
-  IllegalStateError,
-  ObjectNotFoundError,
-} from '@nyx-discord/core';
+import { IllegalStateError } from '@nyx-discord/core';
 import type { Client, Guild, Message, TextBasedChannel } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
@@ -58,31 +54,14 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     const guild = this.guild as Guild;
 
     const requestChannel = guild.channels.cache.get(this.requestConfig.channel);
-    if (!requestChannel) {
-      throw new ObjectNotFoundError(
-        'Request channel not found: ' + this.requestConfig.channel,
-      );
-    }
-    if (!requestChannel.isTextBased()) {
-      throw new AssertionError(
-        'Request channel is not a text channel: ' + this.requestConfig.channel,
-      );
-    }
+    this.assertTextChannel('Request', requestChannel, true);
     this.requestChannel = requestChannel;
 
     if (!this.requestConfig.log) return;
 
     const logChannel = guild.channels.cache.get(this.requestConfig.log.channel);
-    if (!logChannel) {
-      throw new ObjectNotFoundError(
-        'Log channel not found: ' + this.requestConfig.log.channel,
-      );
-    }
-    if (!logChannel.isTextBased()) {
-      throw new AssertionError(
-        'Log channel is not a text channel: ' + this.requestConfig.log.channel,
-      );
-    }
+    this.assertTextChannel('Request Log', logChannel);
+
     this.logChannel = logChannel;
   }
 
@@ -90,11 +69,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
     user: HermesMember | string,
     request: RequestDataWithMember,
   ): Promise<Message> {
-    if (!this.requestChannel) {
-      throw new IllegalStateError(
-        "Request channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request', this.requestChannel, true);
 
     const member =
       typeof user === 'string' ? await this.fetchMember(user, true) : user;
@@ -109,11 +84,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   }
 
   public async deleteRequest(request: RequestData): Promise<Message | null> {
-    if (!this.requestChannel) {
-      throw new IllegalStateError(
-        "Request channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request', this.requestChannel, true);
 
     let requestMessage;
     try {
@@ -129,11 +100,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   }
 
   public async repostRequest(request: RequestDataWithMember): Promise<Message> {
-    if (!this.requestChannel) {
-      throw new IllegalStateError(
-        "Request channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request', this.requestChannel, true);
 
     /**
      * Worst case scenario the post succeeds but the delete fails,
@@ -147,11 +114,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   }
 
   public async refreshRequest(request: RequestDataWithMember): Promise<void> {
-    if (!this.requestChannel) {
-      throw new IllegalStateError(
-        "Request channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request', this.requestChannel, true);
 
     const member =
       (await this.fetchMember(request.memberId))
@@ -181,11 +144,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   ): Promise<void> {
     if (!this.requestConfig.log || !this.requestConfig.log.update) return;
 
-    if (!this.logChannel) {
-      throw new IllegalStateError(
-        "Log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request Log', this.logChannel);
 
     const updaterMember =
       typeof updater === 'string'
@@ -232,11 +191,7 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
   ): Promise<void> {
     if (!this.requestConfig.log || !this.requestConfig.log.delete) return;
 
-    if (!this.logChannel) {
-      throw new IllegalStateError(
-        "Log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Request Log', this.logChannel);
 
     const ownerMember =
       (await this.fetchMember(request.memberId))

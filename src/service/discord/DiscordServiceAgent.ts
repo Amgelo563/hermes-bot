@@ -1,16 +1,22 @@
 import type { Identifiable } from '@nyx-discord/core';
-import { IllegalStateError, ObjectNotFoundError } from '@nyx-discord/core';
+import {
+  AssertionError,
+  IllegalStateError,
+  ObjectNotFoundError,
+} from '@nyx-discord/core';
 import type {
+  Channel,
   Client,
   EmbedBuilder,
   Guild,
+  GuildBasedChannel,
   GuildMember,
   Interaction,
   Message,
   TextBasedChannel,
   User,
 } from 'discord.js';
-import { DiscordAPIError } from 'discord.js';
+import { DiscordAPIError, PermissionsBitField } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/file/HermesConfigSchema';
@@ -51,19 +57,13 @@ export class DiscordServiceAgent {
   public start() {
     const guild = this.client.guilds.cache.get(this.config.server);
     if (!guild) {
-      throw new ObjectNotFoundError('Guild not found: ' + this.config.server);
+      throw new ObjectNotFoundError(`Guild not found: ${this.config.server}`);
     }
     this.guild = guild;
 
     const errorChannel = guild.channels.cache.get(this.config.errorLogChannel);
-    if (!errorChannel) {
-      throw new ObjectNotFoundError(
-        'Channel not found: ' + this.config.errorLogChannel,
-      );
-    }
-    if (!errorChannel.isTextBased()) {
-      throw new Error('Channel is not text: ' + this.config.errorLogChannel);
-    }
+    this.assertTextChannel('Error', errorChannel);
+
     this.errorChannel = errorChannel;
   }
 
@@ -84,15 +84,8 @@ export class DiscordServiceAgent {
   }
 
   public async postErrorEmbed(embed: EmbedBuilder): Promise<void> {
-    const channel = this.errorChannel;
-
-    if (!channel) {
-      throw new IllegalStateError(
-        'Error channel not found, has the agent started?',
-      );
-    }
-
-    await channel.send({ embeds: [embed] });
+    this.assertTextChannel('Error', this.errorChannel);
+    await this.errorChannel.send({ embeds: [embed] });
   }
 
   public async handleError(
@@ -220,11 +213,7 @@ export class DiscordServiceAgent {
   }
 
   public postError(embed: EmbedBuilder): Promise<Message> {
-    if (!this.errorChannel) {
-      throw new IllegalStateError(
-        "Error log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Error', this.errorChannel);
 
     return this.errorChannel.send({ embeds: [embed] });
   }
@@ -235,5 +224,50 @@ export class DiscordServiceAgent {
     }
 
     return this.guild;
+  }
+
+  protected assertTextChannel(
+    name: string,
+    channel: Channel | null | undefined,
+    assertAdministrator: boolean = false,
+  ): asserts channel is GuildBasedChannel & TextBasedChannel {
+    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+
+    if (!channel) {
+      throw new IllegalStateError(
+        `Specified ${capitalizedName} channel not found.`,
+      );
+    }
+
+    if (!channel.isTextBased()) {
+      throw new AssertionError(
+        `${capitalizedName} channel is not a text channel. Type is: ${channel.type}.`,
+      );
+    }
+
+    if (channel.isDMBased()) {
+      return;
+    }
+
+    const me = channel.guild.members.me;
+    if (!me) {
+      throw new IllegalStateError(
+        'Client user not found, has the client started?',
+      );
+    }
+    const permissions = channel.permissionsFor(me);
+    const adminPermissions =
+      PermissionsBitField.Flags.ManageMessages
+      | PermissionsBitField.Flags.ReadMessageHistory;
+
+    if (
+      !permissions.has(PermissionsBitField.Flags.SendMessages)
+      || !permissions.has(PermissionsBitField.Flags.ViewChannel)
+      || (assertAdministrator && !permissions.has(adminPermissions))
+    ) {
+      throw new AssertionError(
+        `Bot cannot send messages in ${capitalizedName} channel (${channel.id}): Missing either \`SendMessages\` or \`ViewChannel\` permission.`,
+      );
+    }
   }
 }

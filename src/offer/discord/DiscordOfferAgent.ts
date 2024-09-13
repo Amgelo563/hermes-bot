@@ -1,8 +1,4 @@
-import {
-  AssertionError,
-  IllegalStateError,
-  ObjectNotFoundError,
-} from '@nyx-discord/core';
+import { IllegalStateError } from '@nyx-discord/core';
 import type { Client, Guild, Message, TextBasedChannel } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
@@ -57,31 +53,15 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     super.start();
     const guild = this.guild as Guild;
     const offerChannel = guild.channels.cache.get(this.offerConfig.channel);
-    if (!offerChannel) {
-      throw new ObjectNotFoundError(
-        'Offer channel not found: ' + this.offerConfig.channel,
-      );
-    }
-    if (!offerChannel.isTextBased()) {
-      throw new AssertionError(
-        'Offer channel is not a text channel: ' + this.offerConfig.channel,
-      );
-    }
+    this.assertTextChannel('Offer', offerChannel);
+
     this.offerChannel = offerChannel;
 
     if (!this.offerConfig.log) return;
 
     const logChannel = guild.channels.cache.get(this.offerConfig.log.channel);
-    if (!logChannel) {
-      throw new ObjectNotFoundError(
-        'Log channel not found: ' + this.offerConfig.log.channel,
-      );
-    }
-    if (!logChannel.isTextBased()) {
-      throw new AssertionError(
-        'Log channel is not a text channel: ' + this.offerConfig.log.channel,
-      );
-    }
+    this.assertTextChannel('Offer Log', logChannel);
+
     this.logChannel = logChannel;
   }
 
@@ -89,11 +69,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
     poster: HermesMember | string,
     offer: OfferDataWithMember,
   ): Promise<Message> {
-    if (!this.offerChannel) {
-      throw new IllegalStateError(
-        "Offer channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Offer', this.offerChannel, true);
 
     const member =
       typeof poster === 'string'
@@ -106,11 +82,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
   }
 
   public async deleteOffer(offer: OfferData): Promise<Message | null> {
-    if (!this.offerChannel) {
-      throw new IllegalStateError(
-        "Offer channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Offer', this.offerChannel, true);
 
     let offerMessage;
     try {
@@ -124,11 +96,7 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
   }
 
   public async repostOffer(offer: OfferDataWithMember): Promise<Message> {
-    if (!this.offerChannel) {
-      throw new IllegalStateError(
-        "Offer channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Offer', this.offerChannel, true);
 
     const member = await this.fetchMember(offer.memberId, true);
     /**

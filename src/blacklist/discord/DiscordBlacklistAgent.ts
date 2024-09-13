@@ -1,8 +1,3 @@
-import {
-  AssertionError,
-  IllegalStateError,
-  ObjectNotFoundError,
-} from '@nyx-discord/core';
 import type { Client, Guild, Message, TextBasedChannel } from 'discord.js';
 
 import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
@@ -57,17 +52,8 @@ export class DiscordBlacklistAgent extends DiscordServiceAgent {
     const logChannel = guild.channels.cache.get(
       this.blacklistConfig.log.channel,
     );
-    if (!logChannel) {
-      throw new ObjectNotFoundError(
-        'Blacklist log channel not found: ' + this.blacklistConfig.log.channel,
-      );
-    }
-    if (!logChannel.isTextBased()) {
-      throw new AssertionError(
-        'Blacklist log channel is not a text channel: '
-          + this.blacklistConfig.log.channel,
-      );
-    }
+    this.assertTextChannel('Blacklist Log', logChannel);
+
     this.logChannel = logChannel;
   }
 
@@ -80,11 +66,7 @@ export class DiscordBlacklistAgent extends DiscordServiceAgent {
       return null;
     }
 
-    if (!this.logChannel) {
-      throw new IllegalStateError(
-        "Blacklist log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Blacklist Log', this.logChannel);
 
     const context = {
       member: blacklister,
@@ -109,11 +91,7 @@ export class DiscordBlacklistAgent extends DiscordServiceAgent {
       return null;
     }
 
-    if (!this.logChannel) {
-      throw new IllegalStateError(
-        "Blacklist log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Blacklist Log', this.logChannel);
 
     const context = {
       member: blacklister,
@@ -137,11 +115,7 @@ export class DiscordBlacklistAgent extends DiscordServiceAgent {
       return null;
     }
 
-    if (!this.logChannel) {
-      throw new IllegalStateError(
-        "Blacklist log channel not found, haven't started yet?",
-      );
-    }
+    this.assertTextChannel('Blacklist Log', this.logChannel);
 
     const blacklister =
       (await this.fetchMember(data.createdBy))
