@@ -121,6 +121,29 @@ export class BotManager {
       await this.stickyMessages.start();
     }
 
+    const agent = this.discordAgent;
+    this.bot
+      .getSessionManager()
+      .getExecutor()
+      .setMissingHandler(async (_sessionId, interaction) => {
+        const context = {
+          member: await agent.fetchMemberFromInteraction(interaction),
+        };
+        const embed = this.messages
+          .getGeneralMessages()
+          .getCancelledEmbed(context);
+
+        if (interaction.replied || interaction.deferred) {
+          await interaction.editReply({
+            components: [],
+            embeds: [embed],
+          });
+          return;
+        }
+
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+      });
+
     await this.bot.start();
     const replacer = await BotCommandPlaceholderReplacer.fromBot(this.bot);
     this.messages.getPlaceholderManager().addReplacer(replacer);
