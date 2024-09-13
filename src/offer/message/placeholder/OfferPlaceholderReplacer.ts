@@ -36,6 +36,10 @@ export class OfferPlaceholderReplacer implements HermesPlaceholderReplacer {
         return offer.title;
       case 'description':
         return offer.description;
+      case 'shortdescription':
+        return offer.description.length > 100
+          ? offer.description.slice(0, 100) + '…'
+          : offer.description;
       case 'price':
         return offer.price;
       case 'thumbnail':

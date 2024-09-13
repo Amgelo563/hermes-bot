@@ -35,6 +35,10 @@ export class RequestPlaceholderReplacer implements HermesPlaceholderReplacer {
         return request.title;
       case 'description':
         return request.description;
+      case 'shortdescription':
+        return request.description.length > 100
+          ? request.description.slice(0, 100) + '…'
+          : request.description;
       case 'budget':
         return request.budget;
       case 'userid':
