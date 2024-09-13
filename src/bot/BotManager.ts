@@ -141,7 +141,7 @@ export class BotManager {
           return;
         }
 
-        await interaction.update({ embeds: [embed] });
+        await interaction.update({ embeds: [embed], components: [] });
       });
 
     await this.bot.start();
