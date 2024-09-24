@@ -96,8 +96,6 @@ export class ServiceSearchSession<
   }
 
   public async onStart(): Promise<void> {
-    await this.startInteraction.deferReply({ ephemeral: true });
-
     const embed = this.embedFactory(this.filteredItems);
     const components = this.buildRows();
 

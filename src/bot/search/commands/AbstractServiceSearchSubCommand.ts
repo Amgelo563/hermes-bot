@@ -46,6 +46,8 @@ export abstract class AbstractServiceSearchSubCommand<
     interaction: ChatInputCommandInteraction,
     metadata: CommandExecutionMeta,
   ): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
     const bot = metadata.getBot();
     const items = await this.fetch();
     const tags = this.repository.getTags();
