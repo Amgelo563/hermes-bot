@@ -98,7 +98,7 @@ export class ServiceSearchSession<
   }
 
   public async onStart(): Promise<void> {
-    const embed = this.embedFactory(this.filteredItems);
+    const embed = this.embedFactory(this.getCurrentPageItems());
     const components = this.buildRows();
 
     await this.startInteraction.editReply({
@@ -152,7 +152,7 @@ export class ServiceSearchSession<
   ): Promise<boolean> {
     await interaction.deferUpdate();
 
-    const embed = this.embedFactory(this.filteredItems);
+    const embed = this.embedFactory(this.getCurrentPageItems());
     const components = this.buildRows();
 
     await interaction.editReply({ embeds: [embed], components });
