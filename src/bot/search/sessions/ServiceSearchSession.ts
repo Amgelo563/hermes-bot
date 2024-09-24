@@ -9,12 +9,14 @@ import {
   ActionRowList,
 } from '@nyx-discord/framework';
 import type {
+  ActionRowData,
   AnySelectMenuInteraction,
   ButtonBuilder,
   EmbedBuilder,
+  InteractionButtonComponentData,
   StringSelectMenuBuilder,
 } from 'discord.js';
-import { ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import type { GeneralMessagesParser } from '../../../hermes/message/messages/general/GeneralMessagesParser';
@@ -112,6 +114,37 @@ export class ServiceSearchSession<
     await this.startInteraction.editReply({
       components: rowList.toRowsData(),
     });
+  }
+
+  public override getCurrentPageItems() {
+    return this.filteredItems.slice(
+      this.currentPage * this.itemsPerPage,
+      this.currentPage * this.itemsPerPage + this.itemsPerPage,
+    );
+  }
+
+  protected override buildDefaultPageRow(): ActionRowData<InteractionButtonComponentData> {
+    const nextPage = this.currentPage + 1;
+    const previousPage = this.currentPage - 1;
+    return {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          customId: this.buildCustomIdForPage(previousPage),
+          emoji: '\u2B05',
+          style: ButtonStyle.Secondary,
+          disabled: this.currentPage === 0,
+        },
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Secondary,
+          customId: this.buildCustomIdForPage(nextPage),
+          emoji: '\u27A1',
+          disabled: this.itemsPerPage * nextPage >= this.filteredItems.length,
+        },
+      ],
+    };
   }
 
   protected async updatePage(
