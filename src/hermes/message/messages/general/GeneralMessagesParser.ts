@@ -1,6 +1,7 @@
 import { ActionRowWrapper } from '@nyx-discord/framework';
 import type {
   ButtonBuilder,
+  Collection,
   EmbedBuilder,
   StringSelectMenuBuilder,
 } from 'discord.js';
@@ -8,9 +9,9 @@ import { ActionRowBuilder } from 'discord.js';
 import type { z } from 'zod';
 
 import type { DateFilterStateKey } from '../../../../bot/search/sessions/filter/filters/ServiceSearchDateFilter';
-import { DiscordSelectMenuLimits } from '../../../../discord/select/DiscordSelectMenuLimits';
 import type { HermesMember } from '../../../../service/member/HermesMember';
 import { HermesMemberTypeEnum } from '../../../../service/member/HermesMemberType';
+import type { TagData } from '../../../../tag/data/TagData';
 import { BasicHermesMessageParser } from '../../BasicHermesMessageParser';
 import type { HermesPlaceholderContext } from '../../context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../../context/HermesPlaceholderErrorContext';
@@ -145,13 +146,20 @@ export class GeneralMessagesParser extends BasicHermesMessageParser<
     );
   }
 
-  public getTagFilterSelectMenuPlaceholder(
+  public getTagFilterSelectMenu(
     context: HermesPlaceholderContext,
-  ): string {
-    return this.parsePlaceholders(
-      this.messages.filters.tag.placeholder,
-      context,
-      DiscordSelectMenuLimits.Placeholder,
-    );
+    tags: Collection<string, TagData>,
+  ): StringSelectMenuBuilder {
+    const options = tags.map((tag, value) => {
+      const optionContext = { ...context, services: { tag } };
+      return this.parseSelectOption(
+        this.messages.filters.tag.options.tag,
+        optionContext,
+        value,
+      );
+    });
+
+    const select = this.parseSelect(this.messages.filters.tag, context);
+    return select.setOptions(options);
   }
 }

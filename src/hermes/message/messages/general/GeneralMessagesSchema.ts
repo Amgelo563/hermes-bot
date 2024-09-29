@@ -4,10 +4,7 @@ import type { DateFilterStateKey } from '../../../../bot/search/sessions/filter/
 import { ServiceSearchDateFilter } from '../../../../bot/search/sessions/filter/filters/ServiceSearchDateFilter';
 import { DiscordButtonSchema } from '../../../../discord/button/DiscordButtonSchema';
 import { DiscordEmbedSchema } from '../../../../discord/embed/DiscordEmbedSchema';
-import {
-  DiscordSelectMenuSchema,
-  SelectMenuSchemaWithOptions,
-} from '../../../../discord/select/DiscordSelectMenuSchema';
+import { SelectMenuSchemaWithOptions } from '../../../../discord/select/DiscordSelectMenuSchema';
 
 export const GeneralMessagesSchema = z.object({
   booleans: z.object({
@@ -63,6 +60,6 @@ export const GeneralMessagesSchema = z.object({
         ServiceSearchDateFilter.AvailableStates,
       ) as DateFilterStateKey[],
     ),
-    tag: DiscordSelectMenuSchema,
+    tag: SelectMenuSchemaWithOptions(['tag']),
   }),
 });

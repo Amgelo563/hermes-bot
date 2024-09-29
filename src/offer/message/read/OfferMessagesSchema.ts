@@ -10,7 +10,7 @@ import { DiscordEmbedLimits } from '../../../discord/embed/DiscordEmbedLimits';
 import { DiscordEmbedSchema } from '../../../discord/embed/DiscordEmbedSchema';
 import { DiscordTemplatedEmbedSchema } from '../../../discord/embed/DiscordTemplatedEmbedSchema';
 import { ModalSchemaWithFields } from '../../../discord/modal/schema/DiscordModalSchema';
-import { DiscordSelectMenuSchema } from '../../../discord/select/DiscordSelectMenuSchema';
+import { SelectMenuSchemaWithOptions } from '../../../discord/select/DiscordSelectMenuSchema';
 
 export const OfferMessagesSchema = z.object({
   notFoundError: DiscordEmbedSchema,
@@ -35,7 +35,7 @@ export const OfferMessagesSchema = z.object({
       'image',
       'thumbnail',
     ]),
-    tagSelect: DiscordSelectMenuSchema,
+    tagSelect: SelectMenuSchemaWithOptions(['tag']),
 
     previewing: DiscordEmbedSchema,
     success: DiscordEmbedSchema,

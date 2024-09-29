@@ -1,5 +1,5 @@
 import { IllegalStateError } from '@nyx-discord/core';
-import type { EmbedBuilder } from 'discord.js';
+import type { Collection, EmbedBuilder } from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import type { ConfigCommandOption } from '../../discord/command/DiscordCommandOptionSchema';
@@ -59,10 +59,13 @@ export class TagMessagesParser extends BasicHermesMessageParser<
     return this.messages.list.command;
   }
 
-  public getListSelect(context: HermesPlaceholderContext, tags: TagData[]) {
+  public getListSelect(
+    context: HermesPlaceholderContext,
+    tags: Collection<string, TagData>,
+  ) {
     const select = this.parseSelect(this.messages.list.select, context);
 
-    if (!tags.length) {
+    if (!tags.size) {
       select.setPlaceholder(this.messages.list.empty);
       select.addOptions({
         label: this.messages.list.empty,
@@ -72,7 +75,17 @@ export class TagMessagesParser extends BasicHermesMessageParser<
       return select.setDisabled(true);
     }
 
-    return select;
+    const options = tags.map((tag, value) => {
+      const optionContext = { ...context, services: { tag } };
+
+      return this.parseSelectOption(
+        this.messages.list.select.options.tag,
+        optionContext,
+        value,
+      );
+    });
+
+    return select.setOptions(options);
   }
 
   public getListEmbed(

@@ -4,7 +4,11 @@ import type {
   ChatInputCommandInteraction,
   StringSelectMenuBuilder,
 } from 'discord.js';
-import { ActionRowBuilder, SlashCommandSubcommandBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  Collection,
+  SlashCommandSubcommandBuilder,
+} from 'discord.js';
 import { nanoid } from 'nanoid';
 
 import type { CommandSchemaType } from '../../../discord/command/DiscordCommandSchema';
@@ -55,17 +59,15 @@ export class TagsListSubCommand extends AbstractSubCommand {
       return;
     }
 
-    const select = this.messages
-      .getListSelect({ member }, tags)
-      .setCustomId(nanoid(5));
+    const tagsEntries = tags.map((tag) => {
+      const id = this.actions.createActionCustomId(tag.id, TagAction.enum.Info);
+      return [id, tag] as const;
+    });
+    const tagsCollection = new Collection(tagsEntries);
 
-    select.addOptions(
-      tags.map((tag) => ({
-        label: tag.name,
-        description: tag.description,
-        value: this.actions.createActionCustomId(tag.id, TagAction.enum.Info),
-      })),
-    );
+    const select = this.messages
+      .getListSelect({ member }, tagsCollection)
+      .setCustomId(nanoid(5));
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       select,

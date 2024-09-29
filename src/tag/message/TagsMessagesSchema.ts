@@ -1,13 +1,13 @@
 import { z } from 'zod';
+
 import {
   CommandSchemaWithOptions,
   DiscordCommandSchema,
 } from '../../discord/command/DiscordCommandSchema';
-
 import { DiscordEmbedSchema } from '../../discord/embed/DiscordEmbedSchema';
 import { DiscordTemplatedEmbedSchema } from '../../discord/embed/DiscordTemplatedEmbedSchema';
 import { ModalSchemaWithFields } from '../../discord/modal/schema/DiscordModalSchema';
-import { DiscordSelectMenuSchema } from '../../discord/select/DiscordSelectMenuSchema';
+import { SelectMenuSchemaWithOptions } from '../../discord/select/DiscordSelectMenuSchema';
 import { ConfigTagSchema } from '../config/ConfigTagSchema';
 
 export const TagsMessagesSchema = z.object({
@@ -23,7 +23,7 @@ export const TagsMessagesSchema = z.object({
     empty: z.string(),
 
     embed: DiscordTemplatedEmbedSchema,
-    select: DiscordSelectMenuSchema,
+    select: SelectMenuSchemaWithOptions(['tag']),
   }),
 
   create: z.object({

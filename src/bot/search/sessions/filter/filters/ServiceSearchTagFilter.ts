@@ -1,5 +1,5 @@
 import type { StringSelectMenuBuilder } from 'discord.js';
-import { type StringSelectMenuInteraction } from 'discord.js';
+import { Collection, type StringSelectMenuInteraction } from 'discord.js';
 
 import type { GeneralMessagesParser } from '../../../../../hermes/message/messages/general/GeneralMessagesParser';
 import type { HermesMember } from '../../../../../service/member/HermesMember';
@@ -7,8 +7,6 @@ import type { TagData } from '../../../../../tag/data/TagData';
 import type { TagMessagesParser } from '../../../../../tag/message/TagMessagesParser';
 import type { FilterableService } from '../FilterableService';
 import type { ServiceSearchFilter } from '../ServiceSearchFilter';
-
-type TagWithStringId = TagData & { id: string };
 
 export class ServiceSearchTagFilter
   implements ServiceSearchFilter<FilterableService>
@@ -19,7 +17,7 @@ export class ServiceSearchTagFilter
 
   protected readonly tagMessages: TagMessagesParser;
 
-  protected readonly availableTags: TagWithStringId[];
+  protected readonly availableTags: TagData[];
 
   constructor(
     generalMessages: GeneralMessagesParser,
@@ -28,34 +26,19 @@ export class ServiceSearchTagFilter
   ) {
     this.generalMessages = generalMessages;
     this.tagMessages = tagMessages;
-    this.availableTags = availableTags.map(
-      (tag) =>
-        ({
-          ...tag,
-          id: tag.id.toString(),
-        }) as TagWithStringId,
-    );
+    this.availableTags = availableTags;
   }
 
   public buildSelectMenu(member: HermesMember): StringSelectMenuBuilder {
-    const placeholder = this.generalMessages.getTagFilterSelectMenuPlaceholder({
-      member,
-    });
-
-    const select = this.tagMessages
-      .getListSelect({ member }, this.availableTags)
-      .setPlaceholder(placeholder)
-      .setMaxValues(this.availableTags.length);
-
-    select.addOptions(
-      this.availableTags.map((tag) => ({
-        label: tag.name,
-        description: tag.description,
-        value: tag.id,
-      })),
+    const tagsEntries = this.availableTags.map(
+      (tag) => [tag.id.toString(), tag] as const,
     );
+    const tagsCollection = new Collection<string, TagData>(tagsEntries);
 
-    return select;
+    return this.generalMessages.getTagFilterSelectMenu(
+      { member },
+      tagsCollection,
+    );
   }
 
   public update(select: StringSelectMenuInteraction): void {

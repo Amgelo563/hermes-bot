@@ -1,5 +1,6 @@
 import type {
   ButtonBuilder,
+  Collection,
   EmbedBuilder,
   MessageCreateOptions,
   StringSelectMenuBuilder,
@@ -12,6 +13,7 @@ import { BasicHermesMessageParser } from '../../../hermes/message/BasicHermesMes
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { ErrorEmbedsData } from '../../../hermes/message/error/ErrorEmbedsData';
+import type { TagData } from '../../../tag/data/TagData';
 import type { WithRequired } from '../../../types/WithRequired';
 import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { OfferModalData } from '../../modal/OfferModalData';
@@ -77,8 +79,25 @@ export class OfferMessagesParser extends BasicHermesMessageParser<
 
   public getCreateTagSelect(
     context: OfferPlaceholderContext,
+    tags: Collection<string, TagData>,
+    selected: number[],
   ): StringSelectMenuBuilder {
-    return this.parseSelect(this.messages.create.tagSelect, context);
+    const select = this.parseSelect(this.messages.create.tagSelect, context);
+
+    const options = tags.map((tag, value) => {
+      const optionContext = { ...context, services: { tag } };
+      const tagId = tag.id;
+
+      const parsed = this.parseSelectOption(
+        this.messages.create.tagSelect.options.tag,
+        optionContext,
+        value,
+      );
+
+      return parsed.setDefault(selected.includes(tagId));
+    });
+
+    return select.setOptions(options);
   }
 
   public getCreatePreviewingEmbed(

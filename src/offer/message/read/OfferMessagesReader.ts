@@ -1,4 +1,5 @@
 import type { Identifiable } from '@nyx-discord/core';
+
 import { AbstractMessageFileReader } from '../../../message/file/AbstractMessageFileReader';
 import { OfferMessagesSchema } from './OfferMessagesSchema';
 

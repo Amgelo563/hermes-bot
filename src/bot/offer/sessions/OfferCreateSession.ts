@@ -6,6 +6,7 @@ import type {
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
 } from 'discord.js';
+import { Collection } from 'discord.js';
 
 import type { OptionalInlineField } from '../../../discord/embed/OptionalInlineField';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
@@ -104,19 +105,19 @@ export class OfferCreateSession extends AbstractServiceSession<OfferCreateData> 
   protected createSelectRow(
     messages: OfferMessagesParser,
   ): ActionRowWrapper<StringSelectMenuBuilder> {
+    const tagEntries = this.tags.map((tag) => {
+      return [tag.id.toString(), tag] as const;
+    });
+    const tagsCollection = new Collection(tagEntries);
+
     const select = messages
-      .getCreateTagSelect(this.cachedContext)
+      .getCreateTagSelect(
+        this.cachedContext,
+        tagsCollection,
+        this.data.tags.map((tag) => tag.id),
+      )
       .setMaxValues(this.tags.length)
       .setCustomId(this.customId.build());
-
-    const options = this.tags.map((tag) => ({
-      label: tag.name,
-      description: tag.description,
-      value: tag.id.toString(),
-      default: this.data.tags.includes(tag),
-    }));
-
-    select.setOptions(options);
 
     return new ActionRowWrapper<StringSelectMenuBuilder>(select);
   }
