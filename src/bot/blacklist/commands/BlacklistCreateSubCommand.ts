@@ -4,8 +4,10 @@ import { AbstractSubCommand } from '@nyx-discord/framework';
 import type {
   ChatInputCommandInteraction,
   ModalSubmitInteraction,
+  User,
 } from 'discord.js';
 import {
+  GuildMember,
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
 } from 'discord.js';
@@ -85,8 +87,16 @@ export class BlacklistCreateSubCommand extends AbstractSubCommand {
       return;
     }
 
-    const target = interaction.options.getMember(this.optionName);
-    if (!target) {
+    const target: GuildMember | User =
+      interaction.options.getMember(this.optionName)
+      ?? interaction.options.getUser(this.optionName, true);
+
+    const targetMember =
+      target instanceof GuildMember
+        ? await this.agent.fetchMember(target)
+        : this.agent.mockMember(target);
+
+    if (!targetMember || this.config.isStaff(targetMember)) {
       const error = this.messages.getNotAllowedErrorEmbed({ member });
       await interaction.reply({
         ephemeral: true,
