@@ -15,6 +15,7 @@ import { ErrorPlaceholderReplacer } from '../../error/message/ErrorPlaceholderRe
 import { MessageService } from '../../message/MessageService';
 import { MessagePlaceholderManager } from '../../message/placeholder/MessagePlaceholderManager';
 import { DatePlaceholderReplacer } from '../../message/placeholder/replacers/DatePlaceholderReplacer';
+import { SlicePlaceholderReplacer } from '../../message/placeholder/replacers/SlicePlaceholderReplacer';
 import { MessageRepository } from '../../message/repository/MessageRepository';
 import type { MessageSource } from '../../message/source/MessageSource';
 import { OfferPlaceholderReplacer } from '../../offer/message/placeholder/OfferPlaceholderReplacer';
@@ -102,6 +103,7 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
     const replacers: HermesPlaceholderReplacer[] = [
       new HermesMemberPlaceholderReplacer(),
       new DatePlaceholderReplacer(),
+      new SlicePlaceholderReplacer(placeholder),
       new ErrorPlaceholderReplacer(),
       new UpdatePlaceholderReplacer(),
       new TagPlaceholderReplacer(),
