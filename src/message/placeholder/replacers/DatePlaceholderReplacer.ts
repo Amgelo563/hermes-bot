@@ -13,6 +13,6 @@ export class DatePlaceholderReplacer
   }
 
   public getNamespace(): string {
-    return 'object';
+    return 'date';
   }
 }
