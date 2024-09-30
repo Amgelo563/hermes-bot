@@ -71,14 +71,17 @@ export class BasicHermesMessageParser<Schema extends z.ZodTypeAny> {
     ephemeralContext?: EphemeralPlaceholderContext,
     descriptionLimit?: number,
   ): EmbedBuilder {
-    const builder = new EmbedBuilder().setTitle(
-      this.parsePlaceholders(
+    const builder = new EmbedBuilder();
+
+    if (config.title) {
+      const parsed = this.parsePlaceholders(
         config.title,
         context,
         DiscordEmbedLimits.Title,
         ephemeralContext,
-      ),
-    );
+      );
+      builder.setTitle(parsed);
+    }
 
     if (config.description) {
       const parsed = this.parsePlaceholders(
