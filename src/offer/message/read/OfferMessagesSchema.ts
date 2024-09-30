@@ -54,7 +54,6 @@ export const OfferMessagesSchema = z.object({
     requirements: z.object({
       deny: DiscordTemplatedEmbedSchema,
       warn: DiscordTemplatedEmbedSchema,
-      confirm: DiscordEmbedSchema,
     }),
 
     command: CommandSchemaWithOptions(['offer']),
