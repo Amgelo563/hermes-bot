@@ -1,6 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
 
 import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
@@ -53,7 +54,8 @@ export class OfferActionsManager extends AbstractActionsManager<
     modalCodec: OfferModalCodec,
     messages: HermesMessageService,
     requirements: OfferRequirementsChecker,
-    agent: DiscordOfferAgent,
+    offerAgent: DiscordOfferAgent,
+    errorAgent: HermesErrorAgent,
   ): OfferActionsManager {
     const customIdCodec = ServiceActionsCustomIdCodec.createActions<
       IdentifiableOffer,
@@ -69,18 +71,28 @@ export class OfferActionsManager extends AbstractActionsManager<
       ],
       [
         OfferAction.enum.Delete,
-        new OfferDeleteExecutor(bot, messages, repository),
+        new OfferDeleteExecutor(bot, messages, repository, errorAgent),
       ],
       [
         OfferAction.enum.Update,
-        new OfferUpdateExecutor(repository, offerMessages),
+        new OfferUpdateExecutor(repository, offerMessages, errorAgent),
       ],
       [
         OfferAction.enum.Repost,
-        new OfferRepostExecutor(bot, offerMessages, requirements, repository),
+        new OfferRepostExecutor(
+          bot,
+          offerMessages,
+          requirements,
+          repository,
+          errorAgent,
+        ),
       ],
     ]);
-    const createExecutor = new OfferCreateExecutor(offerMessages, repository);
+    const createExecutor = new OfferCreateExecutor(
+      offerMessages,
+      repository,
+      errorAgent,
+    );
     const notFoundExecutor = new OfferNotFoundExecutor(offerMessages);
 
     const manager = new OfferActionsManager(
@@ -89,7 +101,7 @@ export class OfferActionsManager extends AbstractActionsManager<
       executors,
       createExecutor,
       notFoundExecutor,
-      agent,
+      offerAgent,
     );
 
     manager.setExecutor(

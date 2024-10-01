@@ -1,5 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
+
 import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
@@ -50,6 +52,7 @@ export class TagActionsManager extends AbstractActionsManager<
     repository: TagRepository,
     modalCodec: TagModalCodec,
     tagAgent: DiscordTagAgent,
+    errorAgent: HermesErrorAgent,
   ): TagActionsManager {
     const actionsCodec = ServiceActionsCustomIdCodec.createActions<
       IdentifiableTag,
@@ -59,7 +62,13 @@ export class TagActionsManager extends AbstractActionsManager<
     const executors = new Map<TagActionType, TagActionExecutor>([
       [
         TagAction.enum.Delete,
-        new TagDeleteExecutor(bot, messageService, repository, configWrapper),
+        new TagDeleteExecutor(
+          bot,
+          messageService,
+          repository,
+          configWrapper,
+          errorAgent,
+        ),
       ],
       [
         TagAction.enum.ReqUpd,
@@ -76,6 +85,7 @@ export class TagActionsManager extends AbstractActionsManager<
           modalCodec,
           repository,
           configWrapper,
+          errorAgent,
         ),
       ],
     ]);
@@ -86,6 +96,7 @@ export class TagActionsManager extends AbstractActionsManager<
       messageService.getTagsMessages(),
       repository,
       configWrapper,
+      errorAgent,
     );
 
     return new TagActionsManager(

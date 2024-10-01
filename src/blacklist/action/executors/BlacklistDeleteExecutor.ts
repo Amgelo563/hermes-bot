@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { WithRequired } from '../../../types/WithRequired';
 import type { DiscordBlacklistAgent } from '../../discord/DiscordBlacklistAgent';
@@ -14,12 +15,16 @@ export class BlacklistDeleteExecutor implements BlacklistActionExecutor {
 
   protected readonly repository: BlacklistRepository;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     messages: BlacklistMessagesParser,
     repository: BlacklistRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.messages = messages;
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -59,8 +64,11 @@ export class BlacklistDeleteExecutor implements BlacklistActionExecutor {
       };
 
       const errorEmbeds = this.messages.getDeleteErrorEmbeds(errorContext);
-      await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await agent.postError(errorEmbeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        e as object,
+        errorEmbeds,
+        interaction,
+      );
 
       return;
     }

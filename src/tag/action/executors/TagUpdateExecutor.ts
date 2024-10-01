@@ -1,7 +1,9 @@
 import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
+
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { TagData } from '../../data/TagData';
 
@@ -20,16 +22,20 @@ export class TagUpdateExecutor implements TagActionExecutor {
 
   protected readonly configWrapper: HermesConfigWrapper;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     messages: TagMessagesParser,
     modalCodec: TagModalCodec,
     repository: TagRepository,
     configWrapper: HermesConfigWrapper,
+    errorAgent: HermesErrorAgent,
   ) {
     this.modalCodec = modalCodec;
     this.messages = messages;
     this.repository = repository;
     this.configWrapper = configWrapper;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -81,12 +87,8 @@ export class TagUpdateExecutor implements TagActionExecutor {
         },
       });
 
-      await interaction.editReply({
-        embeds: [errors.user],
-        components: [],
-      });
-
-      await agent.postError(errors.log);
+      await this.errorAgent.consumeWithErrorEmbeds(e, errors, interaction);
+      return;
     }
 
     const newEmbed = this.messages.getInfoEmbed(context);

@@ -1,5 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
+
 import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
@@ -8,7 +10,6 @@ import type { ServiceActionExecutor } from '../../service/action/executor/Servic
 import { ServiceObject } from '../../service/ServiceObject';
 import type { TagRepository } from '../../tag/database/TagRepository';
 import type { RequestCreateData } from '../data/RequestCreateData';
-
 import type { RequestRepository } from '../database/RequestRepository';
 import type { DiscordRequestAgent } from '../discord/DiscordRequestAgent';
 import type { IdentifiableRequest } from '../identity/IdentifiableRequest';
@@ -55,10 +56,11 @@ export class RequestActionsManager extends AbstractActionsManager<
     messageService: HermesMessageService,
     configWrapper: HermesConfigWrapper,
     repository: RequestRepository,
-    agent: DiscordRequestAgent,
+    requestAgent: DiscordRequestAgent,
     modalCodec: RequestModalCodec,
     requirements: RequestRequirementsChecker,
     tagRepository: TagRepository,
+    errorAgent: HermesErrorAgent,
   ): RequestActionsManager {
     const requestMessages = messageService.getRequestMessages();
 
@@ -70,7 +72,7 @@ export class RequestActionsManager extends AbstractActionsManager<
     const executors = new Map<RequestActionType, RequestActionExecutor>([
       [
         RequestAction.enum.Update,
-        new RequestUpdateExecutor(repository, requestMessages),
+        new RequestUpdateExecutor(repository, requestMessages, errorAgent),
       ],
       [
         RequestAction.enum.Info,
@@ -82,18 +84,20 @@ export class RequestActionsManager extends AbstractActionsManager<
           bot,
           requestMessages,
           requirements,
-          agent,
+          requestAgent,
           repository,
+          errorAgent,
         ),
       ],
       [
         RequestAction.enum.Delete,
-        new RequestDeleteExecutor(bot, messageService, repository),
+        new RequestDeleteExecutor(bot, messageService, repository, errorAgent),
       ],
     ]);
     const createExecutor = new RequestCreateExecutor(
       requestMessages,
       repository,
+      errorAgent,
     );
     const notFoundExecutor = new RequestNotFoundExecutor(requestMessages);
 
@@ -103,7 +107,7 @@ export class RequestActionsManager extends AbstractActionsManager<
       executors,
       createExecutor,
       notFoundExecutor,
-      agent,
+      requestAgent,
     );
 
     manager.setExecutor(

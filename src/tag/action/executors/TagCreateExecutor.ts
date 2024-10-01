@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid';
+
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { TagCreateData } from '../../data/TagCreateData';
@@ -17,14 +19,18 @@ export class TagCreateExecutor
 
   protected readonly configWrapper: HermesConfigWrapper;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     tagMessages: TagMessagesParser,
     repository: TagRepository,
     configWrapper: HermesConfigWrapper,
+    errorAgent: HermesErrorAgent,
   ) {
     this.tagMessages = tagMessages;
     this.repository = repository;
     this.configWrapper = configWrapper;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -52,7 +58,7 @@ export class TagCreateExecutor
       tag = await this.repository.create(createData);
       await agent.postCreateLog(member, tag);
     } catch (e) {
-      const embeds = this.tagMessages.getCreateErrorEmbeds({
+      const errorEmbeds = this.tagMessages.getCreateErrorEmbeds({
         ...context,
         error: {
           instance: e as Error,
@@ -60,8 +66,11 @@ export class TagCreateExecutor
         },
       });
 
-      await interaction.editReply({ embeds: [embeds.user], components: [] });
-      await agent.postError(embeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        e as object,
+        errorEmbeds,
+        interaction,
+      );
 
       return;
     }

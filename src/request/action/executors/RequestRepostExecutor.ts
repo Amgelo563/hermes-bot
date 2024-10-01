@@ -1,9 +1,10 @@
 import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
+
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { RequestDataWithMember } from '../../data/RequestDataWithMember';
-
 import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestMessagesParser } from '../../message/read/RequestMessagesParser';
@@ -21,18 +22,22 @@ export class RequestRepostExecutor implements RequestActionExecutor {
 
   protected readonly repository: RequestRepository;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     requestMessages: RequestMessagesParser,
     requirements: RequestRequirementsChecker,
     agent: DiscordRequestAgent,
     repository: RequestRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.requestMessages = requestMessages;
     this.requirements = requirements;
     this.agent = agent;
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -72,8 +77,11 @@ export class RequestRepostExecutor implements RequestActionExecutor {
       const errorEmbeds =
         this.requestMessages.getRepostErrorEmbeds(errorContext);
 
-      await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await this.agent.postError(errorEmbeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        interaction,
+      );
       return;
     }
 

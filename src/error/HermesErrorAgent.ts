@@ -1,8 +1,14 @@
 import type { Identifiable, NyxBot } from '@nyx-discord/core';
-import type { Interaction } from 'discord.js';
+import type {
+  EmbedBuilder,
+  Interaction,
+  RepliableInteraction,
+} from 'discord.js';
+
+import type { ErrorEmbedsData } from '../hermes/message/error/ErrorEmbedsData';
 import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 
-export class HermesBotErrorAgent {
+export class HermesErrorAgent {
   protected readonly agent: DiscordServiceAgent;
 
   protected readonly bot: NyxBot;
@@ -13,7 +19,7 @@ export class HermesBotErrorAgent {
   }
 
   public static create(bot: NyxBot, agent: DiscordServiceAgent) {
-    return new HermesBotErrorAgent(bot, agent);
+    return new HermesErrorAgent(bot, agent);
   }
 
   public start() {
@@ -47,11 +53,11 @@ export class HermesBotErrorAgent {
     );
     clientEventErrorHandler.setFallbackConsumer(
       (error, _subscriber, [dispatchMeta]) => {
-        this.consume(error, dispatchMeta);
+        this.consumeGeneric(error, dispatchMeta);
       },
     );
     scheduleErrorHandler.setFallbackConsumer((error, _schedule, [tickMeta]) => {
-      this.consume(error, tickMeta);
+      this.consumeGeneric(error, tickMeta);
     });
     sessionStartErrorHandler.setFallbackConsumer(
       (error, session, [executionMeta]) => {
@@ -78,7 +84,7 @@ export class HermesBotErrorAgent {
     );
   }
 
-  public consume(error: object, meta: Identifiable) {
+  public consumeGeneric(error: object, meta: Identifiable) {
     this.bot.getLogger().error(error);
     void this.agent.postGenericError(error as Error, String(meta.getId()));
   }
@@ -90,5 +96,30 @@ export class HermesBotErrorAgent {
   ) {
     this.bot.getLogger().error(error);
     void this.agent.handleError(interaction, error as Error, meta);
+  }
+
+  public async consumeWithLogEmbed(error: unknown, embed: EmbedBuilder) {
+    this.bot.getLogger().error(error);
+    await this.agent.postError(embed);
+  }
+
+  public async consumeWithErrorEmbeds(
+    error: unknown,
+    embeds: ErrorEmbedsData,
+    interaction: RepliableInteraction,
+  ) {
+    this.bot.getLogger().error(error);
+
+    try {
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply({ embeds: [embeds.user], components: [] });
+      } else {
+        await interaction.reply({ embeds: [embeds.user], ephemeral: true });
+      }
+
+      await this.agent.postError(embeds.log);
+    } catch (e) {
+      this.bot.getLogger().error('Fatal error while consuming error: ', e);
+    }
   }
 }

@@ -6,6 +6,7 @@ import type { DiscordBlacklistAgent } from '../../../blacklist/discord/DiscordBl
 import type { BlacklistPlaceholderContext } from '../../../blacklist/message/placeholder/BlacklistPlaceholderContext';
 import type { BlacklistMessagesParser } from '../../../blacklist/message/read/BlacklistMessagesParser';
 import type { BlacklistRepository } from '../../../blacklist/repository/BlacklistRepository';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { WithRequired } from '../../../types/WithRequired';
 
 export class BlacklistExpireSchedule extends AbstractSchedule {
@@ -18,15 +19,19 @@ export class BlacklistExpireSchedule extends AbstractSchedule {
 
   protected readonly messages: BlacklistMessagesParser;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     repository: BlacklistRepository,
     agent: DiscordBlacklistAgent,
     messages: BlacklistMessagesParser,
+    errorAgent: HermesErrorAgent,
   ) {
     super();
     this.repository = repository;
     this.agent = agent;
     this.messages = messages;
+    this.errorAgent = errorAgent;
   }
 
   public async tick(meta: ScheduleTickMeta): Promise<void> {
@@ -64,7 +69,7 @@ export class BlacklistExpireSchedule extends AbstractSchedule {
           };
 
         const errorEmbed = this.messages.getExpireErrorEmbed(errorContext);
-        await this.agent.postError(errorEmbed);
+        await this.errorAgent.consumeWithLogEmbed(e, errorEmbed);
 
         return;
       }

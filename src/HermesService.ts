@@ -91,6 +91,7 @@ export class HermesService {
       messages,
       bot,
       config,
+      serviceManager.getErrorAgent(),
       stickyMessagesDomain,
     );
 

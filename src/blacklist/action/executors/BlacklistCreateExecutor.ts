@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
@@ -27,15 +28,19 @@ export class BlacklistCreateExecutor
 
   protected readonly repository: BlacklistRepository;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     repository: BlacklistRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.blacklistMessages = messages.getBlacklistMessages();
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -87,11 +92,14 @@ export class BlacklistCreateExecutor
         },
       };
 
-      const errors = this.blacklistMessages.getCreateErrorEmbeds(errorContext);
+      const errorEmbeds =
+        this.blacklistMessages.getCreateErrorEmbeds(errorContext);
 
-      await buttonInteraction.editReply({ embeds: [errors.user] });
-      await agent.postError(errors.log);
-
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        buttonInteraction,
+      );
       return;
     }
 

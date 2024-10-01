@@ -1,5 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
+
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { BlacklistActionsManager } from './action/BlacklistActionsManager';
@@ -43,6 +45,7 @@ export class BlacklistDomain {
     configWrapper: HermesConfigWrapper,
     database: HermesDatabaseService,
     messagesService: HermesMessageService,
+    errorAgent: HermesErrorAgent,
   ): BlacklistDomain {
     const messages = messagesService.getBlacklistMessages();
     const repository = database.getBlacklistRepository();
@@ -61,6 +64,7 @@ export class BlacklistDomain {
       messagesService,
       repository,
       discordAgent,
+      errorAgent,
     );
 
     return new BlacklistDomain(

@@ -2,6 +2,7 @@ import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
 
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
 import type { OfferRepository } from '../../database/OfferRepository';
@@ -14,9 +15,16 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
 
   protected readonly messages: OfferMessagesParser;
 
-  constructor(repository: OfferRepository, messages: OfferMessagesParser) {
+  protected readonly errorAgent: HermesErrorAgent;
+
+  constructor(
+    repository: OfferRepository,
+    messages: OfferMessagesParser,
+    errorAgent: HermesErrorAgent,
+  ) {
     this.repository = repository;
     this.messages = messages;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -62,8 +70,11 @@ export class OfferUpdateExecutor implements OfferActionExecutor {
       };
 
       const errorEmbeds = this.messages.getUpdateErrorEmbeds(errorContext);
-      await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await agent.postError(errorEmbeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        interaction,
+      );
 
       return;
     }

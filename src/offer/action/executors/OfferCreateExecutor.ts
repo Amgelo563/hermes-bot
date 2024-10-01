@@ -1,13 +1,14 @@
 import type { Message } from 'discord.js';
 import { nanoid } from 'nanoid';
+
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { OfferCreateData } from '../../data/OfferCreateData';
 import type { OfferData } from '../../data/OfferData';
-
 import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferPlaceholderContext } from '../../message/placeholder/OfferPlaceholderContext';
@@ -20,9 +21,16 @@ export class OfferCreateExecutor
 
   protected readonly repository: OfferRepository;
 
-  constructor(messages: OfferMessagesParser, repository: OfferRepository) {
+  protected readonly errorAgent: HermesErrorAgent;
+
+  constructor(
+    messages: OfferMessagesParser,
+    repository: OfferRepository,
+    errorAgent: HermesErrorAgent,
+  ) {
     this.messages = messages;
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -96,10 +104,13 @@ export class OfferCreateExecutor
         },
       };
 
-      const errors = this.messages.getCreateErrorEmbeds(errorContext);
+      const errorEmbeds = this.messages.getCreateErrorEmbeds(errorContext);
 
-      await interaction.editReply({ embeds: [errors.user] });
-      await agent.postError(errors.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        interaction,
+      );
 
       return;
     }

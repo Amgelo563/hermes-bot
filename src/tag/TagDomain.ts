@@ -1,5 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
+
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { TagActionsManager } from './action/TagActionsManager';
@@ -43,6 +45,7 @@ export class TagDomain {
     configWrapper: HermesConfigWrapper,
     database: HermesDatabaseService,
     messagesService: HermesMessageService,
+    errorAgent: HermesErrorAgent,
   ): TagDomain {
     const messages = messagesService.getTagsMessages();
     const tagAgent = DiscordTagAgent.create(
@@ -61,6 +64,7 @@ export class TagDomain {
       database.getTagRepository(),
       modalCodec,
       tagAgent,
+      errorAgent,
     );
 
     const repository = database.getTagRepository();

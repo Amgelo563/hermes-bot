@@ -1,6 +1,8 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { Client } from 'discord.js';
+
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import type { DiscordServiceAgent } from '../service/discord/DiscordServiceAgent';
 import type { ServiceManager } from '../service/ServiceManager';
@@ -56,6 +58,7 @@ export class BotManager {
     messages: HermesMessageService,
     bot: NyxBot,
     config: HermesConfigWrapper,
+    errorAgent: HermesErrorAgent,
     stickyMessagesDomain: StickyMessagesDomain | null,
   ) {
     const tag = BotTagManager.create(
@@ -83,6 +86,7 @@ export class BotManager {
       messages,
       config,
       services.getBlacklistDomain(),
+      errorAgent,
     );
 
     const stickyMessages = stickyMessagesDomain

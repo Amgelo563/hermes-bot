@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import type { HermesConfigWrapper } from '../../../config/file/HermesConfigWrapper';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesPlaceholderContext } from '../../../hermes/message/context/HermesPlaceholderContext';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
@@ -22,16 +23,20 @@ export class TagDeleteExecutor implements TagActionExecutor {
 
   protected readonly configWrapper: HermesConfigWrapper;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     repository: TagRepository,
     configWrapper: HermesConfigWrapper,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.repository = repository;
     this.configWrapper = configWrapper;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -93,19 +98,22 @@ export class TagDeleteExecutor implements TagActionExecutor {
     try {
       await this.repository.delete(tag.id);
       await agent.postDeleteLog(member, tag);
-    } catch (e) {
+    } catch (error) {
       const id = nanoid(5);
       const errorContext = {
         ...context,
         error: {
-          instance: e as Error,
+          instance: error as Error,
           id,
         },
       } satisfies WithRequired<HermesPlaceholderContext, 'error'>;
-      const error = tagMessages.getDeleteErrorEmbeds(errorContext);
+      const errorEmbeds = tagMessages.getDeleteErrorEmbeds(errorContext);
 
-      await buttonInteraction.editReply({ embeds: [error.user] });
-      await agent.postError(error.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        buttonInteraction,
+      );
 
       return;
     }

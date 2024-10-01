@@ -1,9 +1,9 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { Client } from 'discord.js';
+
 import { BlacklistDomain } from '../blacklist/BlacklistDomain';
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
-import { HermesBotErrorAgent } from '../error/HermesBotErrorAgent';
-
+import { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { OfferDomain } from '../offer/OfferDomain';
@@ -15,7 +15,7 @@ import { DiscordServiceAgent } from './discord/DiscordServiceAgent';
 export class ServiceManager {
   protected readonly agent: DiscordServiceAgent;
 
-  protected readonly errorAgent: HermesBotErrorAgent;
+  protected readonly errorAgent: HermesErrorAgent;
 
   protected readonly database: HermesDatabaseService;
 
@@ -30,7 +30,7 @@ export class ServiceManager {
   constructor(
     database: HermesDatabaseService,
     agent: DiscordServiceAgent,
-    errorAgent: HermesBotErrorAgent,
+    errorAgent: HermesErrorAgent,
     request: RequestDomain,
     offer: OfferDomain,
     tagDomain: TagDomain,
@@ -57,20 +57,35 @@ export class ServiceManager {
       messages,
       configWrapper.getConfig(),
     );
-    const errorAgent = HermesBotErrorAgent.create(bot, serviceAgent);
+    const errorAgent = HermesErrorAgent.create(bot, serviceAgent);
+
     const request = RequestDomain.create(
       bot,
       configWrapper,
       database,
       messages,
+      errorAgent,
     );
-    const offer = OfferDomain.create(bot, configWrapper, database, messages);
-    const tag = TagDomain.create(bot, configWrapper, database, messages);
+    const offer = OfferDomain.create(
+      bot,
+      configWrapper,
+      database,
+      messages,
+      errorAgent,
+    );
+    const tag = TagDomain.create(
+      bot,
+      configWrapper,
+      database,
+      messages,
+      errorAgent,
+    );
     const blacklist = BlacklistDomain.create(
       bot,
       configWrapper,
       database,
       messages,
+      errorAgent,
     );
 
     return new ServiceManager(
@@ -112,5 +127,9 @@ export class ServiceManager {
 
   public getBlacklistDomain() {
     return this.blacklistDomain;
+  }
+
+  public getErrorAgent() {
+    return this.errorAgent;
   }
 }

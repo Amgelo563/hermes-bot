@@ -1,8 +1,9 @@
 import type { NyxBot } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
+
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
-
 import type { OfferRepository } from '../../database/OfferRepository';
 import type { DiscordOfferAgent } from '../../discord/DiscordOfferAgent';
 import type { OfferMessagesParser } from '../../message/read/OfferMessagesParser';
@@ -18,16 +19,20 @@ export class OfferRepostExecutor implements OfferActionExecutor {
 
   protected readonly repository: OfferRepository;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: OfferMessagesParser,
     requirements: OfferRequirementsChecker,
     repository: OfferRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.requirements = requirements;
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -69,8 +74,11 @@ export class OfferRepostExecutor implements OfferActionExecutor {
 
       const errorEmbeds = this.messages.getRepostErrorEmbeds(errorContext);
 
-      await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await agent.postError(errorEmbeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        interaction,
+      );
       return;
     }
 

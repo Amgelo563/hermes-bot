@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { RequestDataWithMember } from '../../data/RequestDataWithMember';
@@ -17,14 +18,18 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
 
   protected readonly messages: HermesMessageService;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     requestRepository: RequestRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.requestRepository = requestRepository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -69,8 +74,7 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
       await agent.postDeleteLog(member, request);
     } catch (e) {
       const errorId = nanoid(5);
-
-      const embeds = requestMessages.getDeleteErrorEmbeds({
+      const errorEmbeds = requestMessages.getDeleteErrorEmbeds({
         ...context,
         error: {
           instance: e as Error,
@@ -78,12 +82,11 @@ export class RequestDeleteExecutor implements RequestActionExecutor {
         },
       });
 
-      await confirmInteraction.editReply({
-        embeds: [embeds.user],
-        components: [],
-      });
-
-      await agent.postError(embeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        e as object,
+        errorEmbeds,
+        confirmInteraction,
+      );
 
       return;
     }

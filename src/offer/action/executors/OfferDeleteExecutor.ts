@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { ConfirmationSession } from '../../../bot/sessions/confirm/ConfirmationSession';
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../../hermes/message/HermesMessageService';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { OfferDataWithMember } from '../../data/OfferDataWithMember';
@@ -17,14 +18,18 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
 
   protected readonly messages: HermesMessageService;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     offerRepository: OfferRepository,
+    errorAgent: HermesErrorAgent,
   ) {
     this.bot = bot;
     this.messages = messages;
     this.offerRepository = offerRepository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -69,8 +74,7 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
       await agent.postDeleteLog(member, offer);
     } catch (e) {
       const errorId = nanoid(5);
-
-      const embeds = offerMessages.getDeleteErrorEmbeds({
+      const errorEmbeds = offerMessages.getDeleteErrorEmbeds({
         ...context,
         error: {
           instance: e as Error,
@@ -78,12 +82,11 @@ export class OfferDeleteExecutor implements OfferActionExecutor {
         },
       });
 
-      await confirmInteraction.editReply({
-        embeds: [embeds.user],
-        components: [],
-      });
-
-      await agent.postError(embeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        e as object,
+        errorEmbeds,
+        confirmInteraction,
+      );
 
       return;
     }

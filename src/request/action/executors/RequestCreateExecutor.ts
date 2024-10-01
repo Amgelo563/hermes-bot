@@ -1,13 +1,14 @@
 import type { Message } from 'discord.js';
 import { nanoid } from 'nanoid';
+
 import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
 import type { HermesPlaceholderErrorContext } from '../../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { TransactionClient } from '../../../prisma/TransactionClient';
 import type { ServiceActionExecutor } from '../../../service/action/executor/ServiceActionExecutor';
 import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { RequestCreateData } from '../../data/RequestCreateData';
 import type { RequestData } from '../../data/RequestData';
-
 import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { RequestPlaceholderContext } from '../../message/placeholder/RequestPlaceholderContext';
@@ -20,9 +21,16 @@ export class RequestCreateExecutor
 
   protected readonly repository: RequestRepository;
 
-  constructor(messages: RequestMessagesParser, repository: RequestRepository) {
+  protected readonly errorAgent: HermesErrorAgent;
+
+  constructor(
+    messages: RequestMessagesParser,
+    repository: RequestRepository,
+    errorAgent: HermesErrorAgent,
+  ) {
     this.messages = messages;
     this.repository = repository;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -94,8 +102,9 @@ export class RequestCreateExecutor
 
       const errors = this.messages.getCreateErrorEmbeds(errorContext);
 
-      await interaction.editReply({ embeds: [errors.user] });
-      await agent.postError(errors.log);
+      await this.errorAgent.consumeWithErrorEmbeds(e, errors, interaction);
+
+      return;
     }
 
     const newContext: RequestPlaceholderContext = {

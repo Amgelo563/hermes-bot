@@ -1,6 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
 
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { RequirementCheckModeEnum } from '../requirement/mode/RequirementCheckMode';
@@ -50,6 +51,7 @@ export class OfferDomain {
     configWrapper: HermesConfigWrapper,
     database: HermesDatabaseService,
     messagesService: HermesMessageService,
+    errorAgent: HermesErrorAgent,
   ): OfferDomain {
     const messages = messagesService.getOfferMessages();
 
@@ -78,6 +80,7 @@ export class OfferDomain {
       messagesService,
       requirements,
       discordAgent,
+      errorAgent,
     );
 
     return new OfferDomain(

@@ -1,8 +1,9 @@
 import { IllegalStateError } from '@nyx-discord/core';
 import { nanoid } from 'nanoid';
-import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
-import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 
+import { deferReplyOrUpdate } from '../../../discord/reply/InteractionReplies';
+import type { HermesErrorAgent } from '../../../error/HermesErrorAgent';
+import type { ServiceActionInteraction } from '../../../service/action/interaction/ServiceActionInteraction';
 import type { RequestRepository } from '../../database/RequestRepository';
 import type { DiscordRequestAgent } from '../../discord/DiscordRequestAgent';
 import type { IdentifiableRequest } from '../../identity/IdentifiableRequest';
@@ -14,9 +15,16 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
 
   protected readonly messages: RequestMessagesParser;
 
-  constructor(repository: RequestRepository, messages: RequestMessagesParser) {
+  protected readonly errorAgent: HermesErrorAgent;
+
+  constructor(
+    repository: RequestRepository,
+    messages: RequestMessagesParser,
+    errorAgent: HermesErrorAgent,
+  ) {
     this.repository = repository;
     this.messages = messages;
+    this.errorAgent = errorAgent;
   }
 
   public async execute(
@@ -62,8 +70,11 @@ export class RequestUpdateExecutor implements RequestActionExecutor {
       };
 
       const errorEmbeds = this.messages.getUpdateErrorEmbeds(errorContext);
-      await interaction.editReply({ embeds: [errorEmbeds.user] });
-      await agent.postError(errorEmbeds.log);
+      await this.errorAgent.consumeWithErrorEmbeds(
+        error,
+        errorEmbeds,
+        interaction,
+      );
 
       return;
     }

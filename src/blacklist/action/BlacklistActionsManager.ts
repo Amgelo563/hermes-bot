@@ -1,4 +1,6 @@
 import type { NyxBot } from '@nyx-discord/core';
+
+import type { HermesErrorAgent } from '../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { AbstractActionsManager } from '../../service/action/AbstractActionsManager';
 import { ServiceActionsCustomIdCodec } from '../../service/action/codec/ServiceActionsCustomIdCodec';
@@ -49,7 +51,8 @@ export class BlacklistActionsManager extends AbstractActionsManager<
     bot: NyxBot,
     messageService: HermesMessageService,
     repository: BlacklistRepository,
-    agent: DiscordBlacklistAgent,
+    blacklistAgent: DiscordBlacklistAgent,
+    errorAgent: HermesErrorAgent,
   ) {
     const messages = messageService.getBlacklistMessages();
     const codec = ServiceActionsCustomIdCodec.createActions<
@@ -60,13 +63,14 @@ export class BlacklistActionsManager extends AbstractActionsManager<
       [BlacklistAction.enum.Info, new BlacklistInfoExecutor(messages)],
       [
         BlacklistAction.enum.Delete,
-        new BlacklistDeleteExecutor(messages, repository),
+        new BlacklistDeleteExecutor(messages, repository, errorAgent),
       ],
     ]);
     const createExecutor = new BlacklistCreateExecutor(
       bot,
       messageService,
       repository,
+      errorAgent,
     );
     const missingExecutor = new BlacklistNotFoundExecutor(messages);
     return new BlacklistActionsManager(
@@ -75,7 +79,7 @@ export class BlacklistActionsManager extends AbstractActionsManager<
       executors,
       createExecutor,
       missingExecutor,
-      agent,
+      blacklistAgent,
     );
   }
 

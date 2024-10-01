@@ -1,9 +1,11 @@
 import type { NyxBot } from '@nyx-discord/core';
 import type { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
 import type { Events } from 'discord.js';
+
 import { BlacklistAction } from '../../blacklist/action/BlacklistAction';
 import type { BlacklistDomain } from '../../blacklist/BlacklistDomain';
 import type { HermesConfigWrapper } from '../../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../../error/HermesErrorAgent';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import { ServiceActionInteractionSubscriber } from '../action/events/ServiceActionInteractionSubscriber';
 import { BlacklistActionSubCommand } from './commands/BlacklistActionSubCommand';
@@ -23,11 +25,14 @@ export class BotBlacklistManager {
 
   protected readonly config: HermesConfigWrapper;
 
+  protected readonly errorAgent: HermesErrorAgent;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
     config: HermesConfigWrapper,
     blacklistDomain: BlacklistDomain,
+    errorAgent: HermesErrorAgent,
     actionsSubscriber: AbstractDJSClientSubscriber<Events.InteractionCreate>,
   ) {
     this.bot = bot;
@@ -35,6 +40,7 @@ export class BotBlacklistManager {
     this.blacklistDomain = blacklistDomain;
     this.actionsSubscriber = actionsSubscriber;
     this.config = config;
+    this.errorAgent = errorAgent;
   }
 
   public static create(
@@ -42,6 +48,7 @@ export class BotBlacklistManager {
     messages: HermesMessageService,
     config: HermesConfigWrapper,
     blacklistDomain: BlacklistDomain,
+    errorAgent: HermesErrorAgent,
   ) {
     const actionsSubscriber = new ServiceActionInteractionSubscriber(
       blacklistDomain.getActions(),
@@ -52,6 +59,7 @@ export class BotBlacklistManager {
       messages,
       config,
       blacklistDomain,
+      errorAgent,
       actionsSubscriber,
     );
   }
@@ -134,6 +142,7 @@ export class BotBlacklistManager {
       this.blacklistDomain.getRepository(),
       this.blacklistDomain.getAgent(),
       this.messages.getBlacklistMessages(),
+      this.errorAgent,
     );
 
     await this.bot.getScheduleManager().addSchedule(schedule);

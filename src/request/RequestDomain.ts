@@ -1,5 +1,7 @@
 import type { NyxBot } from '@nyx-discord/core';
+
 import type { HermesConfigWrapper } from '../config/file/HermesConfigWrapper';
+import type { HermesErrorAgent } from '../error/HermesErrorAgent';
 import type { HermesDatabaseService } from '../hermes/database/HermesDatabaseService';
 import type { HermesMessageService } from '../hermes/message/HermesMessageService';
 import { RequirementCheckModeEnum } from '../requirement/mode/RequirementCheckMode';
@@ -50,6 +52,7 @@ export class RequestDomain {
     configWrapper: HermesConfigWrapper,
     database: HermesDatabaseService,
     messagesService: HermesMessageService,
+    errorAgent: HermesErrorAgent,
   ): RequestDomain {
     const messages = messagesService.getRequestMessages();
 
@@ -80,6 +83,7 @@ export class RequestDomain {
       modalCodec,
       requirements,
       database.getTagRepository(),
+      errorAgent,
     );
 
     return new RequestDomain(
