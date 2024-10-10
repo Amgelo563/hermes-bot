@@ -2,6 +2,7 @@
   "name": "hermes-bot",
   "version": "1.0.0",
   "main": "build/index.js",
+  "private": true,
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "pnpm run clean && pnpm run prisma:push && tsc",
