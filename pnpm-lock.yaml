@@ -12,11 +12,11 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       '@nyx-discord/core':
-        specifier: 2.1.0
-        version: 2.1.0(discord.js@14.15.3)
+        specifier: 2.3.0
+        version: 2.3.0(discord.js@14.15.3)
       '@nyx-discord/framework':
-        specifier: 2.3.1
-        version: 2.3.1(discord.js@14.15.3)
+        specifier: 2.5.0
+        version: 2.5.0(discord.js@14.15.3)
       '@prisma/client':
         specifier: 5.16.2
         version: 5.16.2(prisma@5.16.2)
@@ -59,6 +59,9 @@ importers:
       zod:
         specifier: 3.23.8
         version: 3.23.8
+      zod-validation-error:
+        specifier: ^3.4.0
+        version: 3.4.0(zod@3.23.8)
     devDependencies:
       '@eslint/compat':
         specifier: 1.1.1
@@ -196,13 +199,13 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@nyx-discord/core@2.1.0':
-    resolution: {integrity: sha512-6Oe3ZrYLjyJrJ3VPBVzD4yOVUC+aFQ+Vwo0HtdeJQh+W+ndvYpFPxYQVrgPUc8jk1jSGu2xdRMfypYKvCmnjDw==}
+  '@nyx-discord/core@2.3.0':
+    resolution: {integrity: sha512-Y0gI18FnP6tCGbfKxZa3LJfLdZEuwdKw0iAYDIEjfoNUyKtRkUXBzJA0QkekQhWoQ3B6Ex9+OiBkdtXEic2dng==}
     peerDependencies:
       discord.js: ^14.14.1
 
-  '@nyx-discord/framework@2.3.1':
-    resolution: {integrity: sha512-uIodS38uNolsjE4krsJ+1J+KnFxb8dp3LQVARwAaRh1iZtYkJ/wRG1H4OQp5MZogqd9IjhlObVUkO/bsIrd+5w==}
+  '@nyx-discord/framework@2.5.0':
+    resolution: {integrity: sha512-EKggz+EKDEdw6EslmwdWSxoKV2t0B3kjcPwZmN8/ihw4FNIUJjejS/nj5guPr3V0CTVyYxdkIpmfMMhPYo/pAQ==}
     peerDependencies:
       discord.js: ^14.14.1
 
@@ -1630,6 +1633,12 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod-validation-error@3.4.0:
+    resolution: {integrity: sha512-ZOPR9SVY6Pb2qqO5XHt+MkkTRxGXb4EVtnjc9JpXUOtUB1T9Ru7mZOT361AN3MsetVe7R0a1KZshJDZdgp9miQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      zod: ^3.18.0
+
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
@@ -1759,15 +1768,15 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@nyx-discord/core@2.1.0(discord.js@14.15.3)':
+  '@nyx-discord/core@2.3.0(discord.js@14.15.3)':
     dependencies:
       discord.js: 14.15.3
 
-  '@nyx-discord/framework@2.3.1(discord.js@14.15.3)':
+  '@nyx-discord/framework@2.5.0(discord.js@14.15.3)':
     dependencies:
       '@discordjs/collection': 1.5.3
       '@isaacs/ttlcache': 1.4.1
-      '@nyx-discord/core': 2.1.0(discord.js@14.15.3)
+      '@nyx-discord/core': 2.3.0(discord.js@14.15.3)
       cron: 3.0.0
       discord.js: 14.15.3
 
@@ -3445,5 +3454,9 @@ snapshots:
   yallist@4.0.0: {}
 
   yocto-queue@0.1.0: {}
+
+  zod-validation-error@3.4.0(zod@3.23.8):
+    dependencies:
+      zod: 3.23.8
 
   zod@3.23.8: {}
