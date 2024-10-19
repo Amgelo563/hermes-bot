@@ -1,6 +1,7 @@
 import type { Identifier } from '@nyx-discord/core';
-import { AssertionError, ObjectNotFoundError } from '@nyx-discord/core';
+import { ObjectNotFoundError } from '@nyx-discord/core';
 import { ZodError } from 'zod';
+
 import { ZodErrorFormatter } from '../../zod/ZodErrorFormatter';
 import type { MessageSource } from '../source/MessageSource';
 
@@ -38,10 +39,8 @@ export class MessageRepository {
       } catch (e) {
         if (e instanceof ZodError) {
           const formatted = ZodErrorFormatter.format(e);
-          const json = JSON.stringify(formatted, null, 2);
-
-          throw new AssertionError(
-            `Validation error while reading message file "${source.getFilename()}"\n ${json}`,
+          throw new Error(
+            `Validation error while reading message file "${source.getFilename()}": ${formatted}`,
           );
         }
 

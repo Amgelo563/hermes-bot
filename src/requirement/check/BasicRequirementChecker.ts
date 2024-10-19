@@ -1,6 +1,7 @@
 import { AssertionError, ObjectNotFoundError } from '@nyx-discord/core';
 import { EmbedBuilder } from 'discord.js';
 import { ZodError } from 'zod';
+
 import type { OptionalInlineField } from '../../discord/embed/OptionalInlineField';
 import type { RequirementConfig } from '../../hermes/requirement/config/RequirementConfigSchema';
 import { ZodErrorFormatter } from '../../zod/ZodErrorFormatter';
@@ -82,14 +83,10 @@ export class BasicRequirementChecker<
         requirement = factory.create(config);
       } catch (e) {
         if (e instanceof ZodError) {
-          const formatted = JSON.stringify(
-            ZodErrorFormatter.format(e),
-            null,
-            2,
-          );
+          const formatted = ZodErrorFormatter.format(e);
 
           throw new AssertionError(
-            `Validation error for requirement "${config.id}" on "${this.constructor.name}"\n ${formatted}`,
+            `Validation error for requirement "${config.id}" on "${this.constructor.name}": ${formatted}`,
           );
         }
 

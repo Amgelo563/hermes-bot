@@ -28,7 +28,8 @@
     "sqlite3": "5.1.7",
     "tslog": "4.9.3",
     "typescript": "5.5.3",
-    "zod": "3.23.8"
+    "zod": "3.23.8",
+    "zod-validation-error": "3.4.0"
   },
   "devDependencies": {
     "@eslint/compat": "1.1.1",
