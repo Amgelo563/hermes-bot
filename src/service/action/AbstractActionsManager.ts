@@ -141,6 +141,8 @@ export abstract class AbstractActionsManager<
     if (Number.isNaN(numberId)) {
       return null;
     }
+
+    return numberId as Data['id'];
   }
 
   protected abstract createBuilderFromCustomId(
