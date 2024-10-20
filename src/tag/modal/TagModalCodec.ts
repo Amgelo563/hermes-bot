@@ -96,9 +96,9 @@ export class TagModalCodec implements DiscordModalCodec<TagCreateData> {
     const get = interaction.fields.getTextInputValue.bind(interaction.fields);
 
     return (
-      data.name === get(ids.Name) &&
-      data.description === get(ids.Description) &&
-      data.color === get(ids.Color)
+      data.name === get(ids.Name)
+      && data.description === get(ids.Description)
+      && data.color === get(ids.Color)
     );
   }
 

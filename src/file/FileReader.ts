@@ -22,7 +22,6 @@ export class FileReader<S extends z.ZodTypeAny> {
 
   public async read(): Promise<z.infer<S>> {
     if (this.cached) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return this.cached;
     }
 
@@ -41,17 +40,13 @@ export class FileReader<S extends z.ZodTypeAny> {
       strict: false,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = this.schema.parse(read);
 
     this.cached = parsed as z.infer<S>;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return parsed;
   }
 
   public getCached(): z.infer<S> | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.cached;
   }
 }
