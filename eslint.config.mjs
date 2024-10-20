@@ -11,7 +11,7 @@ export default typescriptEslint.config(
   ...typescriptEslint.configs.recommended,
   prettierConfig,
   {
-    ignores: ['dist/', 'eslint.config.mjs'],
+    ignores: ['dist/', 'eslint.config.mjs', 'commitlint.config.js'],
     rules: {
       // Eslint rules
       'lines-between-class-members': ['error', 'always'],

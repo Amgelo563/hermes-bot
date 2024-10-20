@@ -6,10 +6,12 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "lint": "eslint src",
+    "format": "prettier --write src",
     "build": "pnpm run clean && pnpm run prisma:gen && tsc",
     "start": "node --trace-deprecation -r source-map-support/register dist/index.js",
     "prisma:gen": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "prepare": "husky || true"
   },
   "license": "MIT",
   "dependencies": {
@@ -33,6 +35,9 @@
     "zod-validation-error": "3.4.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
+    "@commitlint/types": "19.5.0",
     "@eslint/js": "9.7.0",
     "@types/eslint__js": "8.42.3",
     "@typescript-eslint/eslint-plugin": "8.6.0",
@@ -40,6 +45,8 @@
     "eslint": "9.7.0",
     "eslint-config-prettier": "9.1.0",
     "globals": "15.8.0",
+    "husky": "9.1.6",
+    "lint-staged": "15.2.10",
     "prettier": "3.3.2",
     "typescript": "5.5.4",
     "typescript-eslint": "8.6.0"
@@ -47,5 +54,11 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@9.5.0"
+  "packageManager": "pnpm@9.5.0",
+  "lint-staged": {
+    "*.ts": [
+      "pnpm format",
+      "pnpm lint --fix"
+    ]
+  }
 }
