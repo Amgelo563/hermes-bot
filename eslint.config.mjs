@@ -20,6 +20,15 @@ export default typescriptEslint.config(
       'quotes': ['error', 'single', {
         avoidEscape: true,
       }],
+      'operator-linebreak': ['error', 'before', {
+        overrides: {
+          '=': 'after',
+          '+=': 'after',
+          '-=': 'after',
+          '*=': 'after',
+          '/=': 'after',
+        },
+      }],
       'max-len': ['error', {
         code: 100,
         tabWidth: 2,
