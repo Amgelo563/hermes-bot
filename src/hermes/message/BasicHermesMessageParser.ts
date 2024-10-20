@@ -368,7 +368,6 @@ export class BasicHermesMessageParser<Schema extends z.ZodTypeAny> {
   }
 
   public getRaw(): z.infer<Schema> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.messages;
   }
 
