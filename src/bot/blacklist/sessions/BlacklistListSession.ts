@@ -1,10 +1,9 @@
 import type {
   NyxBot,
   SessionStartInteraction,
-  SessionUpdateInteraction} from '@nyx-discord/core';
-import {
-  SessionEndCodes
+  SessionUpdateInteraction,
 } from '@nyx-discord/core';
+import { SessionEndCodes } from '@nyx-discord/core';
 import { AbstractListPaginationSession } from '@nyx-discord/framework';
 import { nanoid } from 'nanoid';
 
