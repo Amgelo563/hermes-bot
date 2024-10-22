@@ -4,7 +4,7 @@ let cache: string[] | undefined;
 
 export function getMessagesLanguages() {
   if (!cache) {
-    cache = getLanguages('messages');
+    cache = getLanguages('lang');
   }
   return cache;
 }
