@@ -1,5 +1,4 @@
 import { readdirSync } from 'node:fs';
-import { join as joinPath } from 'path';
 
 const getDirectories = (source: string) =>
   readdirSync(source, { withFileTypes: true })
@@ -7,6 +6,5 @@ const getDirectories = (source: string) =>
     .map((dirent) => dirent.name);
 
 export function getLanguages(parent: string) {
-  const path = joinPath(parent, 'lang');
-  return getDirectories(path);
+  return getDirectories(parent);
 }
