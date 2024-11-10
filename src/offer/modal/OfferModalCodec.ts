@@ -150,8 +150,12 @@ export class OfferModalCodec implements DiscordModalCodec<OfferCreateData> {
     titleField.setValue(data.title);
     descriptionField.setValue(data.description);
     priceField.setValue(data.price);
-    thumbnailField.setValue(data.thumbnail);
-    imageField.setValue(data.image);
+    if (data.thumbnail) {
+      thumbnailField.setValue(data.thumbnail);
+    }
+    if (data.image) {
+      imageField.setValue(data.image);
+    }
 
     return modal.setTextInputs(
       titleField,

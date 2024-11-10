@@ -15,8 +15,8 @@ model Offer {
   createdAt    DateTime @default(now())
   lastPostedAt DateTime @default(now())
   postsAmount  Int      @default(1)
-  thumbnail    String
-  image        String
+  thumbnail    String?
+  image        String?
   guildId      String
   channelId    String
   messageId    String

@@ -16,8 +16,8 @@ export type OfferData = {
   channelId: string;
   messageId: string;
 
-  thumbnail: string;
-  image: string;
+  thumbnail: string | null;
+  image: string | null;
 
   tags: TagData[];
 };
