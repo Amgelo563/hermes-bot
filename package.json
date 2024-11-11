@@ -8,7 +8,7 @@
     "lint": "eslint src",
     "format": "prettier --write src",
     "build": "pnpm run clean && pnpm run prisma:gen && tsc",
-    "start": "node --trace-deprecation -r source-map-support/register dist/index.js",
+    "start": "node --trace-deprecation -r source-map-support/register dist/src/index.js",
     "prisma:gen": "prisma generate",
     "prisma:push": "prisma db push",
     "prepare": "husky || true",
