@@ -17,9 +17,9 @@ import type {
   User,
 } from 'discord.js';
 import { DiscordAPIError, PermissionsBitField } from 'discord.js';
-
 import type { DiscordConfig } from '../../config/configs/discord/DiscordConfigSchema';
 import type { HermesConfig } from '../../config/file/HermesConfigSchema';
+import { DiscordCommandLimits } from '../../discord/command/DiscordCommandLimits';
 import type { HermesPlaceholderErrorContext } from '../../hermes/message/context/HermesPlaceholderErrorContext';
 import type { HermesMessageService } from '../../hermes/message/HermesMessageService';
 import type { HermesMember } from '../member/HermesMember';
@@ -97,7 +97,10 @@ export class DiscordServiceAgent {
     if (interaction.isAutocomplete()) {
       await interaction.respond([
         {
-          name: `❌ Error (ID: ${id})`,
+          name: `❌ Error (ID: ${id})`.slice(
+            0,
+            DiscordCommandLimits.Autocomplete.Label,
+          ),
           value: 'error',
         },
       ]);
