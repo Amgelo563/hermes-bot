@@ -3,7 +3,7 @@ import type {
   AutocompleteInteraction,
 } from 'discord.js';
 import fuzzysort from 'fuzzysort';
-
+import { DiscordCommandLimits } from '../discord/command/DiscordCommandLimits';
 import type { AutocompleteChoiceSource } from './AutocompleteChoiceSource';
 
 export class PermanentAutocompleteChoiceSource
@@ -36,7 +36,8 @@ export class PermanentAutocompleteChoiceSource
           .go<ApplicationCommandOptionChoiceData>(search, choices, {
             key: 'name',
           })
+          .slice(0, DiscordCommandLimits.Autocomplete.Max)
           .map((res) => res.obj)
-      : choices;
+      : choices.slice(0, DiscordCommandLimits.Autocomplete.Max);
   }
 }
