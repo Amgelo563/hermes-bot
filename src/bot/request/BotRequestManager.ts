@@ -14,6 +14,7 @@ import { RequestActionSubCommand } from './commands/RequestActionSubCommand';
 import { RequestSearchSubCommand } from './commands/RequestSearchSubCommand';
 import { RequestsParentCommand } from './commands/RequestsParentCommand';
 import { RequestStandaloneCommand } from './commands/RequestStandaloneCommand';
+import { LeavingMemberRequestCleanupSubscriber } from './events/LeavingMemberRequestCleanupSubscriber';
 
 export class BotRequestManager {
   protected readonly messages: HermesMessageService;
@@ -28,6 +29,8 @@ export class BotRequestManager {
 
   protected readonly tagRepository: TagRepository;
 
+  protected readonly cleanupSubscriber: AbstractDJSClientSubscriber<Events.GuildMemberRemove>;
+
   constructor(
     bot: NyxBot,
     messages: HermesMessageService,
@@ -35,6 +38,7 @@ export class BotRequestManager {
     requestAutocomplete: UserAutocompleteChoiceSource,
     actionsSubscriber: AbstractDJSClientSubscriber<Events.InteractionCreate>,
     tagRepository: TagRepository,
+    cleanupSubscriber: AbstractDJSClientSubscriber<Events.GuildMemberRemove>,
   ) {
     this.bot = bot;
     this.messages = messages;
@@ -42,6 +46,7 @@ export class BotRequestManager {
     this.requestAutocomplete = requestAutocomplete;
     this.actionsSubscriber = actionsSubscriber;
     this.tagRepository = tagRepository;
+    this.cleanupSubscriber = cleanupSubscriber;
   }
 
   public static create(
@@ -92,8 +97,13 @@ export class BotRequestManager {
       },
     );
 
-    const subscriber = new ServiceActionInteractionSubscriber(
+    const interactionSubscriber = new ServiceActionInteractionSubscriber(
       requestDomain.getActions(),
+    );
+
+    const cleanupSubscriber = new LeavingMemberRequestCleanupSubscriber(
+      repository,
+      requestDomain.getDiscordAgent(),
     );
 
     return new BotRequestManager(
@@ -101,15 +111,18 @@ export class BotRequestManager {
       messages,
       requestDomain,
       requestAutocomplete,
-      subscriber,
+      interactionSubscriber,
       tagRepository,
+      cleanupSubscriber,
     );
   }
 
   public async start(): Promise<void> {
     await this.setupStandaloneCommand();
     await this.setupParentCommand();
-    await this.bot.getEventManager().subscribeClient(this.actionsSubscriber);
+    await this.bot
+      .getEventManager()
+      .subscribeClient(this.actionsSubscriber, this.cleanupSubscriber);
   }
 
   protected async setupStandaloneCommand() {

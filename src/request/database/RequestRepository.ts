@@ -212,4 +212,22 @@ export class RequestRepository extends AbstractCachedPrismaRepository<RequestDat
 
     return result;
   }
+
+  public async deleteByMemberId(memberId: string): Promise<RequestData[]> {
+    const [results] = await this.prisma.$transaction([
+      this.prisma.request.findMany({
+        where: { memberId },
+        include: { tag: true },
+      }),
+      this.prisma.request.deleteMany({
+        where: { memberId },
+      }),
+    ]);
+
+    for (const offer of results) {
+      this.cache.delete(offer.id);
+    }
+
+    return results;
+  }
 }

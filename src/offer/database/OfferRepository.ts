@@ -4,7 +4,6 @@ import type { PrismaClient } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import type { Message } from 'discord.js';
 import { LRUCache } from 'lru-cache';
-
 import type { ModelId } from '../../database/model/ModelId';
 import { AbstractCachedPrismaRepository } from '../../hermes/database/prisma/AbstractCachedPrismaRepository';
 import type { TagData } from '../../tag/data/TagData';
@@ -236,5 +235,23 @@ export class OfferRepository extends AbstractCachedPrismaRepository<OfferData> {
     }
 
     return result;
+  }
+
+  public async deleteByMemberId(memberId: string): Promise<OfferData[]> {
+    const [results] = await this.prisma.$transaction([
+      this.prisma.offer.findMany({
+        where: { memberId },
+        include: { tags: true },
+      }),
+      this.prisma.offer.deleteMany({
+        where: { memberId },
+      }),
+    ]);
+
+    for (const offer of results) {
+      this.cache.delete(offer.id);
+    }
+
+    return results;
   }
 }
