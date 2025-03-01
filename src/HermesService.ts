@@ -53,6 +53,7 @@ export class HermesService {
       intents: [
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMessages,
+        IntentsBitField.Flags.GuildMembers,
       ],
       allowedMentions: {
         parse: ['users'],
