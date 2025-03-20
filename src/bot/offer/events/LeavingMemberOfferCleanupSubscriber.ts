@@ -1,6 +1,6 @@
 import type { EventDispatchMeta } from '@nyx-discord/core';
 import { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
-import type { GuildMember } from 'discord.js';
+import type { GuildMember, PartialGuildMember } from 'discord.js';
 import { Events } from 'discord.js';
 import type { OfferRepository } from '../../../offer/database/OfferRepository';
 import type { DiscordOfferAgent } from '../../../offer/discord/DiscordOfferAgent';
@@ -21,7 +21,7 @@ export class LeavingMemberOfferCleanupSubscriber extends AbstractDJSClientSubscr
 
   public async handleEvent(
     _meta: EventDispatchMeta,
-    member: GuildMember,
+    member: GuildMember | PartialGuildMember,
   ): Promise<void> {
     if (member.user.bot) {
       return;

@@ -1,6 +1,6 @@
 import type { EventDispatchMeta } from '@nyx-discord/core';
 import { AbstractDJSClientSubscriber } from '@nyx-discord/framework';
-import type { GuildMember } from 'discord.js';
+import type { GuildMember, PartialGuildMember } from 'discord.js';
 import { Events } from 'discord.js';
 import type { RequestRepository } from '../../../request/database/RequestRepository';
 import type { DiscordRequestAgent } from '../../../request/discord/DiscordRequestAgent';
@@ -21,9 +21,11 @@ export class LeavingMemberRequestCleanupSubscriber extends AbstractDJSClientSubs
 
   public async handleEvent(
     _meta: EventDispatchMeta,
-    member: GuildMember,
+    member: GuildMember | PartialGuildMember,
   ): Promise<void> {
-    if (member.user.bot) return;
+    if (member.user.bot) {
+      return;
+    }
 
     const deleted = await this.repository.deleteByMemberId(member.id);
     if (deleted.length === 0) {

@@ -1,6 +1,6 @@
 import type { NyxLogger } from '@nyx-discord/core';
 import { Bot } from '@nyx-discord/framework';
-import { Client, IntentsBitField } from 'discord.js';
+import { Client, IntentsBitField, Partials } from 'discord.js';
 
 import { BotManager } from './bot/BotManager';
 import type { HermesConfigWrapper } from './config/file/HermesConfigWrapper';
@@ -50,6 +50,7 @@ export class HermesService {
     deployCommands: boolean,
   ): HermesService {
     const client = new Client({
+      partials: [Partials.GuildMember],
       intents: [
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMessages,
