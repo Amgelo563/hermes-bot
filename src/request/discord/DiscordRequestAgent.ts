@@ -88,9 +88,10 @@ export class DiscordRequestAgent extends DiscordServiceAgent {
 
     let requestMessage;
     try {
-      requestMessage = await this.requestChannel.messages.fetch(
-        request.messageId,
-      );
+      requestMessage = await this.requestChannel.messages.fetch({
+        message: request.messageId,
+        force: true,
+      });
     } catch (e) {
       return null;
     }

@@ -86,7 +86,10 @@ export class DiscordOfferAgent extends DiscordServiceAgent {
 
     let offerMessage;
     try {
-      offerMessage = await this.offerChannel.messages.fetch(offer.messageId);
+      offerMessage = await this.offerChannel.messages.fetch({
+        message: offer.messageId,
+        force: true,
+      });
     } catch (e) {
       return null;
     }
