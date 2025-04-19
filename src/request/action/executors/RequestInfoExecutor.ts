@@ -85,8 +85,4 @@ export class RequestInfoExecutor implements RequestActionExecutor {
 
     await interaction.editReply({ embeds: [embed], components: [row] });
   }
-
-  public async defer(interaction: ServiceActionInteraction): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
-  }
 }

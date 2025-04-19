@@ -92,8 +92,4 @@ export class RequestRequestUpdateExecutor implements RequestActionExecutor {
 
     await this.bot.getSessionManager().start(session);
   }
-
-  public async defer(interaction: ServiceActionInteraction): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
-  }
 }

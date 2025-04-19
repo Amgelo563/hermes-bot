@@ -17,7 +17,9 @@ export class TagNotFoundExecutor
     agent: DiscordServiceAgent,
     id: string,
   ): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.deferReply({ ephemeral: true });
+    }
 
     const member = await agent.fetchMemberFromInteraction(interaction);
     const context = {
