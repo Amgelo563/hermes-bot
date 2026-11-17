@@ -9,8 +9,8 @@ export class BlacklistMessagesReader
 {
   public static readonly ID = Symbol('BlacklistMessages');
 
-  constructor(language: string) {
-    super(language, 'blacklist', BlacklistMessagesSchema);
+  constructor() {
+    super('blacklist', BlacklistMessagesSchema);
   }
 
   public getId() {

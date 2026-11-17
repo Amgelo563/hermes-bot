@@ -1,4 +1,5 @@
 import type { Identifiable } from '@nyx-discord/core';
+
 import { AbstractMessageFileReader } from '../../../../message/file/AbstractMessageFileReader';
 import { GeneralMessagesSchema } from './GeneralMessagesSchema';
 
@@ -8,8 +9,8 @@ export class GeneralMessagesReader
 {
   public static readonly ID = Symbol('GeneralMessages');
 
-  constructor(language: string) {
-    super(language, 'general', GeneralMessagesSchema);
+  constructor() {
+    super('general', GeneralMessagesSchema);
   }
 
   public getId() {

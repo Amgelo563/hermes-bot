@@ -9,8 +9,8 @@ export class OfferMessagesReader
 {
   public static readonly ID = Symbol('OfferMessages');
 
-  constructor(language: string) {
-    super(language, 'offer', OfferMessagesSchema);
+  constructor() {
+    super('offer', OfferMessagesSchema);
   }
 
   public getId() {

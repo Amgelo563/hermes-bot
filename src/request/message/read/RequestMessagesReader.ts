@@ -1,4 +1,5 @@
 import type { Identifiable } from '@nyx-discord/core';
+
 import { AbstractMessageFileReader } from '../../../message/file/AbstractMessageFileReader';
 import { RequestMessagesSchema } from './RequestMessagesSchema';
 
@@ -8,8 +9,8 @@ export class RequestMessagesReader
 {
   public static readonly ID = Symbol('RequestMessages');
 
-  constructor(language: string) {
-    super(language, 'request', RequestMessagesSchema);
+  constructor() {
+    super('request', RequestMessagesSchema);
   }
 
   public getId() {

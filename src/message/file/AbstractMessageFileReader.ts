@@ -8,8 +8,8 @@ export abstract class AbstractMessageFileReader<S extends z.ZodTypeAny>
   extends FileReader<S>
   implements MessageSource<S>
 {
-  constructor(language: string, file: string, schema: S) {
-    const newFile = joinPath('lang', language, file);
+  constructor(file: string, schema: S) {
+    const newFile = joinPath('messages', file);
     super(newFile, schema);
   }
 

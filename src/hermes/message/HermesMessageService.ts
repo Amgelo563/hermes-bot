@@ -1,7 +1,4 @@
-import type {
-  Identifier,
-  NyxLogger,
-} from '@nyx-discord/core';
+import type { Identifier, NyxLogger } from '@nyx-discord/core';
 import type { z } from 'zod';
 
 import { BlacklistPlaceholderReplacer } from '../../blacklist/message/placeholder/BlacklistPlaceholderReplacer';
@@ -74,14 +71,12 @@ export class HermesMessageService extends MessageService<HermesPlaceholderContex
     config: HermesConfig,
     logger: NyxLogger,
   ): HermesMessageService {
-    const lang = config.general.language;
-
     const sources: [Identifier, MessageSource<object>][] = [
-      [GeneralMessagesReader.ID, new GeneralMessagesReader(lang)],
-      [OfferMessagesReader.ID, new OfferMessagesReader(lang)],
-      [RequestMessagesReader.ID, new RequestMessagesReader(lang)],
-      [TagsMessagesReader.ID, new TagsMessagesReader(lang)],
-      [BlacklistMessagesReader.ID, new BlacklistMessagesReader(lang)],
+      [GeneralMessagesReader.ID, new GeneralMessagesReader()],
+      [OfferMessagesReader.ID, new OfferMessagesReader()],
+      [RequestMessagesReader.ID, new RequestMessagesReader()],
+      [TagsMessagesReader.ID, new TagsMessagesReader()],
+      [BlacklistMessagesReader.ID, new BlacklistMessagesReader()],
     ];
 
     const repository = new MessageRepository(new Map(sources));
