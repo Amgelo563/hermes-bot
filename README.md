@@ -1,3 +1,4 @@
+
 # 🤖 `hermes-bot`
 
 *[Named after the greek god of merchants and commerce.](https://www.wikiwand.com/en/articles/Hermes)*
@@ -16,7 +17,7 @@ This quick showcase shows an offer workflow, where the user can edit mistakes in
 requirements before letting them publish it. After publishing, the sticky message is re-sent so it's always the first in
 the channel.
 
-![Video Showcase](assets/showcase.mp4)
+https://github.com/user-attachments/assets/dca0cd0a-a52b-44f8-a283-81165cea45d6
 
 ## ✨ Features
 
